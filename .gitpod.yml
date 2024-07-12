@@ -1,0 +1,9 @@
+tasks:
+  - name: Setup
+    command: |
+      # MUSL GCC
+      sudo apt install musl-dev
+
+      # Bun
+      curl -fsSL https://bun.sh/install | bash
+      source /home/gitpod/.bashrc
