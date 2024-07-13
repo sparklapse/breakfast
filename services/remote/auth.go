@@ -22,8 +22,8 @@ type Payload struct {
 var shared_secret string = ""
 
 func init() {
-	secret, success := os.LookupEnv("BREAKFAST_REMOTE_SHARED_KEY")
-	if !success {
+	secret, success := os.LookupEnv("BREAKFAST_REMOTE_SECRET")
+	if !success || secret == "" {
 		return
 	}
 

@@ -1,4 +1,4 @@
-package auth
+package tokens
 
 import (
 	"github.com/pocketbase/dbx"
