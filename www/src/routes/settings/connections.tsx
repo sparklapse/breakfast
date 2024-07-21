@@ -57,9 +57,10 @@ export default function SettingsPage() {
                       <button
                         onclick={async () => {
                           await toast.promise(
-                            pb
-                              .collection("users")
-                              .authWithOAuth2({ provider: "twitch", scopes: ["user:read:chat"] }),
+                            pb.collection("users").authWithOAuth2({
+                              provider: "twitch",
+                              scopes: ["user:read:chat"],
+                            }),
                             {
                               loading: "Linking twitch account...",
                               success: "Account linked!",

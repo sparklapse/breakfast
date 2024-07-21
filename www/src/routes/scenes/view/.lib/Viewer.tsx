@@ -1,9 +1,8 @@
-import { For, Show, createEffect, createMemo, createResource } from "solid-js";
-import { createStore } from "solid-js/store";
+import { For, Show, createMemo, createResource } from "solid-js";
 import { loadPluginScript } from "$lib/core";
 import { Component } from "$lib/core/components";
 import { BUILT_INS } from "$app/builtin";
-import type { ComponentSource, PluginModule, PluginComponent, Scene } from "$lib/core";
+import type { PluginModule, PluginComponent, Scene } from "$lib/core";
 
 export type EditorProps = {
   scene: Scene;

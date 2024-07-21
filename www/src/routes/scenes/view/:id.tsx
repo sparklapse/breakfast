@@ -1,4 +1,4 @@
-import { Match, Show, Switch, createResource, createSignal, onMount } from "solid-js";
+import { Match, Show, Switch, createResource, onMount } from "solid-js";
 import { useNavigate, useParams, useSearchParams } from "@solidjs/router";
 import { sceneType } from "$lib/core/scene";
 import { pb } from "$app/connections/pocketbase";
