@@ -1,6 +1,6 @@
-//go:build !remote
+//go:build !saas
 
-package remote
+package saas
 
 import (
 	"github.com/pocketbase/pocketbase"

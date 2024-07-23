@@ -24,7 +24,7 @@ func RegisterService(app *pocketbase.PocketBase, scheduler *cron.Cron) {
 	// Don't allow listing auth providers if not singed in
 	app.OnRecordListExternalAuthsRequest("users").Add(func(e *core.RecordListExternalAuthsEvent) error {
 		info := apis.RequestInfo(e.HttpContext)
-		if info.AuthRecord == nil {
+		if info.AuthRecord == nil && info.Admin == nil {
 			return errors.New("unauthorized")
 		}
 		return nil

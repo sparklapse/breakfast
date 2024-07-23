@@ -1,10 +1,19 @@
-//go:build remote
+//go:build saas
 
-package remote
+package saas
 
 import (
+	"crypto/hmac"
+	"crypto/sha256"
 	"database/sql"
+	"encoding/base64"
+	"encoding/hex"
+	"encoding/json"
+	"errors"
 	"net/http"
+	"os"
+	"slices"
+	"strings"
 	"time"
 
 	"github.com/labstack/echo/v5"
@@ -16,44 +25,83 @@ import (
 	"github.com/pocketbase/pocketbase/tools/types"
 )
 
-type UserRequest struct {
-	Type string            `json:"type"`
-	Data map[string]string `json:"data"`
+type Payload struct {
+	Nonce  string   `json:"nonce"`
+	Scopes []string `json:"scopes"`
 }
 
-type User struct {
-	Id           string `db:"id"`
-	Username     string `db:"username"`
-	PasswordHash string `db:"passwordHash"`
+var sharedSecret string = ""
+
+func init() {
+	secret, success := os.LookupEnv("BREAKFAST_REMOTE_SECRET")
+	if !success || secret == "" {
+		return
+	}
+
+	sharedSecret = secret
 }
 
-func RegisterService(app *pocketbase.PocketBase) {
+func generateHmac(message []byte) string {
+	h := hmac.New(sha256.New, []byte(sharedSecret))
+	h.Write(message)
+	hash := h.Sum(nil)
+	return hex.EncodeToString(hash)
+}
+
+func verifyHmac(message []byte, hash string) bool {
+	expected := generateHmac(message)
+	return hmac.Equal([]byte(expected), []byte(hash))
+}
+
+func verifyToken(token string) error {
+	parts := strings.Split(token, ".")
+
+	if len(parts) != 2 {
+		return errors.New("Invalid token")
+	}
+
+	basePayload := parts[0]
+	hash := parts[1]
+	rawPayload, err := base64.StdEncoding.DecodeString(basePayload)
+	if err != nil {
+		return errors.New("Invalid payload")
+	}
+
+	var payload Payload
+	{
+		err := json.Unmarshal([]byte(rawPayload), &payload)
+		if err != nil {
+			return errors.New("Invalid payload")
+		}
+	}
+
+	if payload.Nonce == "" {
+		return errors.New("No nonce was included")
+	}
+
+	if len(payload.Nonce) < 21 {
+		return errors.New("Invalid nonce")
+	}
+
+	if !slices.Contains(payload.Scopes, "remote") {
+		return errors.New("Remote scope not included")
+	}
+
+	hmacPassed := verifyHmac([]byte(basePayload), hash)
+	if !hmacPassed {
+		return errors.New("HMAC check failed")
+	}
+
+	return nil
+}
+
+func registerRemote(app *pocketbase.PocketBase) {
 	app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
-		if shared_secret == "" {
-			println("Remote APIs are enabled but environment isn't configured correctly")
+		if sharedSecret == "" {
 			return nil
 		}
 
-		e.Router.POST("/api/breakfast/remote", func(c echo.Context) error {
-			// Auth check
-			{
-				// We use a custom header instead of Authorization since PB will try and db lookup the user
-				auth := c.Request().Header.Get("remote-token")
-				if auth == "" {
-					return c.JSON(http.StatusUnauthorized, map[string]string{"message": "Unauthorized"})
-				}
-
-				err := verifyToken(auth)
-				if err != nil {
-					e.App.Logger().Error(err.Error())
-					return c.JSON(http.StatusUnauthorized, map[string]string{"message": "Unathorized"})
-				}
-			}
-
-			return c.JSON(http.StatusOK, map[string]string{
-				"message": "OK",
-			})
-		})
+		println("SAAS Remote APIs enabled")
 
 		e.Router.POST("/api/breakfast/remote/user", func(c echo.Context) error {
 			// Auth check
@@ -75,18 +123,18 @@ func RegisterService(app *pocketbase.PocketBase) {
 				return c.JSON(http.StatusBadRequest, map[string]string{"meesage": "Bad request"})
 			}
 
-			var request_data UserRequest
+			var requestData UserRequest
 			{
-				err := c.Bind(&request_data)
+				err := c.Bind(&requestData)
 				if err != nil {
 					return c.JSON(http.StatusBadRequest, map[string]string{"message": err.Error()})
 				}
 			}
 
-			switch request_data.Type {
+			switch requestData.Type {
 			case "authenticate":
-				user_id := request_data.Data["id"]
-				record, err := e.App.Dao().FindRecordById("users", user_id)
+				userId := requestData.Data["id"]
+				record, err := e.App.Dao().FindRecordById("users", userId)
 				if err == sql.ErrNoRows {
 					return c.JSON(http.StatusNotFound, map[string]string{"message": "User not found"})
 				}
@@ -106,12 +154,12 @@ func RegisterService(app *pocketbase.PocketBase) {
 					"url":     e.App.Settings().Meta.AppUrl + "/breakfast?token=" + token,
 				})
 			case "configure":
-				user_id := request_data.Data["id"]
-				username := request_data.Data["username"]
-				password_hash := request_data.Data["passwordHash"]
+				userId := requestData.Data["id"]
+				username := requestData.Data["username"]
+				passwordHash := requestData.Data["passwordHash"]
 
 				// Password hash can be empty since we can generate tokens programmatically instead
-				if user_id == "" || username == "" {
+				if userId == "" || username == "" {
 					return c.JSON(http.StatusBadRequest, map[string]string{"message": "Missing data"})
 				}
 
@@ -119,7 +167,7 @@ func RegisterService(app *pocketbase.PocketBase) {
 				err := e.App.Dao().DB().
 					Select("id", "username", "passwordHash").
 					From("users").
-					Where(dbx.NewExp("id = {:id}", dbx.Params{"id": user_id})).
+					Where(dbx.NewExp("id = {:id}", dbx.Params{"id": userId})).
 					One(&user)
 
 				if err != nil && err != sql.ErrNoRows {
@@ -132,10 +180,10 @@ func RegisterService(app *pocketbase.PocketBase) {
 							"created":                time.Now().UTC().Format(types.DefaultDateLayout),
 							"email":                  "",
 							"emailVisibility":        0,
-							"id":                     user_id,
+							"id":                     userId,
 							"lastResetSentAt":        "",
 							"lastVerificationSentAt": "",
-							"passwordHash":           password_hash,
+							"passwordHash":           passwordHash,
 							"tokenKey":               security.RandomString(50),
 							"updated":                time.Now().UTC().Format(types.DefaultDateLayout),
 							"username":               username,
@@ -151,9 +199,9 @@ func RegisterService(app *pocketbase.PocketBase) {
 					_, err := e.App.Dao().DB().
 						Update("users", dbx.Params{
 							"updated":      time.Now().UTC().Format(types.DefaultDateLayout),
-							"passwordHash": password_hash,
+							"passwordHash": passwordHash,
 							"username":     username,
-						}, dbx.NewExp("id = {:id}", dbx.Params{"id": user_id})).
+						}, dbx.NewExp("id = {:id}", dbx.Params{"id": userId})).
 						Execute()
 					if err != nil {
 						return c.JSON(http.StatusInternalServerError, map[string]string{"message": err.Error()})
@@ -162,13 +210,13 @@ func RegisterService(app *pocketbase.PocketBase) {
 
 				break
 			case "remove":
-				user_id := request_data.Data["id"]
+				userId := requestData.Data["id"]
 
 				var user User
 				err := e.App.Dao().DB().
 					Select("id", "username", "passwordHash").
 					From("users").
-					Where(dbx.NewExp("id = {:id}", dbx.Params{"id": user_id})).
+					Where(dbx.NewExp("id = {:id}", dbx.Params{"id": userId})).
 					One(&user)
 
 				if err == sql.ErrNoRows {
@@ -182,7 +230,7 @@ func RegisterService(app *pocketbase.PocketBase) {
 				// Remove user record
 				{
 					_, err := e.App.Dao().DB().
-						Delete("users", dbx.NewExp("id = {:id}", dbx.Params{"id": user_id})).
+						Delete("users", dbx.NewExp("id = {:id}", dbx.Params{"id": userId})).
 						Execute()
 
 					if err != nil {
@@ -193,7 +241,7 @@ func RegisterService(app *pocketbase.PocketBase) {
 				// Removed linked auth providers
 				{
 					_, err := e.App.Dao().DB().
-						Delete("_externalAuths", dbx.NewExp("recordId = {:id}", dbx.Params{"id": user_id})).
+						Delete("_externalAuths", dbx.NewExp("recordId = {:id}", dbx.Params{"id": userId})).
 						Execute()
 
 					if err != nil {

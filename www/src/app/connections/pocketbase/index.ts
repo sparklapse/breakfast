@@ -61,6 +61,20 @@ class SolidAuthStore extends BaseAuthStore {
  */
 class Breakfast extends PocketBase {
   breakfast = {
+    setup: {
+      isSetup: async () => {
+        const result = await this.send("/api/breakfast/setup", {});
+        if (typeof result === "boolean") return result as boolean;
+        return true;
+      },
+      runSetup: async (setup: { username: string; password: string }) => {
+        await this.send("/api/breakfast/setup", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(setup),
+        });
+      },
+    },
     scenes: {
       resetStreamKey: async () => {
         const userId = this.authStore.modelStore()?.id;

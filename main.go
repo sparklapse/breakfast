@@ -5,7 +5,8 @@ import (
 	"breakfast/services/account"
 	"breakfast/services/auth"
 	"breakfast/services/events"
-	"breakfast/services/remote"
+	"breakfast/services/pages"
+	"breakfast/services/saas"
 	ui "breakfast/www"
 	"log"
 
@@ -30,10 +31,11 @@ func main() {
 	})
 
 	// Setup Services
-	remote.RegisterService(app)
+	saas.RegisterService(app)
 	account.RegisterService(app)
 	auth.RegisterService(app, scheduler)
 	events.RegisterService(app)
+	pages.RegisterService(app)
 
 	app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
 		scheduler.Start()

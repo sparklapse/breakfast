@@ -82,11 +82,6 @@ export function MenuDraw() {
                   return "Copy created!";
                 },
                 error: (err) => {
-                  if (err.status === 401) {
-                    if (import.meta.env.VITE_FEATURE_SAAS === "true")
-                      window.open(`${import.meta.env.VITE_SAAS_URL}/account/sign-in`, "_blank");
-                    else console.error("Not implemented: Local authentication page");
-                  }
                   return `Failed to create copy: ${err.message}`;
                 },
               });
