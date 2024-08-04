@@ -5,6 +5,46 @@ import { sceneType } from "$lib/core";
 
 export const streamKeyAlphabet = customAlphabet("abcdefghijklmnopqrstuvwxyz0123456789", 21);
 
+/**
+ * Open a url in a popup window
+ *
+ * Implementation copied from the pocketbase js-sdk
+ * https://github.com/pocketbase/js-sdk/blob/eb6092d82ae0b82061c559eda1d5323368370ba4/src/services/RecordService.ts#L1100
+ *
+ * @param url url to open in popup window
+ * @returns the window opened
+ */
+function openBrowserPopup(url?: string | URL): Window | null {
+  let width = 1024;
+  let height = 768;
+
+  let windowWidth = window.innerWidth;
+  let windowHeight = window.innerHeight;
+
+  // normalize window size
+  width = width > windowWidth ? windowWidth : width;
+  height = height > windowHeight ? windowHeight : height;
+
+  let left = windowWidth / 2 - width / 2;
+  let top = windowHeight / 2 - height / 2;
+
+  // note: we don't use the noopener and noreferrer attributes since
+  // for some reason browser blocks such windows then url is undefined/blank
+  return window.open(
+    url,
+    "popup_window",
+    "width=" +
+      width +
+      ",height=" +
+      height +
+      ",top=" +
+      top +
+      ",left=" +
+      left +
+      ",resizable,menubar=no",
+  );
+}
+
 type UserModel = {
   id: string;
   streamKey: string;
@@ -94,6 +134,26 @@ class Breakfast extends PocketBase {
         return parsed.data;
       },
     },
+    auth: {
+      sso: {
+        twitch: () =>
+          this.collection("users").authWithOAuth2({
+            provider: "twitch",
+            scopes: ["user:read:chat"],
+            urlCallback: import.meta.env.VITE_FEATURE_PROXY_AUTH_REDIRECT
+              ? async (u) => {
+                  const url = new URL(u);
+                  url.searchParams.set("redirect_uri", "https://auth.brekkie.stream/callback");
+                  const state = url.searchParams.get("state");
+                  url.searchParams.set("state", `${state}|${window.location.host}`);
+                  if (state === null) throw new Error("Missing state");
+
+                  openBrowserPopup(url);
+                }
+              : undefined,
+          }),
+      },
+    },
   };
 
   authStore: SolidAuthStore;
@@ -104,7 +164,7 @@ class Breakfast extends PocketBase {
 
     const url = new URL(window.location.toString());
     const existingUserAuth =
-      url.searchParams.get("token") ?? window.localStorage.getItem("pb-users-token");
+      url.searchParams.get("token") ?? window.localStorage.getItem("pb_users_auth");
     if (existingUserAuth) {
       this.authStore.save(existingUserAuth);
       this.collection("users")
@@ -120,11 +180,11 @@ class Breakfast extends PocketBase {
 
     this.authStore.onChange((token, model) => {
       if (token === "") {
-        window.localStorage.removeItem("pb-users-token");
-        window.localStorage.removeItem("pb-viewers-token");
+        window.localStorage.removeItem("pb_users_auth");
+        window.localStorage.removeItem("pb_viewers_auth");
       }
       if (!model) return;
-      window.localStorage.setItem(`pb-${model.collectionName}-token`, token);
+      window.localStorage.setItem(`pb_${model.collectionName}_auth`, token);
     });
   }
 }

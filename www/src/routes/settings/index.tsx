@@ -20,7 +20,7 @@ export default function SettingsPage() {
       actions={
         <>
           {import.meta.env.VITE_FEATURE_EXTERNAL_ACCOUNT_MANAGEMENT === "true" ? (
-            <a href={import.meta.env.VTIE_EXTERNAL_ACCOUNT_MANAGE} target="_blank">
+            <a href={import.meta.env.VITE_EXTERNAL_ACCOUNT_MANAGE} target="_blank">
               Manage account
             </a>
           ) : (
