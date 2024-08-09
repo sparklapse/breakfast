@@ -1,5 +1,3 @@
-//go:build saas
-
 package saas
 
 import (
@@ -26,8 +24,9 @@ import (
 )
 
 type Payload struct {
-	Nonce  string   `json:"nonce"`
-	Scopes []string `json:"scopes"`
+	Nonce     string   `json:"nonce"`
+	Timestamp string   `json:"timestamp"`
+	Scopes    []string `json:"scopes"`
 }
 
 var sharedSecret string = ""
@@ -54,42 +53,55 @@ func verifyHmac(message []byte, hash string) bool {
 }
 
 func verifyToken(token string) error {
-	parts := strings.Split(token, ".")
+	parts := strings.SplitN(token, ".", 2)
 
-	if len(parts) != 2 {
-		return errors.New("Invalid token")
+	if len(parts) < 2 {
+		return errors.New("invalid token")
 	}
 
 	basePayload := parts[0]
 	hash := parts[1]
 	rawPayload, err := base64.StdEncoding.DecodeString(basePayload)
 	if err != nil {
-		return errors.New("Invalid payload")
+		return errors.New("invalid payload")
 	}
 
 	var payload Payload
 	{
 		err := json.Unmarshal([]byte(rawPayload), &payload)
 		if err != nil {
-			return errors.New("Invalid payload")
+			return errors.New("invalid payload")
 		}
 	}
 
 	if payload.Nonce == "" {
-		return errors.New("No nonce was included")
+		return errors.New("no nonce was included")
 	}
 
 	if len(payload.Nonce) < 21 {
-		return errors.New("Invalid nonce")
+		return errors.New("invalid nonce")
+	}
+
+	if payload.Timestamp == "" {
+		return errors.New("")
+	}
+
+	ts, err := time.Parse(time.RFC3339, payload.Timestamp)
+	if err != nil {
+		return errors.Join(errors.New("failed to parse payload timestamp"), err)
+	}
+
+	if ts.Before(time.Now().Add(-10 * time.Minute)) {
+		return errors.New("timestamp request too old")
 	}
 
 	if !slices.Contains(payload.Scopes, "remote") {
-		return errors.New("Remote scope not included")
+		return errors.New("remote scope not included")
 	}
 
 	hmacPassed := verifyHmac([]byte(basePayload), hash)
 	if !hmacPassed {
-		return errors.New("HMAC check failed")
+		return errors.New("hmac check failed")
 	}
 
 	return nil
@@ -101,7 +113,7 @@ func registerRemote(app *pocketbase.PocketBase) {
 			return nil
 		}
 
-		println("SAAS Remote APIs enabled")
+		app.Logger().Info("SAAS Remote APIs enabled")
 
 		e.Router.POST("/api/breakfast/remote/user", func(c echo.Context) error {
 			// Auth check
@@ -207,8 +219,6 @@ func registerRemote(app *pocketbase.PocketBase) {
 						return c.JSON(http.StatusInternalServerError, map[string]string{"message": err.Error()})
 					}
 				}
-
-				break
 			case "remove":
 				userId := requestData.Data["id"]
 
@@ -248,8 +258,6 @@ func registerRemote(app *pocketbase.PocketBase) {
 						return c.JSON(http.StatusInternalServerError, map[string]string{"message": err.Error()})
 					}
 				}
-
-				break
 			default:
 				return c.JSON(http.StatusBadRequest, map[string]string{"message": "Invalid request type"})
 			}

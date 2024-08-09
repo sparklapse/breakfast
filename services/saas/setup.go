@@ -1,10 +1,9 @@
-//go:build saas
-
 package saas
 
 import (
 	"database/sql"
 	"errors"
+	"os"
 	"time"
 
 	"github.com/labstack/echo/v5"
@@ -40,12 +39,15 @@ func registerSetup(app *pocketbase.PocketBase) {
 
 		nullAdmin := &models.Admin{}
 		nullAdmin.Email = "nu@ll.dev"
-		nullAdmin.SetPassword(security.RandomString(128))
+		password := security.RandomString(128)
+		nullAdmin.SetPassword(password)
+
+		app.Logger().Debug("Created null admin: nu@ll.dev - " + password)
 
 		return app.Dao().SaveAdmin(nullAdmin)
 	})
 
-	// Self service setup APIs
+	// Self service user setup APIs
 	app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
 		isSetup := true
 
@@ -67,6 +69,48 @@ func registerSetup(app *pocketbase.PocketBase) {
 		e.Router.GET("/api/breakfast/setup", func(c echo.Context) error {
 			return c.JSON(200, isSetup)
 		})
+
+		username, preSetup := os.LookupEnv("BREAKFAST_PRE_SETUP")
+		if preSetup && !isSetup {
+			usersCollection, err := app.Dao().FindCollectionByNameOrId("users")
+			if err != nil {
+				return err
+			}
+
+			if !usersCollection.IsAuth() {
+				return errors.New("users collection is not of type auth")
+			}
+
+			newUser := models.NewRecord(usersCollection)
+			newUser.Set("streamKey", security.RandomString(21))
+			newUser.SetUsername(username)
+			newUser.SetPassword(security.RandomString(128))
+			newUser.SetVerified(true)
+
+			{
+				err := app.Dao().SaveRecord(newUser)
+				if err != nil {
+					return err
+				}
+			}
+
+			{
+				_, err := app.Dao().DB().Insert("_params", dbx.Params{
+					"id":      security.RandomString(15),
+					"key":     "breakfast-setup",
+					"value":   "true",
+					"created": time.Now().UTC().Format(types.DefaultDateLayout),
+					"updated": time.Now().UTC().Format(types.DefaultDateLayout),
+				}).Execute()
+
+				if err != nil {
+					return err
+				}
+			}
+
+			isSetup = true
+			return nil
+		}
 
 		e.Router.POST("/api/breakfast/setup", func(c echo.Context) error {
 			if isSetup {
@@ -126,5 +170,26 @@ func registerSetup(app *pocketbase.PocketBase) {
 		})
 
 		return nil
+	})
+
+	// Setup environment
+	app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
+		settings, err := app.Dao().FindSettings()
+		if err != nil {
+			return err
+		}
+
+		{
+			clientId, clientIdExists := os.LookupEnv("BREAKFAST_TWITCH_CLIENT_ID")
+			clientSecret, clientSecretExists := os.LookupEnv("BREAKFAST_TWITCH_CLIENT_SECRET")
+
+			if clientIdExists && clientSecretExists {
+				settings.TwitchAuth.ClientId = clientId
+				settings.TwitchAuth.ClientSecret = clientSecret
+				settings.TwitchAuth.Enabled = true
+			}
+		}
+
+		return app.Dao().SaveSettings(settings)
 	})
 }
