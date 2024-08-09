@@ -10,7 +10,6 @@ import (
 	"errors"
 	"net/http"
 	"os"
-	"slices"
 	"strings"
 	"time"
 
@@ -18,15 +17,20 @@ import (
 	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase"
 	"github.com/pocketbase/pocketbase/core"
+	"github.com/pocketbase/pocketbase/models"
 	"github.com/pocketbase/pocketbase/tokens"
 	"github.com/pocketbase/pocketbase/tools/security"
 	"github.com/pocketbase/pocketbase/tools/types"
 )
 
 type Payload struct {
-	Nonce     string   `json:"nonce"`
-	Timestamp string   `json:"timestamp"`
-	Scopes    []string `json:"scopes"`
+	Nonce     string `json:"nonce"`
+	Timestamp string `json:"timestamp"`
+}
+
+type UserRequest struct {
+	Type string            `json:"type"`
+	Data map[string]string `json:"data"`
 }
 
 var sharedSecret string = ""
@@ -95,10 +99,6 @@ func verifyToken(token string) error {
 		return errors.New("timestamp request too old")
 	}
 
-	if !slices.Contains(payload.Scopes, "remote") {
-		return errors.New("remote scope not included")
-	}
-
 	hmacPassed := verifyHmac([]byte(basePayload), hash)
 	if !hmacPassed {
 		return errors.New("hmac check failed")
@@ -145,17 +145,40 @@ func registerRemote(app *pocketbase.PocketBase) {
 
 			switch requestData.Type {
 			case "authenticate":
-				userId := requestData.Data["id"]
-				record, err := e.App.Dao().FindRecordById("users", userId)
-				if err == sql.ErrNoRows {
-					return c.JSON(http.StatusNotFound, map[string]string{"message": "User not found"})
+				userId, hasUserId := requestData.Data["id"]
+				username, hasUsername := requestData.Data["username"]
+
+				if !hasUserId && !hasUsername {
+					return c.JSON(http.StatusBadRequest, map[string]string{"message": "Missing user identifier (id or username)"})
 				}
 
-				if err != nil {
-					return c.JSON(http.StatusInternalServerError, map[string]string{"message": err.Error()})
+				var user *models.Record
+				if hasUserId {
+					record, err := e.App.Dao().FindRecordById("users", userId)
+					if err == sql.ErrNoRows {
+						return c.JSON(http.StatusNotFound, map[string]string{"message": "User not found"})
+					}
+					if err != nil {
+						return c.JSON(http.StatusInternalServerError, map[string]string{"message": err.Error()})
+					}
+
+					user = record
+				} else {
+					record, err := app.Dao().FindFirstRecordByFilter(
+						"users", "username = {:username}",
+						dbx.Params{"username": username},
+					)
+					if err == sql.ErrNoRows {
+						return c.JSON(http.StatusNotFound, map[string]string{"message": "User not found"})
+					}
+					if err != nil {
+						return c.JSON(http.StatusInternalServerError, map[string]string{"message": err.Error()})
+					}
+
+					user = record
 				}
 
-				token, err := tokens.NewRecordAuthToken(e.App, record)
+				token, err := tokens.NewRecordAuthToken(e.App, user)
 				if err != nil {
 					return c.JSON(http.StatusInternalServerError, map[string]string{"message": err.Error()})
 				}
