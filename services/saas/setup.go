@@ -82,6 +82,7 @@ func registerSetup(app *pocketbase.PocketBase) {
 			}
 
 			newUser := models.NewRecord(usersCollection)
+			newUser.SetId("owner")
 			newUser.Set("streamKey", security.RandomString(21))
 			newUser.SetUsername(username)
 			newUser.SetPassword(security.RandomString(128))
@@ -139,6 +140,7 @@ func registerSetup(app *pocketbase.PocketBase) {
 			}
 
 			newUser := models.NewRecord(usersCollection)
+			newUser.SetId("owner")
 			newUser.Set("streamKey", security.RandomString(21))
 			newUser.SetUsername(setup.Username)
 			newUser.SetPassword(setup.Password)
