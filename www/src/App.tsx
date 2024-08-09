@@ -1,6 +1,5 @@
 import "$app/bootstrap";
 
-import { lazy } from "solid-js";
 import { Router } from "@solidjs/router";
 import { Toaster } from "solid-toast";
 import type { JSX } from "solid-js";

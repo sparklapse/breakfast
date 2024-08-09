@@ -1,7 +1,7 @@
 import toast from "solid-toast";
 import { createEffect, createResource, Match, Switch } from "solid-js";
 import { useNavigate } from "@solidjs/router";
-import { Layers3, Settings, Home } from "lucide-solid";
+import { Layers3, Settings } from "lucide-solid";
 import { siTwitch } from "simple-icons";
 import StitchGridLayout from "$app/components/layouts/StitchGrid";
 import { pb } from "$app/connections/pocketbase";
@@ -90,6 +90,15 @@ function LoginScreen() {
               </div>
 
               <div class="mt-6 grid grid-cols-2 gap-4">
+                {import.meta.env.VITE_FEATURE_EXTERNAL_ACCOUNT_MANAGEMENT === "true" && (
+                  <a
+                    href={import.meta.env.VITE_EXTERNAL_ACCOUNT_LOGIN}
+                    class="flex w-full items-center justify-center gap-3 rounded-md bg-white px-3 py-2 text-sm font-semibold text-slate-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus-visible:ring-transparent"
+                  >
+                    <img class="size-4 rotate-3" src="/breakfast/logo.png" alt="" />
+                    <span class="text-sm font-semibold leading-6">Brekkie.stream</span>
+                  </a>
+                )}
                 <button
                   class="flex w-full items-center justify-center gap-3 rounded-md bg-white px-3 py-2 text-sm font-semibold text-purple-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus-visible:ring-transparent"
                   onclick={() => {
