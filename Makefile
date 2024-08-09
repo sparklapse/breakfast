@@ -1,4 +1,5 @@
 build:
+	cd www; bun run build
 	CGO_ENABLED=1 CC=/usr/bin/x86_64-linux-musl-gcc go build -ldflags '-linkmode external -extldflags -static' -tags "netgo embed" -o breakfast
 	docker build -t sparklapse/breakfast:latest .
 
@@ -9,5 +10,6 @@ push:
 	docker push sparklapse/breakfast:latest
 
 clean:
-	rm breakfast
-	docker image rm sparklapse/breakfast:latest
+	rm -f breakfast
+	rm -rf www/build
+	docker image rm -f sparklapse/breakfast:latest
