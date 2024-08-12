@@ -1,6 +1,6 @@
 //go:build embed
 
-package ui
+package www
 
 import (
 	"embed"
@@ -15,7 +15,7 @@ import (
 var distDir embed.FS
 var distDirFs = echo.MustSubFS(distDir, "build")
 
-func RegisterBreakfastUI(e *core.ServeEvent) {
+func RegisterBreakfastAdmin(e *core.ServeEvent) {
 	e.Router.GET("/breakfast", apis.StaticDirectoryHandler(distDirFs, true), middleware.Gzip())
 	e.Router.GET("/breakfast/*", apis.StaticDirectoryHandler(distDirFs, true), middleware.Gzip())
 }

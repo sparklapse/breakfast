@@ -7,7 +7,7 @@ import (
 	"breakfast/services/events"
 	"breakfast/services/pages"
 	"breakfast/services/saas"
-	ui "breakfast/www"
+	"breakfast/www"
 	"log"
 
 	"github.com/pocketbase/pocketbase"
@@ -26,7 +26,7 @@ func main() {
 
 	// Setup UI
 	app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
-		ui.RegisterBreakfastUI(e)
+		www.RegisterBreakfastAdmin(e)
 		return nil
 	})
 

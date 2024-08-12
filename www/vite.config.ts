@@ -10,6 +10,16 @@ export default defineConfig({
   build: {
     sourcemap: true,
     outDir: "build",
+    rollupOptions: {
+      input: {
+        main: resolve(__dirname, "index.html"),
+        welcome: resolve(__dirname, "pages/welcome.html"),
+      },
+    },
+    minify: "terser",
+    terserOptions: {
+      mangle: false,
+    },
   },
   server: {
     host: "0.0.0.0",
