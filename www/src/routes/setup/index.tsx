@@ -36,8 +36,9 @@ export default function SetupPage() {
               toast.promise(pb.breakfast.setup.runSetup({ username, password }), {
                 loading: "Creating account...",
                 success: () => {
-                  navigate("/");
-                  pb.collection("users").authWithPassword(username, password);
+                  pb.collection("users")
+                    .authWithPassword(username, password)
+                    .then(() => navigate("/"));
                   return "Account Created! Welcome te Breakfast!";
                 },
                 error: (err) => `Failed to setup account: ${err.message}`,
