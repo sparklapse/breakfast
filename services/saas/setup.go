@@ -25,6 +25,47 @@ type setupRequest struct {
 	Password string `json:"password"`
 }
 
+func setupBreakfast(app *pocketbase.PocketBase, username string, password string) error {
+	usersCollection, err := app.Dao().FindCollectionByNameOrId("users")
+	if err != nil {
+		return err
+	}
+
+	if !usersCollection.IsAuth() {
+		return errors.New("users collection is not of type auth")
+	}
+
+	newUser := models.NewRecord(usersCollection)
+	newUser.SetId("owner")
+	newUser.Set("streamKey", security.RandomString(21))
+	newUser.SetUsername(username)
+	newUser.SetPassword(password)
+	newUser.SetVerified(true)
+
+	{
+		err := app.Dao().SaveRecord(newUser)
+		if err != nil {
+			return err
+		}
+	}
+
+	{
+		_, err := app.Dao().DB().Insert("_params", dbx.Params{
+			"id":      security.RandomString(15),
+			"key":     "breakfast-setup",
+			"value":   "true",
+			"created": time.Now().UTC().Format(types.DefaultDateLayout),
+			"updated": time.Now().UTC().Format(types.DefaultDateLayout),
+		}).Execute()
+
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func registerSetup(app *pocketbase.PocketBase) {
 	// null admin user
 	app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
@@ -39,7 +80,7 @@ func registerSetup(app *pocketbase.PocketBase) {
 
 		nullAdmin := &models.Admin{}
 		nullAdmin.Email = "nu@ll.dev"
-		password := security.RandomString(128)
+		password := security.RandomString(32)
 		nullAdmin.SetPassword(password)
 
 		app.Logger().Debug("Created null admin: nu@ll.dev - " + password)
@@ -72,41 +113,9 @@ func registerSetup(app *pocketbase.PocketBase) {
 
 		username, preSetup := os.LookupEnv("BREAKFAST_PRE_SETUP")
 		if preSetup && !isSetup {
-			usersCollection, err := app.Dao().FindCollectionByNameOrId("users")
+			err := setupBreakfast(app, username, security.RandomString(128))
 			if err != nil {
 				return err
-			}
-
-			if !usersCollection.IsAuth() {
-				return errors.New("users collection is not of type auth")
-			}
-
-			newUser := models.NewRecord(usersCollection)
-			newUser.SetId("owner")
-			newUser.Set("streamKey", security.RandomString(21))
-			newUser.SetUsername(username)
-			newUser.SetPassword(security.RandomString(128))
-			newUser.SetVerified(true)
-
-			{
-				err := app.Dao().SaveRecord(newUser)
-				if err != nil {
-					return err
-				}
-			}
-
-			{
-				_, err := app.Dao().DB().Insert("_params", dbx.Params{
-					"id":      security.RandomString(15),
-					"key":     "breakfast-setup",
-					"value":   "true",
-					"created": time.Now().UTC().Format(types.DefaultDateLayout),
-					"updated": time.Now().UTC().Format(types.DefaultDateLayout),
-				}).Execute()
-
-				if err != nil {
-					return err
-				}
 			}
 
 			isSetup = true
@@ -130,41 +139,9 @@ func registerSetup(app *pocketbase.PocketBase) {
 				return c.JSON(400, map[string]any{"message": "Bad request"})
 			}
 
-			usersCollection, err := app.Dao().FindCollectionByNameOrId("users")
+			err := setupBreakfast(app, setup.Username, setup.Password)
 			if err != nil {
 				return err
-			}
-
-			if !usersCollection.IsAuth() {
-				return errors.New("users collection is not of type auth")
-			}
-
-			newUser := models.NewRecord(usersCollection)
-			newUser.SetId("owner")
-			newUser.Set("streamKey", security.RandomString(21))
-			newUser.SetUsername(setup.Username)
-			newUser.SetPassword(setup.Password)
-			newUser.SetVerified(true)
-
-			{
-				err := app.Dao().SaveRecord(newUser)
-				if err != nil {
-					return err
-				}
-			}
-
-			{
-				_, err := app.Dao().DB().Insert("_params", dbx.Params{
-					"id":      security.RandomString(15),
-					"key":     "breakfast-setup",
-					"value":   "true",
-					"created": time.Now().UTC().Format(types.DefaultDateLayout),
-					"updated": time.Now().UTC().Format(types.DefaultDateLayout),
-				}).Execute()
-
-				if err != nil {
-					return err
-				}
 			}
 
 			isSetup = true
@@ -179,6 +156,14 @@ func registerSetup(app *pocketbase.PocketBase) {
 		settings, err := app.Dao().FindSettings()
 		if err != nil {
 			return err
+		}
+
+		{
+			appUrl, appUrlExists := os.LookupEnv("BREAKFAST_APP_URL")
+
+			if appUrlExists {
+				settings.Meta.AppUrl = appUrl
+			}
 		}
 
 		{
