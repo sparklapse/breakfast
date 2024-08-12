@@ -1,7 +1,13 @@
-import PocketBase, { BaseAuthStore, getTokenPayload, isTokenExpired } from "pocketbase";
+import PocketBase, {
+  BaseAuthStore,
+  getTokenPayload,
+  isTokenExpired,
+  RealtimeService,
+} from "pocketbase";
 import { customAlphabet } from "nanoid";
 import { createRoot, createSignal, type Accessor } from "solid-js";
 import { sceneType } from "$lib/core";
+import { TWITCH_AUTH_SCOPES } from "./auth";
 
 export const streamKeyAlphabet = customAlphabet("abcdefghijklmnopqrstuvwxyz0123456789", 21);
 
@@ -50,6 +56,9 @@ type UserModel = {
   streamKey: string;
 } | null;
 
+/**
+ * An auth store that has solid signals instead of just plain js properties.
+ */
 class SolidAuthStore extends BaseAuthStore {
   tokenStore: Accessor<string>;
   modelStore: Accessor<UserModel | null>;
@@ -136,22 +145,60 @@ class Breakfast extends PocketBase {
     },
     auth: {
       sso: {
-        twitch: () =>
-          this.collection("users").authWithOAuth2({
-            provider: "twitch",
-            scopes: ["user:read:chat"],
-            urlCallback: import.meta.env.VITE_FEATURE_PROXY_AUTH_REDIRECT
-              ? async (u) => {
-                  const url = new URL(u);
-                  url.searchParams.set("redirect_uri", "https://auth.brekkie.stream/callback");
-                  const state = url.searchParams.get("state");
-                  url.searchParams.set("state", `${state}|${window.location.host}`);
-                  if (state === null) throw new Error("Missing state");
+        twitch: async () => {
+          let resolve: () => void;
+          let reject: (reason: string) => void;
+          const promise = new Promise<void>((res, rej) => {
+            resolve = res;
+            reject = rej;
+          });
 
-                  openBrowserPopup(url);
-                }
-              : undefined,
-          }),
+          const methods = await this.collection("users").listAuthMethods();
+          const provider = methods.authProviders.find((p) => p.name === "twitch");
+          if (!provider) throw new Error("Twitch provider not enabled");
+
+          const url = new URL(provider.authUrl);
+          const redirectUri = import.meta.env.VITE_FEATURE_PROXY_AUTH_REDIRECT
+            ? "https://auth.brekkie.stream/callback"
+            : this.buildUrl("/api/oauth2-redirect");
+
+          const realtime = new RealtimeService(this);
+          await realtime.subscribe(
+            "@oauth2",
+            async (data: { state: string; code: string }) => {
+              await this.collection("users").authWithOAuth2Code(
+                provider.name,
+                data.code,
+                provider.codeVerifier,
+                redirectUri,
+              );
+              resolve();
+            },
+          );
+
+          url.searchParams.set("state", realtime.clientId);
+          if (import.meta.env.VITE_FEATURE_PROXY_AUTH_REDIRECT) {
+            const state = url.searchParams.get("state");
+            url.searchParams.set("state", `${state}|${window.location.host}`);
+          }
+          url.searchParams.set("scope", TWITCH_AUTH_SCOPES.join(" "));
+          url.searchParams.set("redirect_uri", redirectUri);
+
+          openBrowserPopup(url);
+
+          const cleanup = () => {
+            realtime.unsubscribe();
+          };
+
+          const timeout = setTimeout(() => {
+            reject("Request timed out");
+            cleanup();
+          }, 30000);
+
+          await promise;
+          clearTimeout(timeout);
+          cleanup();
+        },
       },
     },
   };
@@ -195,15 +242,3 @@ pb.beforeSend = async (url, options) => {
 
   return { url, options };
 };
-
-pb.realtime.subscribe(
-  "breakfast/events",
-  (data) => {
-    console.log(data);
-  },
-  // {
-  //   query: {
-  //     sk: "abc123",
-  //   },
-  // },
-);
