@@ -1,3 +1,12 @@
+install:
+	cd www; bun install
+
+dev:
+	go run main.go serve
+
+reset:
+	rm -rf pb_data
+
 build:
 	cd www; bun run build
 	CGO_ENABLED=1 CC=/usr/bin/x86_64-linux-musl-gcc go build -ldflags '-linkmode external -extldflags -static' -tags "netgo embed" -o breakfast
