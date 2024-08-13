@@ -4,8 +4,10 @@
   let selectEnd = { x: 0, y: 0 };
 
   export let onselect:
-    | ((area: { x1: number; y1: number; x2: number; y2: number }) => void | Promise<void>)
+    | ((area: { x1: number; y1: number; x2: number; y2: number }) => any)
     | undefined = undefined;
+
+  export let ondeselect: (() => any) | undefined = undefined;
 
   const onpointerdown = (
     ev: PointerEvent & {
@@ -13,10 +15,11 @@
     },
   ) => {
     if (ev.buttons !== 1) return;
-    if (!ev.shiftKey) return;
-    isSelecting = true;
     selectStart = { x: ev.clientX, y: ev.clientY };
     selectEnd = { x: ev.clientX, y: ev.clientY };
+
+    if (!ev.shiftKey) return;
+    isSelecting = true;
   };
 
   const onpointermove = (
@@ -33,6 +36,12 @@
       currentTarget: EventTarget & Window;
     },
   ) => {
+    selectEnd = { x: ev.clientX, y: ev.clientY };
+    if (selectStart.x === selectEnd.x && selectStart.y === selectEnd.y) {
+      ondeselect?.();
+      return;
+    }
+
     if (!isSelecting) return;
     isSelecting = false;
 

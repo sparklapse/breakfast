@@ -161,5 +161,10 @@
       <Maximize />
     </button>
   </div>
-  <Selector {onselect} />
+  <Selector
+    {onselect}
+    ondeselect={() => {
+      highlightedSources = [];
+    }}
+  />
 </div>
