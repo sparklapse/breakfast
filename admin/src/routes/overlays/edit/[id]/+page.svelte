@@ -7,7 +7,8 @@
   import Selector from "./Selector.svelte";
 
   const {
-    utils: { screenToLocal, panTo },
+    stores: { transform: viewportTransform },
+    utils: { screenToLocal, localToScreen, panTo },
   } = createViewport({ initialView: DEFAULT_VIEW });
   const {
     sources,
@@ -100,16 +101,12 @@
         style:top="{source.transform.y}px"
         style:width="{source.transform.width}px"
         style:height="{source.transform.height}px"
-        style:transform="translate(-50%, -50%) rotate({source.transform.rotation}deg)"
+        style:transform="rotate({source.transform.rotation}deg)"
         on:click={(ev) => {
           if (ev.shiftKey) addSelect(idx);
           else singleSelect(idx);
         }}
         on:pointerdown={(ev) => {
-          ev.stopPropagation();
-        }}
-        on:pointerup={(ev) => {
-          if ($action !== "selecting") return;
           ev.stopPropagation();
         }}
       >
@@ -120,18 +117,18 @@
       {@const transformState =
         $action === "rotating"
           ? {
-              left: `${$rotationPivot.x}px`,
-              top: `${$rotationPivot.y}px`,
+              left: `${$rotationPivot[0]}px`,
+              top: `${$rotationPivot[1]}px`,
               width: `${$rotationCursorDistance * 2}px`,
               height: `${$rotationCursorDistance * 2}px`,
               transform: `translate(-50%, -50%) rotate(${$rotationDelta}deg)`,
             }
           : {
-              left: `${$selectionBounds.x}px`,
-              top: `${$selectionBounds.y}px`,
-              width: `${$selectionBounds.width}px`,
-              height: `${$selectionBounds.height}px`,
-              transform: `translate(-50%, -50%)`,
+              left: `${$selectionBounds[0][0]}px`,
+              top: `${$selectionBounds[0][1]}px`,
+              width: `${$selectionBounds[1][0] - $selectionBounds[0][0]}px`,
+              height: `${$selectionBounds[1][1] - $selectionBounds[0][1]}px`,
+              transform: ``,
             }}
 
       <!-- Transform box -->
@@ -144,7 +141,7 @@
               ? "transition-[background-color,border-radius,width,height]"
               : $action === "resizing"
                 ? "transition-[background-color,border-radius]"
-                : "transition-[background-color,border-radius,width,height,top,left]",
+                : "transition-[background-color,border-radius]",
           $action === "selecting" && "cursor-grab rounded-[1px] bg-blue-500/25",
           $action === "rotating" && "rounded-[100%] bg-pink-500/25",
           $action === "translating" && "rounded-[1px] bg-green-500/25",
@@ -162,42 +159,40 @@
         }}
       />
 
-      <!-- Rotate Handle -->
-      <div
-        class={clsx(
-          "esc-pan absolute size-4 -translate-x-1/2 -translate-y-full cursor-grab rounded-full bg-blue-950 transition-all",
-          $action !== "selecting" && "scale-0",
-        )}
-        style:left="{$selectionBounds.x}px"
-        style:top="{$selectionBounds.y - $selectionBounds.height / 2 - 6}px"
-        on:pointerdown={(ev) => {
-          ev.stopPropagation();
-          startRotation(ev);
-        }}
-      />
-
       <!-- Rotate guide line -->
       <div
         class={clsx([
           "absolute w-1 origin-top rounded-[1px] bg-pink-900",
           $action !== "rotating" && "transition-[height]",
         ])}
-        style:left="{$rotationPivot.x}px"
-        style:top="{$rotationPivot.y}px"
+        style:left="{$rotationPivot[0]}px"
+        style:top="{$rotationPivot[1]}px"
         style:height="{$action === "rotating" ? $rotationCursorDistance : 0}px"
         style:transform="translateX(-50%) rotate({$rotationDelta + 180}deg)"
       />
 
       <!-- Resize Handles -->
-      {@const resizer =
-        $selectedSources.length === 1 ? $selectedSources[0].transform : $selectionBounds}
+      {@const resizer = {
+        ...($selectedSources.length === 1
+          ? $selectedSources[0].transform
+          : {
+              x: $selectionBounds[0][0],
+              y: $selectionBounds[0][1],
+              width: $selectionBounds[1][0] - $selectionBounds[0][0],
+              height: $selectionBounds[1][1] - $selectionBounds[0][1],
+              rotation: 0,
+            }),
+      }}
       <div
-        class="esc-pan absolute transition-all"
+        class={clsx([
+          "esc-pan absolute rounded-[1px]",
+          $action === "selecting" && "border border-blue-300",
+        ])}
         style:left="{resizer.x}px"
         style:top="{resizer.y}px"
         style:width="{resizer.width}px"
         style:height="{resizer.height}px"
-        style:transform="translate(-50%, -50%) rotate({resizer.rotation}deg)"
+        style:transform="rotate({resizer.rotation}deg)"
         on:pointerdown={(ev) => {
           if ($action !== "selecting") return;
           ev.stopPropagation();
@@ -206,7 +201,7 @@
       >
         <div
           class={clsx([
-            "esc-pan absolute left-0 top-0 size-2.5 -translate-x-1/2 -translate-y-1/2 cursor-nw-resize bg-blue-950 transition-transform",
+            "esc-pan absolute left-0 top-0 size-2.5 cursor-nw-resize rounded-tl-[1px] bg-blue-950 transition-transform",
             $action !== "selecting" && "scale-0",
           ])}
           on:pointerdown={(ev) => {
@@ -216,7 +211,7 @@
         />
         <div
           class={clsx([
-            "esc-pan absolute right-0 top-0 size-2.5 -translate-y-1/2 translate-x-1/2 cursor-ne-resize bg-blue-950 transition-transform",
+            "esc-pan absolute right-0 top-0 size-2.5 cursor-ne-resize rounded-tr-[1px] bg-blue-950 transition-transform",
             $action !== "selecting" && "scale-0",
           ])}
           on:pointerdown={(ev) => {
@@ -226,7 +221,7 @@
         />
         <div
           class={clsx([
-            "esc-pan absolute bottom-0 left-0 size-2.5 -translate-x-1/2 translate-y-1/2 cursor-sw-resize bg-blue-950 transition-transform",
+            "esc-pan absolute bottom-0 left-0 size-2.5 cursor-sw-resize rounded-bl-[1px] bg-blue-950 transition-transform",
             $action !== "selecting" && "scale-0",
           ])}
           on:pointerdown={(ev) => {
@@ -236,7 +231,7 @@
         />
         <div
           class={clsx([
-            "esc-pan absolute bottom-0 right-0 size-2.5 translate-x-1/2 translate-y-1/2 cursor-se-resize bg-blue-950 transition-transform",
+            "esc-pan absolute bottom-0 right-0 size-2.5 cursor-se-resize rounded-br-[1px] bg-blue-950 transition-transform",
             $action !== "selecting" && "scale-0",
           ])}
           on:pointerdown={(ev) => {
@@ -247,6 +242,28 @@
       </div>
     {/if}
   </Viewport>
+  {#key $viewportTransform}
+    {#if $selectionBounds}
+      {@const localBounds = [
+        localToScreen($selectionBounds[0]),
+        localToScreen($selectionBounds[1]),
+      ]}
+
+      <!-- Rotate Handle -->
+      <div
+        class={clsx(
+          "esc-pan absolute size-4 -translate-x-1/2 -translate-y-full cursor-grab rounded-full bg-blue-950 transition-all",
+          $action !== "selecting" && "scale-0",
+        )}
+        style:left="{localBounds[0][0] + (localBounds[1][0] - localBounds[0][0]) / 2}px"
+        style:top="{localBounds[0][1] - 8}px"
+        on:pointerdown={(ev) => {
+          ev.stopPropagation();
+          startRotation(ev);
+        }}
+      />
+    {/if}
+  {/key}
   <div class="absolute bottom-4 right-4">
     <button
       class="rounded border border-slate-200 bg-white p-2 shadow"
@@ -256,8 +273,8 @@
     </button>
   </div>
   <Selector
-    onselect={({ start, end }) => {
-      areaSelect({ start: screenToLocal(start), end: screenToLocal(end) });
+    onselect={([start, end]) => {
+      areaSelect([screenToLocal(start), screenToLocal(end)]);
     }}
     ondeselect={() => deselect()}
   />

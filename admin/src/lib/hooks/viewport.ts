@@ -6,6 +6,7 @@ import { interpolateObject } from "d3-interpolate";
 import { timer } from "d3-timer";
 import type { Readable } from "svelte/store";
 import { getContext, setContext } from "svelte";
+import type { Point } from "$lib/math";
 
 type ViewportTransform = { x: number; y: number; k: number };
 type AreaTransform = {
@@ -45,17 +46,24 @@ export function createViewport(options?: {
       transform.set({ x, y, k });
     });
 
-  const screenToLocal = (position: { x: number; y: number }) => {
+  const screenToLocal = (position: Point): Point => {
     const { x, y } = viewContainer.getBoundingClientRect();
 
     const t = get(transform);
-    const localX = (position.x - x - t.x) / t.k;
-    const localY = (position.y - y - t.y) / t.k;
+    const localX = (position[0] - x - t.x) / t.k;
+    const localY = (position[1] - y - t.y) / t.k;
 
-    return {
-      x: localX,
-      y: localY,
-    };
+    return [localX, localY];
+  };
+
+  const localToScreen = (position: Point): Point => {
+    const { x, y } = viewContainer.getBoundingClientRect();
+
+    const t = get(transform);
+    const screenX = position[0] * t.k + t.x + x;
+    const screenY = position[1] * t.k + t.y + y;
+
+    return [screenX, screenY];
   };
 
   const setTransformOverTime = async ({ x, y, k }: ViewportTransform, duration: number) => {
@@ -127,8 +135,8 @@ export function createViewport(options?: {
         subscribe: offset.subscribe,
       } as Readable<{ x: number; y: number }>,
     },
-    use: { attachcontainer: attachcontainer },
-    utils: { screenToLocal, panTo },
+    use: { attachcontainer },
+    utils: { screenToLocal, localToScreen, panTo },
   };
 
   setContext("viewport", ctx);

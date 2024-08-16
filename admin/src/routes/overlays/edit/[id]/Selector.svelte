@@ -1,13 +1,11 @@
 <script lang="ts">
-  import { select } from "d3-selection";
+  import type { Point } from "$lib/math";
 
   let isSelecting = false;
   let selectStart = { x: 0, y: 0 };
   let selectEnd = { x: 0, y: 0 };
 
-  export let onselect:
-    | ((area: { start: { x: number; y: number }; end: { x: number; y: number } }) => any)
-    | undefined = undefined;
+  export let onselect: ((area: [Point, Point]) => any) | undefined = undefined;
 
   export let ondeselect: (() => any) | undefined = undefined;
 
@@ -39,9 +37,9 @@
     },
   ) => {
     selectEnd = { x: ev.clientX, y: ev.clientY };
-    const xDelta = (selectEnd.x - selectStart.x);
-    const yDelta = (selectEnd.y - selectStart.y);
-    const delta = Math.abs(Math.sqrt(xDelta*xDelta + yDelta*yDelta));
+    const xDelta = selectEnd.x - selectStart.x;
+    const yDelta = selectEnd.y - selectStart.y;
+    const delta = Math.abs(Math.sqrt(xDelta * xDelta + yDelta * yDelta));
     if (delta < 10) {
       ondeselect?.();
       isSelecting = false;
@@ -51,16 +49,10 @@
     if (!isSelecting) return;
     isSelecting = false;
 
-    onselect?.({
-      start: {
-        x: Math.min(selectStart.x, selectEnd.x),
-        y: Math.min(selectStart.y, selectEnd.y),
-      },
-      end: {
-        x: Math.max(selectStart.x, selectEnd.x),
-        y: Math.max(selectStart.y, selectEnd.y),
-      },
-    });
+    onselect?.([
+      [Math.min(selectStart.x, selectEnd.x), Math.min(selectStart.y, selectEnd.y)],
+      [Math.max(selectStart.x, selectEnd.x), Math.max(selectStart.y, selectEnd.y)],
+    ]);
   };
 </script>
 
