@@ -1,10 +1,12 @@
 <script lang="ts">
+  import { select } from "d3-selection";
+
   let isSelecting = false;
   let selectStart = { x: 0, y: 0 };
   let selectEnd = { x: 0, y: 0 };
 
   export let onselect:
-    | ((area: { x1: number; y1: number; x2: number; y2: number }) => any)
+    | ((area: { start: { x: number; y: number }; end: { x: number; y: number } }) => any)
     | undefined = undefined;
 
   export let ondeselect: (() => any) | undefined = undefined;
@@ -37,8 +39,12 @@
     },
   ) => {
     selectEnd = { x: ev.clientX, y: ev.clientY };
-    if (selectStart.x === selectEnd.x && selectStart.y === selectEnd.y) {
+    const xDelta = (selectEnd.x - selectStart.x);
+    const yDelta = (selectEnd.y - selectStart.y);
+    const delta = Math.abs(Math.sqrt(xDelta*xDelta + yDelta*yDelta));
+    if (delta < 10) {
       ondeselect?.();
+      isSelecting = false;
       return;
     }
 
@@ -46,10 +52,14 @@
     isSelecting = false;
 
     onselect?.({
-      x1: Math.min(selectStart.x, selectEnd.x),
-      y1: Math.min(selectStart.y, selectEnd.y),
-      x2: Math.max(selectStart.x, selectEnd.x),
-      y2: Math.max(selectStart.y, selectEnd.y),
+      start: {
+        x: Math.min(selectStart.x, selectEnd.x),
+        y: Math.min(selectStart.y, selectEnd.y),
+      },
+      end: {
+        x: Math.max(selectStart.x, selectEnd.x),
+        y: Math.max(selectStart.y, selectEnd.y),
+      },
     });
   };
 </script>

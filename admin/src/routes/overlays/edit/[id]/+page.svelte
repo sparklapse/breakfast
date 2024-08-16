@@ -1,14 +1,35 @@
 <script lang="ts">
-  import { Maximize } from "lucide-svelte";
-  import Viewport, { DEFAULT_GRID, DEFAULT_VIEW, viewport } from "./Viewport.svelte";
-  import Selector from "./Selector.svelte";
   import clsx from "clsx";
+  import { Maximize } from "lucide-svelte";
+  import { createEditor } from "$lib/hooks/editor";
+  import { createViewport } from "$lib/hooks/viewport";
+  import Viewport, { DEFAULT_GRID, DEFAULT_VIEW } from "./Viewport.svelte";
+  import Selector from "./Selector.svelte";
 
-  type Point = { x: number; y: number };
-  type Transform = Point & { width: number; height: number; rotation: number };
-
-  const sources = [
+  const {
+    utils: { screenToLocal, panTo },
+  } = createViewport({ initialView: DEFAULT_VIEW });
+  const {
+    sources,
+    fragment,
+    selection: {
+      action,
+      selectedSources,
+      selectionBounds,
+      singleSelect,
+      addSelect,
+      areaSelect,
+      deselect,
+      startTranslate,
+      startRotation,
+      rotationPivot,
+      rotationDelta,
+      rotationCursorDistance,
+      startResizing,
+    },
+  } = createEditor([
     {
+      id: "a",
       tag: "some-html",
       transform: {
         x: 0,
@@ -21,6 +42,7 @@
       children: [],
     },
     {
+      id: "b",
       tag: "some-html",
       transform: {
         x: 200,
@@ -32,139 +54,211 @@
       props: {},
       children: [],
     },
-  ];
-  let highlightedSources: number[] = [];
+    {
+      id: "c",
+      tag: "some-html",
+      transform: {
+        x: 200,
+        y: 0,
+        width: 100,
+        height: 100,
+        rotation: 90,
+      },
+      props: {},
+      children: [],
+    },
+  ]);
 
-  function getBounds(...transforms: Transform[]): Transform {
-    const tl: Point = {
-      x: Infinity,
-      y: Infinity,
-    };
-    const br: Point = {
-      x: -Infinity,
-      y: -Infinity,
-    };
-
-    for (const transform of transforms) {
-      const { x, y, width, height, rotation } = transform;
-      const rad = (rotation * Math.PI) / 180;
-      const corners: Point[] = [
-        { x: 0, y: 0 }, // Top-left
-        { x: width, y: 0 }, // Top-right
-        { x: 0, y: height }, // Bottom-right
-        { x: width, y: height }, // Bottom-left
-      ];
-
-      for (let i = 0; i < corners.length; i++) {
-        const rotatedX =
-          (corners[i].x - width / 2) * Math.cos(rad) - (corners[i].y - height / 2) * Math.sin(rad);
-        const rotatedY =
-          (corners[i].x - width / 2) * Math.sin(rad) + (corners[i].y - height / 2) * Math.cos(rad);
-
-        corners[i].x = rotatedX;
-        corners[i].y = rotatedY;
-
-        corners[i].x += x + width / 2;
-        corners[i].y += y + height / 2;
-      }
-
-      for (const point of corners) {
-        if (point.x < tl.x) tl.x = point.x;
-        if (point.x > br.x) br.x = point.x;
-        if (point.y < tl.y) tl.y = point.y;
-        if (point.y > br.y) br.y = point.y;
-      }
-    }
-
-    return {
-      x: tl.x,
-      y: tl.y,
-      width: br.x - tl.x,
-      height: br.y - tl.y,
-      rotation: 0,
-    };
+  let frame: HTMLIFrameElement;
+  $: if (frame && $sources && fragment) {
+    const frameWindow = frame.contentWindow;
+    if (!frameWindow) break $;
+    frameWindow.document.body.innerHTML = "";
+    frameWindow.document.body.append(fragment);
   }
-
-  $: sourceBounds = sources.map((s) => getBounds(s.transform));
-  $: highlightedSourcesBounds =
-    highlightedSources.length > 0
-      ? getBounds(...highlightedSources.map((i) => sources[i].transform))
-      : undefined;
-
-  const onselect = ({ x1, y1, x2, y2 }: { x1: number; y1: number; x2: number; y2: number }) => {
-    const start = viewport.screenToLocal!({ x: x1, y: y1 });
-    const end = viewport.screenToLocal!({ x: x2, y: y2 });
-
-    highlightedSources = [];
-
-    for (let i = 0; i < sources.length; i++) {
-      if (
-        sourceBounds[i].x > start.x &&
-        sourceBounds[i].y > start.y &&
-        sourceBounds[i].x + sourceBounds[i].width < end.x &&
-        sourceBounds[i].y + sourceBounds[i].width < end.y
-      ) {
-        highlightedSources.push(i);
-      }
-    }
-
-    highlightedSources = [...highlightedSources];
-  };
 </script>
 
 <div class="absolute inset-0">
-  <Viewport class="text-slate-700" grid={DEFAULT_GRID} initialView={DEFAULT_VIEW}>
+  <Viewport
+    class="relative size-full select-none overflow-hidden text-slate-300"
+    grid={DEFAULT_GRID}
+  >
+    <iframe
+      title="overlay"
+      class="pointer-events-none absolute left-0 top-0 h-[1080px] w-[1920px] select-none"
+      frameborder="0"
+      bind:this={frame}
+    ></iframe>
     <div
-      class="pointer-events-none absolute h-[1080px] w-[1920px] rounded-[1px] outline outline-slate-700"
+      class="pointer-events-none absolute left-0 top-0 h-[1080px] w-[1920px] rounded-[1px] outline outline-slate-700"
     />
     <!-- Debug source transforms -->
-    {#each sources as source, idx}
-      <div
-        class={clsx([
-          "absolute bg-red-500/50",
-          highlightedSources.includes(idx) && "animate-pulse",
-        ])}
+    {#each $sources as source, idx}
+      <button
+        class="absolute grid place-content-center rounded-[1px] border-2 border-dashed border-slate-700/50 outline-none"
         style:left="{source.transform.x}px"
         style:top="{source.transform.y}px"
         style:width="{source.transform.width}px"
         style:height="{source.transform.height}px"
-        style:transform="rotate({source.transform.rotation}deg)"
-      />
+        style:transform="translate(-50%, -50%) rotate({source.transform.rotation}deg)"
+        on:click={(ev) => {
+          if (ev.shiftKey) addSelect(idx);
+          else singleSelect(idx);
+        }}
+        on:pointerdown={(ev) => {
+          ev.stopPropagation();
+        }}
+        on:pointerup={(ev) => {
+          if ($action !== "selecting") return;
+          ev.stopPropagation();
+        }}
+      >
+        {source.transform.rotation}
+      </button>
     {/each}
-    <!-- Debug source bounds transforms -->
-    {#each sourceBounds as source}
+    {#if $selectionBounds}
+      {@const transformState =
+        $action === "rotating"
+          ? {
+              left: `${$rotationPivot.x}px`,
+              top: `${$rotationPivot.y}px`,
+              width: `${$rotationCursorDistance * 2}px`,
+              height: `${$rotationCursorDistance * 2}px`,
+              transform: `translate(-50%, -50%) rotate(${$rotationDelta}deg)`,
+            }
+          : {
+              left: `${$selectionBounds.x}px`,
+              top: `${$selectionBounds.y}px`,
+              width: `${$selectionBounds.width}px`,
+              height: `${$selectionBounds.height}px`,
+              transform: `translate(-50%, -50%)`,
+            }}
+
+      <!-- Transform box -->
       <div
-        class="absolute bg-green-500/25"
-        style:left="{source.x}px"
-        style:top="{source.y}px"
-        style:width="{source.width}px"
-        style:height="{source.height}px"
-        style:transform="rotate({source.rotation}deg)"
+        class={clsx([
+          "esc-pan absolute select-none",
+          $action === "rotating"
+            ? "transition-[background-color,border-radius]"
+            : $action === "translating"
+              ? "transition-[background-color,border-radius,width,height]"
+              : $action === "resizing"
+                ? "transition-[background-color,border-radius]"
+                : "transition-[background-color,border-radius,width,height,top,left]",
+          $action === "selecting" && "cursor-grab rounded-[1px] bg-blue-500/25",
+          $action === "rotating" && "rounded-[100%] bg-pink-500/25",
+          $action === "translating" && "rounded-[1px] bg-green-500/25",
+          $action === "resizing" && "rounded-[1px] bg-yellow-500/25",
+        ])}
+        style:left={transformState.left}
+        style:top={transformState.top}
+        style:width={transformState.width}
+        style:height={transformState.height}
+        style:transform={transformState.transform}
+        on:pointerdown={(ev) => {
+          if ($action !== "selecting") return;
+          ev.stopPropagation();
+          startTranslate(ev);
+        }}
       />
-    {/each}
-    {#if highlightedSourcesBounds}
+
+      <!-- Rotate Handle -->
       <div
-        class="absolute bg-blue-500/25"
-        style:left="{highlightedSourcesBounds.x}px"
-        style:top="{highlightedSourcesBounds.y}px"
-        style:width="{highlightedSourcesBounds.width}px"
-        style:height="{highlightedSourcesBounds.height}px"
-        style:transform="rotate({highlightedSourcesBounds.rotation}deg)"
+        class={clsx(
+          "esc-pan absolute size-4 -translate-x-1/2 -translate-y-full cursor-grab rounded-full bg-blue-950 transition-all",
+          $action !== "selecting" && "scale-0",
+        )}
+        style:left="{$selectionBounds.x}px"
+        style:top="{$selectionBounds.y - $selectionBounds.height / 2 - 6}px"
+        on:pointerdown={(ev) => {
+          ev.stopPropagation();
+          startRotation(ev);
+        }}
       />
+
+      <!-- Rotate guide line -->
+      <div
+        class={clsx([
+          "absolute w-1 origin-top rounded-[1px] bg-pink-900",
+          $action !== "rotating" && "transition-[height]",
+        ])}
+        style:left="{$rotationPivot.x}px"
+        style:top="{$rotationPivot.y}px"
+        style:height="{$action === "rotating" ? $rotationCursorDistance : 0}px"
+        style:transform="translateX(-50%) rotate({$rotationDelta + 180}deg)"
+      />
+
+      <!-- Resize Handles -->
+      {@const resizer =
+        $selectedSources.length === 1 ? $selectedSources[0].transform : $selectionBounds}
+      <div
+        class="esc-pan absolute transition-all"
+        style:left="{resizer.x}px"
+        style:top="{resizer.y}px"
+        style:width="{resizer.width}px"
+        style:height="{resizer.height}px"
+        style:transform="translate(-50%, -50%) rotate({resizer.rotation}deg)"
+        on:pointerdown={(ev) => {
+          if ($action !== "selecting") return;
+          ev.stopPropagation();
+          startTranslate(ev);
+        }}
+      >
+        <div
+          class={clsx([
+            "esc-pan absolute left-0 top-0 size-2.5 -translate-x-1/2 -translate-y-1/2 cursor-nw-resize bg-blue-950 transition-transform",
+            $action !== "selecting" && "scale-0",
+          ])}
+          on:pointerdown={(ev) => {
+            ev.stopPropagation();
+            startResizing(ev, "nw");
+          }}
+        />
+        <div
+          class={clsx([
+            "esc-pan absolute right-0 top-0 size-2.5 -translate-y-1/2 translate-x-1/2 cursor-ne-resize bg-blue-950 transition-transform",
+            $action !== "selecting" && "scale-0",
+          ])}
+          on:pointerdown={(ev) => {
+            ev.stopPropagation();
+            startResizing(ev, "ne");
+          }}
+        />
+        <div
+          class={clsx([
+            "esc-pan absolute bottom-0 left-0 size-2.5 -translate-x-1/2 translate-y-1/2 cursor-sw-resize bg-blue-950 transition-transform",
+            $action !== "selecting" && "scale-0",
+          ])}
+          on:pointerdown={(ev) => {
+            ev.stopPropagation();
+            startResizing(ev, "sw");
+          }}
+        />
+        <div
+          class={clsx([
+            "esc-pan absolute bottom-0 right-0 size-2.5 translate-x-1/2 translate-y-1/2 cursor-se-resize bg-blue-950 transition-transform",
+            $action !== "selecting" && "scale-0",
+          ])}
+          on:pointerdown={(ev) => {
+            ev.stopPropagation();
+            startResizing(ev, "se");
+          }}
+        />
+      </div>
     {/if}
   </Viewport>
   <div class="absolute bottom-4 right-4">
     <button
       class="rounded border border-slate-200 bg-white p-2 shadow"
-      on:click={() => viewport.panTo?.(DEFAULT_VIEW, 500)}
+      on:click={() => panTo(DEFAULT_VIEW, 500)}
     >
       <Maximize />
     </button>
   </div>
   <Selector
-    {onselect}
-    ondeselect={() => {
-      highlightedSources = [];
+    onselect={({ start, end }) => {
+      areaSelect({ start: screenToLocal(start), end: screenToLocal(end) });
     }}
+    ondeselect={() => deselect()}
   />
 </div>
