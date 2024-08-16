@@ -1,6 +1,6 @@
 import { writable, derived, get } from "svelte/store";
 import { useViewport } from "./viewport";
-import { onMount } from "svelte";
+import { getContext, onMount, setContext } from "svelte";
 import {
   avgPoints,
   getTransformBounds,
@@ -350,5 +350,14 @@ export function createEditor(initialSources?: Source[]) {
     },
   };
 
+  setContext("editor", ctx);
+
   return ctx;
+}
+
+export function useEditor(dontCreate?: true) {
+  const ctx = getContext<ReturnType<typeof createEditor>>("editor");
+  if (dontCreate && !ctx) throw new Error("Failed to get an existing editor context");
+  if (!ctx) return createEditor();
+  else return ctx;
 }
