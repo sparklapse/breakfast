@@ -7,27 +7,12 @@
   import Transformer from "./Transformer.svelte";
 
   const {
-    stores: { transform: viewportTransform },
-    utils: { screenToLocal, localToScreen, panTo },
+    utils: { screenToLocal, panTo },
   } = createViewport({ initialView: DEFAULT_VIEW });
   const {
     sources,
     fragment,
-    selection: {
-      action,
-      selectedSources,
-      selectionBounds,
-      singleSelect,
-      addSelect,
-      areaSelect,
-      deselect,
-      startTranslate,
-      startRotation,
-      rotationPivot,
-      rotationDelta,
-      rotationCursorDistance,
-      startResizing,
-    },
+    selection: { singleSelect, addSelect, areaSelect, deselect },
   } = createEditor([
     {
       id: "a",
