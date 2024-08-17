@@ -146,7 +146,7 @@
     >
       <div
         class={clsx([
-          "esc-pan absolute left-0 top-0 size-2.5 cursor-nw-resize rounded-tl-[1px] bg-blue-950 transition-transform",
+          "esc-pan absolute left-0 top-0 size-4 cursor-nw-resize rounded-tl-[1px] bg-blue-950 transition-transform",
           $action !== "selecting" && "scale-0",
         ])}
         on:pointerdown={(ev) => {
@@ -156,7 +156,7 @@
       />
       <div
         class={clsx([
-          "esc-pan absolute right-0 top-0 size-2.5 cursor-ne-resize rounded-tr-[1px] bg-blue-950 transition-transform",
+          "esc-pan absolute right-0 top-0 size-4 cursor-ne-resize rounded-tr-[1px] bg-blue-950 transition-transform",
           $action !== "selecting" && "scale-0",
         ])}
         on:pointerdown={(ev) => {
@@ -166,7 +166,7 @@
       />
       <div
         class={clsx([
-          "esc-pan absolute bottom-0 left-0 size-2.5 cursor-sw-resize rounded-bl-[1px] bg-blue-950 transition-transform",
+          "esc-pan absolute bottom-0 left-0 size-4 cursor-sw-resize rounded-bl-[1px] bg-blue-950 transition-transform",
           $action !== "selecting" && "scale-0",
         ])}
         on:pointerdown={(ev) => {
@@ -176,7 +176,7 @@
       />
       <div
         class={clsx([
-          "esc-pan absolute bottom-0 right-0 size-2.5 cursor-se-resize rounded-br-[1px] bg-blue-950 transition-transform",
+          "esc-pan absolute bottom-0 right-0 size-4 cursor-se-resize rounded-br-[1px] bg-blue-950 transition-transform",
           $action !== "selecting" && "scale-0",
         ])}
         on:pointerdown={(ev) => {

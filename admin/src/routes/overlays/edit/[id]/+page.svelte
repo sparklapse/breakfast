@@ -5,6 +5,7 @@
   import Viewport, { DEFAULT_GRID, DEFAULT_VIEW } from "./Viewport.svelte";
   import Selector from "./Selector.svelte";
   import Transformer from "./Transformer.svelte";
+  import clsx from "clsx";
 
   const {
     utils: { screenToLocal, panTo },
@@ -12,7 +13,7 @@
   const {
     sources,
     fragment,
-    selection: { singleSelect, addSelect, areaSelect, deselect },
+    selection: { action, selectedSources, singleSelect, addSelect, areaSelect, deselect },
   } = createEditor([
     {
       id: "a",
@@ -62,7 +63,18 @@
     frameWindow.document.body.innerHTML = "";
     frameWindow.document.body.append(fragment);
   }
+
+  let isShifting = false;
 </script>
+
+<svelte:window
+  on:keydown={(ev) => {
+    if (ev.key === "Shift") isShifting = true;
+  }}
+  on:keyup={(ev) => {
+    if (ev.key === "Shift") isShifting = false;
+  }}
+/>
 
 <div class="absolute inset-0 overflow-hidden">
   <Viewport
@@ -81,12 +93,17 @@
     <!-- Debug source transforms -->
     {#each $sources as source, idx}
       <div
-        class="absolute grid place-content-center rounded-[1px] outline-none hover:bg-slate-900/10"
+        class={clsx([
+          "absolute grid cursor-pointer place-content-center rounded-[1px] outline-none transition-colors",
+          $action === "selecting" && "border-slate-900/10 hover:border",
+          isShifting && "bg-slate-900/10",
+        ])}
         style:left="{source.transform.x}px"
         style:top="{source.transform.y}px"
         style:width="{source.transform.width}px"
         style:height="{source.transform.height}px"
         style:transform="rotate({source.transform.rotation}deg)"
+        style:transition-delay="{idx * 50}ms"
         on:pointerdown={(ev) => {
           ev.stopPropagation();
           if (ev.shiftKey) addSelect(idx);
