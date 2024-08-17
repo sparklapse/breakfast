@@ -44,11 +44,18 @@
   },
   "type": "module",
   "dependencies": {
+    "@fontsource-variable/gabarito": "^5.0.5",
+    "bits-ui": "^0.21.13",
     "clsx": "^2.1.1",
     "d3-interpolate": "^3.0.1",
     "d3-selection": "^3.0.0",
     "d3-timer": "^3.0.1",
     "d3-zoom": "^3.0.0",
-    "lucide-svelte": "^0.427.0"
+    "lucide-svelte": "^0.427.0",
+    "nanoid": "^5.0.7",
+    "pocketbase": "^0.21.4",
+    "simple-icons": "^13.5.0",
+    "svelte-french-toast": "^1.2.0",
+    "zod": "^3.23.8"
   }
 }
