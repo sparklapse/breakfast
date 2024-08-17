@@ -19,7 +19,7 @@
   import { useViewport } from "$lib/hooks/viewport";
 
   const {
-    stores: { transform, offset },
+    stores: { disableMouseControls, transform, offset },
     use: { attachcontainer },
   } = useViewport();
 

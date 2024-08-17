@@ -1,6 +1,8 @@
 <script lang="ts">
   import type { Point } from "$lib/math";
 
+  export let canSelect = true;
+
   let isSelecting = false;
   let selectStart = { x: 0, y: 0 };
   let selectEnd = { x: 0, y: 0 };
@@ -14,11 +16,11 @@
       currentTarget: EventTarget & Window;
     },
   ) => {
+    if (!canSelect) return;
     if (ev.buttons !== 1) return;
     selectStart = { x: ev.clientX, y: ev.clientY };
     selectEnd = { x: ev.clientX, y: ev.clientY };
 
-    if (!ev.shiftKey) return;
     isSelecting = true;
   };
 

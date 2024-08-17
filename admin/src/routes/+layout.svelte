@@ -1,5 +1,9 @@
 <script lang="ts">
-  import "./global.css";
+  import "@fontsource-variable/gabarito";
+  import "./global.pcss";
+  import { Toaster } from "svelte-french-toast";
 </script>
 
 <slot />
+
+<Toaster position="bottom-center" />

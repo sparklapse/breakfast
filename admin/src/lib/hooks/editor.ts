@@ -21,15 +21,21 @@ type Source = {
   children: Source[];
 };
 
-export function createEditor(initialSources?: Source[]) {
+export function createEditor(initial?: { label?: string; sources?: Source[] }) {
   const viewport = useViewport(true);
 
-  const managedSources = writable<{ sources: Source[] }>({ sources: initialSources ?? [] });
-
+  const label = writable(initial?.label ?? "");
+  const managedSources = writable<{ sources: Source[] }>({ sources: initial?.sources ?? [] });
   const sources = derived(managedSources, ({ sources }) => sources);
 
-  const fragment = new DocumentFragment();
-  const buildSourceDocument = (fragment: DocumentFragment | Element, source: Source) => {
+  const buildSourceDocument = (fragment: DocumentFragment | Element, source: Source | Source[]) => {
+    if (Array.isArray(source)) {
+      for (const s of source) {
+        buildSourceDocument(fragment, s);
+      }
+      return fragment;
+    }
+
     const element = document.createElement(source.tag);
     for (const [prop, value] of Object.entries(source.props)) {
       element.setAttribute(prop, value);
@@ -39,7 +45,7 @@ export function createEditor(initialSources?: Source[]) {
     element.style.left = `${source.transform.x}px`;
     element.style.top = `${source.transform.y}px`;
     element.style.width = `${source.transform.width}px`;
-    element.style.height = `${source.transform.width}px`;
+    element.style.height = `${source.transform.height}px`;
     element.style.transform = `rotate(${source.transform.rotation}deg)`;
 
     fragment.append(element);
@@ -50,6 +56,12 @@ export function createEditor(initialSources?: Source[]) {
 
     return fragment;
   };
+  const fragment = derived(managedSources, ({ sources }) => {
+    const f = new DocumentFragment();
+    return buildSourceDocument(f, sources);
+  });
+
+  const action = writable<"selecting" | "translating" | "rotating" | "resizing">("selecting");
 
   const selectedSourceIndices = writable<number[]>([]);
   const selectedSources = derived(
@@ -75,12 +87,12 @@ export function createEditor(initialSources?: Source[]) {
       }
     }
     selectedSourceIndices.set(indices);
+
+    return indices.length;
   };
   const deselect = () => selectedSourceIndices.set([]);
 
   let selectedSnapshot: Source[] = [];
-
-  const action = writable<"selecting" | "translating" | "rotating" | "resizing">("selecting");
 
   // #region Translation
 
@@ -333,6 +345,7 @@ export function createEditor(initialSources?: Source[]) {
   const ctx = {
     sources,
     fragment,
+    label,
     selection: {
       action,
       selectedSources,
