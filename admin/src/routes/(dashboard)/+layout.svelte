@@ -179,7 +179,9 @@
         />
       </svg>
     </button>
-    <div class="flex-1 text-sm font-semibold leading-6 text-gray-900">Dashboard</div>
+    <div class="flex-1 text-sm font-semibold leading-6 text-gray-900">
+      {navItems.find((i) => $page.route.id === i.route)?.label}
+    </div>
     <a href="/breakfast/account">
       <span class="sr-only">Your profile</span>
       <img class="h-8 w-8 rounded-full bg-gray-50" src="/breakfast/profile.jpg" alt="" />

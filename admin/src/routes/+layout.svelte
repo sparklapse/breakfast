@@ -6,4 +6,4 @@
 
 <slot />
 
-<Toaster position="bottom-center" />
+<Toaster position="top-center" />

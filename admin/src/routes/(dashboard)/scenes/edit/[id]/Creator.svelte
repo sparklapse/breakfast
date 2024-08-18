@@ -1,13 +1,60 @@
 <script lang="ts">
+  import Fuse from "fuse.js";
+  import { scale } from "svelte/transition";
+  import { nanoid } from "nanoid";
+  import { useViewport } from "$lib/hooks/viewport";
+  import { avgPoints, transformFromPoints } from "$lib/math";
   import type { Point } from "$lib/math";
+  import type { Source } from "$lib/types";
+
+  const {
+    utils: { screenToLocal },
+  } = useViewport();
 
   export let canCreate = true;
+  export let sourceTypes: { label: string; subLabel: string; tag: string }[] = [
+    {
+      label: "Textetauhsntoeh untaoehu nstaoehusntaoh usnetah notseeu",
+      subLabel: "Bread n Butter tnaoehuah oentuhantoehuuntaheuntahoentuhantoeeu",
+      tag: "bnb-text",
+    },
+    { label: "Image", subLabel: "Bread n Butter", tag: "bnb-image" },
+    { label: "Chat", subLabel: "Bread n Butter", tag: "bnb-chat" },
+    { label: "Text", subLabel: "Bread n Butter", tag: "bnb-text" },
+    { label: "Image", subLabel: "Bread n Butter", tag: "bnb-image" },
+    { label: "Chat", subLabel: "Bread n Butter", tag: "bnb-chat" },
+    { label: "Text", subLabel: "Bread n Butter", tag: "bnb-text" },
+    { label: "Image", subLabel: "Bread n Butter", tag: "bnb-image" },
+    { label: "Chat", subLabel: "Bread n Butter", tag: "bnb-chat" },
+    { label: "Text", subLabel: "Bread n Butter", tag: "bnb-text" },
+    { label: "Image", subLabel: "Bread n Butter", tag: "bnb-image" },
+    { label: "Chat", subLabel: "Bread n Butter", tag: "bnb-chat" },
+    { label: "Text", subLabel: "Bread n Butter", tag: "bnb-text" },
+    { label: "Image", subLabel: "Bread n Butter", tag: "bnb-image" },
+    { label: "Chat", subLabel: "Bread n Butter", tag: "bnb-chat" },
+  ];
 
   let isCreating = false;
-  let createStart = { x: 0, y: 0 };
-  let createEnd = { x: 0, y: 0 };
+  let createStart: Point = [0, 0];
+  let createEnd: Point = [0, 0];
+  let showCreateMenu = false;
+  let search = "";
+  const fuse = new Fuse(sourceTypes, {
+    keys: [
+      { name: "label", weight: 4 },
+      { name: "subLabel", weight: 2 },
+      { name: "tag", weight: 1 },
+    ],
+  });
+  $: if (sourceTypes) fuse.setCollection(sourceTypes);
+  $: filteredSourceTypes = search ? fuse.search(search).map((r) => r.item) : sourceTypes;
 
-  export let onselect: ((area: [Point, Point]) => any) | undefined = undefined;
+  $: if (!canCreate) {
+    isCreating = false;
+    showCreateMenu = false;
+  }
+
+  export let oncreate: ((source: Source) => any) | undefined = undefined;
 
   const onpointerdown = (
     ev: PointerEvent & {
@@ -17,9 +64,10 @@
     if (!canCreate) return;
     if (ev.buttons !== 1) return;
 
-    createStart = { x: ev.clientX, y: ev.clientY };
-    createEnd = { x: ev.clientX, y: ev.clientY };
+    createStart = [ev.clientX, ev.clientY];
+    createEnd = [ev.clientX, ev.clientY];
     isCreating = true;
+    showCreateMenu = false;
   };
 
   const onpointermove = (
@@ -28,7 +76,7 @@
     },
   ) => {
     if (!isCreating) return;
-    createEnd = { x: ev.clientX, y: ev.clientY };
+    createEnd = [ev.clientX, ev.clientY];
   };
 
   const onpointerup = (
@@ -38,12 +86,40 @@
   ) => {
     if (!isCreating) return;
     isCreating = false;
-    createEnd = { x: ev.clientX, y: ev.clientY };
+    createEnd = [ev.clientX, ev.clientY];
+    const xDelta = createEnd[0] - createStart[0];
+    const yDelta = createEnd[1] - createStart[1];
+    const delta = Math.abs(Math.sqrt(xDelta * xDelta + yDelta * yDelta));
+    if (delta < 10) return;
 
-    onselect?.([
-      [Math.min(createStart.x, createEnd.x), Math.min(createStart.y, createEnd.y)],
-      [Math.max(createStart.x, createEnd.x), Math.max(createStart.y, createEnd.y)],
+    showCreateMenu = true;
+  };
+
+  const create = (tag?: string) => {
+    const viewportStart = screenToLocal([
+      Math.min(createStart[0], createEnd[0]),
+      Math.min(createStart[1], createEnd[1]),
     ]);
+    const viewportEnd = screenToLocal([
+      Math.max(createStart[0], createEnd[0]),
+      Math.max(createStart[1], createEnd[1]),
+    ]);
+    const transform = transformFromPoints(viewportStart, viewportEnd, 0);
+
+    oncreate?.({
+      id: nanoid(),
+      tag: tag ?? filteredSourceTypes[0].tag,
+      transform,
+      props: {},
+      children: [],
+    });
+    showCreateMenu = false;
+  };
+
+  const focus = (el: HTMLElement) => {
+    setTimeout(() => {
+      el.focus();
+    }, 100);
   };
 </script>
 
@@ -53,12 +129,61 @@
   on:pointerup={onpointerup}
 />
 
-{#if isCreating}
+{#if isCreating || showCreateMenu}
   <div
-    class="absolute z-50 bg-green-700/25"
-    style:left="{Math.min(createStart.x, createEnd.x)}px"
-    style:top="{Math.min(createStart.y, createEnd.y)}px"
-    style:width="{Math.max(createStart.x, createEnd.x) - Math.min(createStart.x, createEnd.x)}px"
-    style:height="{Math.max(createStart.y, createEnd.y) - Math.min(createStart.y, createEnd.y)}px"
+    class="absolute bg-green-700/25"
+    style:left="{Math.min(createStart[0], createEnd[0])}px"
+    style:top="{Math.min(createStart[1], createEnd[1])}px"
+    style:width="{Math.max(createStart[0], createEnd[0]) -
+      Math.min(createStart[0], createEnd[0])}px"
+    style:height="{Math.max(createStart[1], createEnd[1]) -
+      Math.min(createStart[1], createEnd[1])}px"
   />
+{/if}
+
+{#if showCreateMenu}
+  {@const center = avgPoints(createStart, createEnd)}
+  <div
+    class="absolute z-10 flex w-full max-w-sm -translate-x-1/2 -translate-y-1/2 flex-col rounded bg-white shadow"
+    style:left="{center[0]}px"
+    style:top="{center[1]}px"
+    on:pointerdown={(ev) => {
+      ev.stopPropagation();
+    }}
+    transition:scale={{ start: 0.9, duration: 100 }}
+  >
+    <input
+      class="p-2"
+      type="text"
+      placeholder="Search for source"
+      bind:value={search}
+      on:keydown={({ key }) => {
+        if (key === "Escape") {
+          showCreateMenu = false;
+          return;
+        }
+        if (key !== "Enter") return;
+        if (filteredSourceTypes.length === 0) return;
+
+        create();
+      }}
+      use:focus
+    />
+    <div class="border-b border-slate-200" />
+    <ul class="flex max-h-32 flex-col overflow-y-auto">
+      {#each filteredSourceTypes as st}
+        <li>
+          <button
+            class="w-full px-2 py-1 text-left leading-none"
+            on:click={() => {
+              create(st.tag);
+            }}
+          >
+            <p class="truncate">{st.label}</p>
+            <p class="truncate text-sm text-slate-500">{st.label}</p>
+          </button>
+        </li>
+      {/each}
+    </ul>
+  </div>
 {/if}

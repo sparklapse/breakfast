@@ -212,8 +212,12 @@ export class BreakfastPocketBase extends PocketBase {
 
   authStore: SvelteAuthStore;
 
-  constructor(...args: ConstructorParameters<typeof PocketBase>) {
+  constructor(f: typeof fetch, ...args: ConstructorParameters<typeof PocketBase>) {
     super(...args);
+    this.beforeSend = (url, options) => {
+      options = { fetch, ...options };
+      return { url, options };
+    };
     this.authStore = new SvelteAuthStore();
 
     const url = new URL(window.location.toString());

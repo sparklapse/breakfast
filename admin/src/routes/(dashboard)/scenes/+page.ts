@@ -4,13 +4,18 @@ import type { PageLoad } from "./$types";
 export const load: PageLoad = async ({ parent }) => {
   const data = await parent();
 
-  const initial = await data.pb.collection("scenes").getList(1, 10, { requestKey: nanoid() });
+  const initial = data.pb
+    .collection("scenes")
+    .getList(1, 10, { requestKey: nanoid() })
+    .then((query) => ({
+      scenes: query.items,
+      totalPages: query.totalPages,
+    }));
 
   return {
     ...data,
-    scenes: {
-      initial: initial.items,
-      pages: initial.totalPages,
+    suspense: {
+      initial,
     },
   };
 };

@@ -19,10 +19,10 @@
     utils: { screenToLocal, panTo },
   } = createViewport({ initialView: DEFAULT_VIEW });
   const {
-    sources,
-    fragment,
     label,
-    selection: { action, singleSelect, addSelect, areaSelect, deselect },
+    sources: { sources, addSource },
+    fragment,
+    selection: { action, selectedSources, singleSelect, addSelect, areaSelect, deselect },
   } = createEditor({
     label: data.scene.label,
     sources: [
@@ -77,7 +77,7 @@
   }
 
   type Tools = "select" | "pan" | "create";
-  let baseTool: Tools = "pan";
+  let baseTool: Tools = "select";
   let isShifting = false;
   let isSpacing = false;
   $: tool =
@@ -97,6 +97,10 @@
 
 <svelte:window
   on:keydown={(ev) => {
+    if (ev.key === "1") baseTool = "select";
+    if (ev.key === "2") baseTool = "pan";
+    if (ev.key === "3") baseTool = "create";
+
     if (ev.key === "Shift") isShifting = true;
     if (ev.key === " ") isSpacing = true;
   }}
@@ -121,8 +125,18 @@
       <div
         class={clsx([
           "absolute grid place-content-center rounded-[1px] outline-none transition-colors",
-          $action === "selecting" && "border-slate-900/10 hover:border cursor-pointer",
-          isShifting && "bg-slate-900/10",
+          tool === "select" && [
+            isShifting && "bg-black/10",
+            $action === "selecting" &&
+              "cursor-pointer border-slate-900/10 hover:border hover:bg-black/10",
+          ],
+          $selectedSources.includes(source) && [
+            "border",
+            $action === "selecting" && "border-blue-400",
+            $action === "translating" && "border-green-600",
+            $action === "rotating" && "border-pink-400",
+            $action === "resizing" && "border-yellow-600",
+          ],
         ])}
         style:left="{source.transform.x}px"
         style:top="{source.transform.y}px"
@@ -131,6 +145,7 @@
         style:transform="rotate({source.transform.rotation}deg)"
         style:transition-delay="{idx * 50}ms"
         on:pointerdown={(ev) => {
+          if (tool !== "select") return;
           ev.stopPropagation();
           if (ev.shiftKey) addSelect(idx);
           else singleSelect(idx);
@@ -138,7 +153,9 @@
       />
     {/each}
   </Viewport>
-  <Transformer />
+  <div class={clsx(["contents", tool !== "select" && "pointer-events-none"])}>
+    <Transformer />
+  </div>
   <Selector
     canSelect={tool === "select"}
     onselect={([start, end]) => {
@@ -146,11 +163,18 @@
     }}
     ondeselect={() => deselect()}
   />
-  <Creator canCreate={tool === "create"} />
+  <Creator
+    canCreate={tool === "create"}
+    oncreate={(source) => {
+      addSource(source);
+      singleSelect($sources.length - 1);
+      baseTool = "select";
+    }}
+  />
   <!-- Menu -->
   <div
     class={clsx([
-      "fixed inset-y-4 left-4 w-full max-w-md rounded border border-slate-200 bg-white p-4 shadow transition-transform",
+      "fixed inset-y-4 left-4 z-50 w-full max-w-md rounded border border-slate-200 bg-white p-4 shadow transition-transform",
       !showInspector && "-translate-x-[90%]",
     ])}
     on:pointerenter={() => {
@@ -162,33 +186,18 @@
     transition:fly|global={{ x: -50, duration: 250 }}
   >
     <div class="flex items-center justify-between">
-      <h2
-        class="font-semibold"
-        contenteditable="plaintext-only"
-        on:input={(ev) => {
-          $label = ev.currentTarget.innerText;
-          console.log("input");
-        }}
-        on:keydown={(ev) => {
-          if (ev.key == "Enter") {
-            ev.preventDefault();
-            ev.currentTarget.blur();
-          }
-        }}
-      >
-        {$label}
-      </h2>
+      <h2 class="font-semibold">{$label}</h2>
       <button
         class="rounded-sm bg-slate-700 px-2 py-1 text-white shadow"
-        on:click={() => {
-          toast.promise(Promise.resolve("test"), {
+        on:click={async () => {
+          await toast.promise(Promise.resolve("test"), {
             loading: "Saving...",
             success: () => {
-              goto("/breakfast/scenes");
               return "Scene saved!";
             },
             error: (err) => `Failed to save scene: ${err.message}`,
           });
+          goto("/breakfast/scenes");
         }}
       >
         Save & Close

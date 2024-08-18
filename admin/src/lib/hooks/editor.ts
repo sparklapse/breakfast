@@ -10,16 +10,9 @@ import {
   transformFromPoints,
   transformToPoints,
 } from "$lib/math";
-import type { Point, Transform } from "$lib/math";
 import { radToDeg } from "$lib/math/units";
-
-type Source = {
-  id: string;
-  tag: string;
-  transform: Transform;
-  props: Record<string, any>;
-  children: Source[];
-};
+import type { Point } from "$lib/math";
+import type { Source } from "$lib/types";
 
 export function createEditor(initial?: { label?: string; sources?: Source[] }) {
   const viewport = useViewport(true);
@@ -27,6 +20,13 @@ export function createEditor(initial?: { label?: string; sources?: Source[] }) {
   const label = writable(initial?.label ?? "");
   const managedSources = writable<{ sources: Source[] }>({ sources: initial?.sources ?? [] });
   const sources = derived(managedSources, ({ sources }) => sources);
+
+  const addSource = (source: Source) => {
+    managedSources.update(({ sources }) => {
+      sources.push(source);
+      return { sources };
+    });
+  };
 
   const buildSourceDocument = (fragment: DocumentFragment | Element, source: Source | Source[]) => {
     if (Array.isArray(source)) {
@@ -343,7 +343,10 @@ export function createEditor(initial?: { label?: string; sources?: Source[] }) {
   // #endregion
 
   const ctx = {
-    sources,
+    sources: {
+      sources,
+      addSource,
+    },
     fragment,
     label,
     selection: {

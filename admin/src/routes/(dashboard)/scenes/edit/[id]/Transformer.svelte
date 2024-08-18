@@ -129,11 +129,7 @@
 
     <!-- Resize Handles -->
     <div
-      class={clsx([
-        "esc-pan absolute select-none rounded-[1px]",
-        $action === "selecting" && "border border-blue-300",
-        $action === "resizing" && "border border-yellow-600",
-      ])}
+      class="esc-pan absolute select-none"
       style:left="{resizer.x}px"
       style:top="{resizer.y}px"
       style:width="{resizer.width}px"
