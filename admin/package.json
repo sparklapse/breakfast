@@ -51,6 +51,7 @@
     "d3-selection": "^3.0.0",
     "d3-timer": "^3.0.1",
     "d3-zoom": "^3.0.0",
+    "fuse.js": "^7.0.0",
     "lucide-svelte": "^0.427.0",
     "nanoid": "^5.0.7",
     "pocketbase": "^0.21.4",
