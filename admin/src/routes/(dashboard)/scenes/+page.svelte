@@ -42,8 +42,8 @@
         .create({
           owner: $user?.id,
           label: "Untitled Scene",
-          plugins: [],
-          sources: [],
+          scripts: [],
+          sources: "",
           visibility: "PRIVATE",
         })
         .then((scene) => goto(`/breakfast/scenes/edit/${scene.id}`)),

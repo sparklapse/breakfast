@@ -12,7 +12,7 @@ import {
 } from "$lib/math";
 import { radToDeg } from "$lib/math/units";
 import type { Point, Transform } from "$lib/math";
-import type { Source } from "$lib/types";
+import type { Source, Script } from "$lib/editor/types";
 
 export function createEditor(initial?: { label?: string; scene?: string }) {
   const viewport = useViewport(true);
@@ -131,8 +131,26 @@ export function createEditor(initial?: { label?: string; scene?: string }) {
       return { fragment };
     });
 
-  const managedPlugins = writable<{ plugins: string[] }>({ plugins: [] });
-  const plugins = derived(managedPlugins, ({ plugins }) => plugins);
+  const managedScripts = writable<{ scripts: Script[] }>({ scripts: [] });
+  const scripts = derived(managedScripts, ({ scripts }) => scripts);
+
+  const addScript = (script: Script) => {
+    if (get(scripts).find((s) => s.filename === script.filename))
+      throw new Error("Script already exists");
+
+    managedScripts.update(({ scripts }) => {
+      scripts.push(script);
+      return { scripts };
+    });
+  };
+
+  const removeScript = (filename: string) => {
+    managedScripts.update(({ scripts }) => {
+      const idx = scripts.findIndex((s) => s.filename === filename);
+      if (idx !== -1) scripts.splice(idx, 1);
+      return { scripts };
+    });
+  };
 
   const mount = (frame: HTMLIFrameElement) => {
     const cw = frame.contentWindow;
@@ -147,10 +165,17 @@ export function createEditor(initial?: { label?: string; scene?: string }) {
 
         return { fragment: cw.document.body };
       });
+
+      const $scripts = get(scripts);
+      for (const { script } of $scripts) {
+        const s = cw.document.createElement("script");
+        s.innerHTML = script;
+        cw.document.head.append(s);
+      }
     };
     frame.addEventListener("load", load);
 
-    const unsubscribe = plugins.subscribe((p) => {
+    const unsubscribe = scripts.subscribe((p) => {
       // Pull the fragment out of the iframe and into memory where it wont be destroyed on reload
       managedScene.update(({ fragment }) => {
         return { fragment: fragment.cloneNode(true) as DocumentFragment | HTMLElement };
@@ -455,8 +480,10 @@ export function createEditor(initial?: { label?: string; scene?: string }) {
   const ctx = {
     scene,
     mount,
-    plugins: {
-      plugins,
+    scripts: {
+      scripts,
+      addScript,
+      removeScript,
     },
     sources: {
       sources,

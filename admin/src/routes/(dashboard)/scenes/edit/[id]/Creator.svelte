@@ -1,11 +1,11 @@
 <script lang="ts">
   import Fuse from "fuse.js";
   import { scale } from "svelte/transition";
-  import { nanoid } from "nanoid";
   import { useViewport } from "$lib/hooks/viewport";
   import { avgPoints, transformFromPoints } from "$lib/math";
+  import { sourceId } from "$lib/editor/naming";
   import type { Point } from "$lib/math";
-  import type { Source } from "$lib/types";
+  import type { Source } from "$lib/editor/types";
 
   const {
     utils: { screenToLocal },
@@ -107,7 +107,7 @@
     const transform = transformFromPoints(viewportStart, viewportEnd, 0);
 
     oncreate?.({
-      id: nanoid(),
+      id: sourceId(),
       tag: tag ?? filteredSourceTypes[0].tag,
       transform,
       props: {},

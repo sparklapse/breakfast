@@ -1,18 +1,16 @@
 <script lang="ts">
   import clsx from "clsx";
-  import toast from "svelte-french-toast";
-  import { fly } from "svelte/transition";
   import { Hand, Maximize, MousePointer2, PlusSquare } from "lucide-svelte";
   import { createEditor } from "$lib/hooks/editor";
   import { createViewport } from "$lib/hooks/viewport";
-  import { goto } from "$app/navigation";
-  import { page } from "$app/stores";
   import Viewport, { DEFAULT_GRID, DEFAULT_VIEW } from "./Viewport.svelte";
+  import Menu from "./Menu.svelte";
   import Selector from "./Selector.svelte";
   import Transformer from "./Transformer.svelte";
   import Creator from "./Creator.svelte";
 
   import type { PageData } from "./$types";
+  import Inspector from "./Inspector.svelte";
   export let data: PageData;
 
   const {
@@ -20,8 +18,6 @@
     utils: { screenToLocal, panTo },
   } = createViewport({ initialView: DEFAULT_VIEW });
   const {
-    label,
-    scene,
     mount,
     sources: { sources, addSource },
     selection: { action, selectedIds, singleSelect, addSelect, selectAll, areaSelect, deselect },
@@ -45,26 +41,6 @@
     if (tool === "pan") $disableMouseControls = false;
     else $disableMouseControls = true;
   }
-
-  let showInspector = false;
-
-  const save = async () => {
-    const clone = $scene.cloneNode(true);
-    let sources: string;
-    if (clone.nodeType === Node.ELEMENT_NODE) {
-      sources = (clone as HTMLElement).innerHTML;
-      (clone as HTMLElement).remove();
-    } else {
-      const tmp = document.createElement("div");
-      tmp.append(clone);
-      sources = tmp.innerHTML;
-      tmp.remove();
-    }
-
-    await data.pb.collection("scenes").update($page.params.id, {
-      sources,
-    });
-  };
 </script>
 
 <svelte:window
@@ -98,7 +74,7 @@
       class="pointer-events-none absolute left-0 top-0 h-[1080px] w-[1920px] select-none rounded-[1px] outline outline-zinc-700"
       use:mount
     ></iframe>
-    {#each $sources as source, idx}
+    {#each $sources as source}
       <div
         class={clsx([
           "absolute grid place-content-center rounded-[1px] outline-none transition-colors",
@@ -109,7 +85,7 @@
           ],
           $selectedIds.includes(source.id) && [
             "border",
-            $action === "selecting" && "border-blue-400",
+            $action === "selecting" && "border-blue-600",
             $action === "translating" && "border-green-600",
             $action === "rotating" && "border-pink-400",
             $action === "resizing" && "border-yellow-600",
@@ -120,7 +96,6 @@
         style:width="{source.transform.width}px"
         style:height="{source.transform.height}px"
         style:transform="rotate({source.transform.rotation}deg)"
-        style:transition-delay="{idx * 50}ms"
         on:pointerdown={(ev) => {
           if (tool !== "select") return;
           ev.stopPropagation();
@@ -149,40 +124,10 @@
     }}
   />
   <!-- Menu -->
-  <div
-    class={clsx([
-      "fixed inset-y-4 left-4 z-50 w-full max-w-md rounded border border-slate-200 bg-white p-4 shadow transition-transform",
-      !showInspector && "-translate-x-[90%]",
-    ])}
-    on:pointerenter={() => {
-      showInspector = true;
-    }}
-    on:pointerleave={() => {
-      showInspector = false;
-    }}
-    transition:fly|global={{ x: -50, duration: 250 }}
-  >
-    <div class="flex items-center justify-between">
-      <h2 class="font-semibold">{$label}</h2>
-      <button
-        class="rounded-sm bg-slate-700 px-2 py-1 text-white shadow"
-        on:click={async () => {
-          await toast.promise(save(), {
-            loading: "Saving...",
-            success: () => {
-              return "Scene saved!";
-            },
-            error: (err) => `Failed to save scene: ${err.message}`,
-          });
-          goto("/breakfast/scenes");
-        }}
-      >
-        Save & Close
-      </button>
-    </div>
-    <input type="text" placeholder="Hello world" />
-  </div>
-  <!-- Camera controls -->
+  <Menu pb={data.pb} />
+  <!-- Inspector -->
+  <Inspector />
+  <!-- Controls -->
   <div
     class="fixed bottom-4 left-1/2 flex -translate-x-1/2 items-center gap-1 rounded border border-slate-200 bg-white p-2 text-slate-700 shadow"
   >

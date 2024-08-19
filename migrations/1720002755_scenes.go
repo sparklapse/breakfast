@@ -56,8 +56,8 @@ func init() {
 						},
 					},
 					&schema.SchemaField{
-						Id:          "plugins",
-						Name:        "plugins",
+						Id:          "scripts",
+						Name:        "scripts",
 						Type:        schema.FieldTypeJson,
 						Required:    false,
 						Presentable: false,
