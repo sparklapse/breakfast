@@ -6,6 +6,7 @@
   import { createEditor } from "$lib/hooks/editor";
   import { createViewport } from "$lib/hooks/viewport";
   import { goto } from "$app/navigation";
+  import { page } from "$app/stores";
   import Viewport, { DEFAULT_GRID, DEFAULT_VIEW } from "./Viewport.svelte";
   import Selector from "./Selector.svelte";
   import Transformer from "./Transformer.svelte";
@@ -20,61 +21,14 @@
   } = createViewport({ initialView: DEFAULT_VIEW });
   const {
     label,
+    scene,
+    mount,
     sources: { sources, addSource },
-    fragment,
-    selection: { action, selectedSources, singleSelect, addSelect, areaSelect, deselect },
+    selection: { action, selectedIds, singleSelect, addSelect, selectAll, areaSelect, deselect },
   } = createEditor({
     label: data.scene.label,
-    sources: [
-      {
-        id: "a",
-        tag: "some-html",
-        transform: {
-          x: 0,
-          y: 0,
-          width: 100,
-          height: 100,
-          rotation: 0,
-        },
-        props: {},
-        children: [],
-      },
-      {
-        id: "b",
-        tag: "some-html",
-        transform: {
-          x: 200,
-          y: 200,
-          width: 100,
-          height: 100,
-          rotation: 45,
-        },
-        props: {},
-        children: [],
-      },
-      {
-        id: "c",
-        tag: "some-html",
-        transform: {
-          x: 200,
-          y: 0,
-          width: 100,
-          height: 100,
-          rotation: 90,
-        },
-        props: {},
-        children: [],
-      },
-    ],
+    scene: data.scene.sources,
   });
-
-  let frame: HTMLIFrameElement;
-  $: if ($fragment && frame) {
-    const frameWindow = frame.contentWindow;
-    if (!frameWindow) break $;
-    frameWindow.document.body.innerHTML = "";
-    frameWindow.document.body.append($fragment);
-  }
 
   type Tools = "select" | "pan" | "create";
   let baseTool: Tools = "select";
@@ -93,6 +47,24 @@
   }
 
   let showInspector = false;
+
+  const save = async () => {
+    const clone = $scene.cloneNode(true);
+    let sources: string;
+    if (clone.nodeType === Node.ELEMENT_NODE) {
+      sources = (clone as HTMLElement).innerHTML;
+      (clone as HTMLElement).remove();
+    } else {
+      const tmp = document.createElement("div");
+      tmp.append(clone);
+      sources = tmp.innerHTML;
+      tmp.remove();
+    }
+
+    await data.pb.collection("scenes").update($page.params.id, {
+      sources,
+    });
+  };
 </script>
 
 <svelte:window
@@ -100,6 +72,12 @@
     if (ev.key === "1") baseTool = "select";
     if (ev.key === "2") baseTool = "pan";
     if (ev.key === "3") baseTool = "create";
+    if (ev.key === "a" && ev.ctrlKey) {
+      if (ev.target instanceof HTMLInputElement) return;
+
+      ev.preventDefault();
+      selectAll();
+    }
 
     if (ev.key === "Shift") isShifting = true;
     if (ev.key === " ") isSpacing = true;
@@ -118,8 +96,7 @@
     <iframe
       title="overlay"
       class="pointer-events-none absolute left-0 top-0 h-[1080px] w-[1920px] select-none rounded-[1px] outline outline-zinc-700"
-      frameborder="0"
-      bind:this={frame}
+      use:mount
     ></iframe>
     {#each $sources as source, idx}
       <div
@@ -130,7 +107,7 @@
             $action === "selecting" &&
               "cursor-pointer border-slate-900/10 hover:border hover:bg-black/10",
           ],
-          $selectedSources.includes(source) && [
+          $selectedIds.includes(source.id) && [
             "border",
             $action === "selecting" && "border-blue-400",
             $action === "translating" && "border-green-600",
@@ -147,8 +124,8 @@
         on:pointerdown={(ev) => {
           if (tool !== "select") return;
           ev.stopPropagation();
-          if (ev.shiftKey) addSelect(idx);
-          else singleSelect(idx);
+          if (ev.shiftKey) addSelect(source.id);
+          else singleSelect(source.id);
         }}
       />
     {/each}
@@ -167,7 +144,7 @@
     canCreate={tool === "create"}
     oncreate={(source) => {
       addSource(source);
-      singleSelect($sources.length - 1);
+      singleSelect(source.id);
       baseTool = "select";
     }}
   />
@@ -190,7 +167,7 @@
       <button
         class="rounded-sm bg-slate-700 px-2 py-1 text-white shadow"
         on:click={async () => {
-          await toast.promise(Promise.resolve("test"), {
+          await toast.promise(save(), {
             loading: "Saving...",
             success: () => {
               return "Scene saved!";
@@ -203,6 +180,7 @@
         Save & Close
       </button>
     </div>
+    <input type="text" placeholder="Hello world" />
   </div>
   <!-- Camera controls -->
   <div

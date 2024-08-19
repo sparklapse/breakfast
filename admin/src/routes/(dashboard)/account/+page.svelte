@@ -2,6 +2,7 @@
   import clsx from "clsx";
   import toast from "svelte-french-toast";
   import { Eye, EyeOff } from "lucide-svelte";
+  import { invalidateAll } from "$app/navigation";
 
   import type { PageData } from "./$types";
   export let data: PageData;
@@ -11,8 +12,17 @@
 </script>
 
 <div>
-  <div class="px-4 sm:px-0">
+  <div class="flex items-center justify-between px-4 sm:px-0">
     <h2 class="text-base font-semibold text-gray-900">Account</h2>
+    <button
+      on:click={() => {
+        data.pb.authStore.clear();
+        toast.success("Signed out!");
+        invalidateAll();
+      }}
+    >
+      Sign Out
+    </button>
   </div>
   <div class="mt-6 border-t border-gray-100">
     <dl class="divide-y divide-gray-100">

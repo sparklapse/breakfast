@@ -17,9 +17,7 @@ type AreaTransform = {
   padding?: number;
 };
 
-export function createViewport(options?: {
-  initialView?: AreaTransform;
-}) {
+export function createViewport(options?: { initialView?: AreaTransform }) {
   const transform = writable<ViewportTransform>({ x: 0, y: 0, k: 1 });
   const offset = writable({ x: 0, y: 0 });
   const disableMouseControls = writable(false);
@@ -28,7 +26,11 @@ export function createViewport(options?: {
   const z = zoom()
     .scaleExtent([0.25, 5])
     .filter((ev: (MouseEvent | WheelEvent) & { target: Element | null }) => {
-      if (get(disableMouseControls)) return false;
+      if (
+        get(disableMouseControls) &&
+        (ev.type.startsWith("mouse") || ev.type.startsWith("touchstart"))
+      )
+        return false;
       if (ev.type === "dblclick") return false; // Disable double click to zoom
 
       const escapePan = ev.target?.closest(".esc-pan");

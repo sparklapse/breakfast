@@ -68,11 +68,13 @@ func init() {
 					&schema.SchemaField{
 						Id:          "sources",
 						Name:        "sources",
-						Type:        schema.FieldTypeJson,
+						Type:        schema.FieldTypeText,
 						Required:    false,
 						Presentable: false,
 						Options: types.JsonMap{
-							"maxSize": 1_000_000_000, // 1GB
+							"min":     nil,
+							"max":     nil,
+							"pattern": "",
 						},
 					},
 					&schema.SchemaField{
