@@ -1,6 +1,6 @@
 <script lang="ts">
   import toast from "svelte-french-toast";
-  import { goto } from "$app/navigation";
+  import { goto, invalidateAll } from "$app/navigation";
 
   import type { PageData } from "./$types";
   export let data: PageData;
@@ -15,22 +15,27 @@
     const username = form.get("username") as string;
     const password = form.get("password") as string;
 
-    toast.promise(data.pb.breakfast.setup.runSetup({ username, password }), {
-      loading: "Creating account...",
-      success: () => {
-        data.pb
-          .collection("users")
-          .authWithPassword(username, password)
-          .then(() => goto("/breakfast"));
-        return "Account Created! Welcome te Breakfast!";
+    toast.promise(
+      data.pb.breakfast.setup
+        .runSetup({ username, password })
+        .then(() =>
+          data.pb
+            .collection("users")
+            .authWithPassword(username, password)
+            .then(() => goto("/breakfast")),
+        )
+        .then(() => invalidateAll()),
+      {
+        loading: "Creating account...",
+        success: "Account Created! Welcome to Breakfast!",
+        error: (err) => `Failed to setup account: ${err.message}`,
       },
-      error: (err) => `Failed to setup account: ${err.message}`,
-    });
+    );
   };
 </script>
 
-<div class="flex min-h-full items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
-  <div class="w-full max-w-sm space-y-10">
+<div class="absolute inset-0 grid place-content-center">
+  <div class="w-full max-w-md space-y-10">
     <div>
       <img class="mx-auto h-24 w-auto rotate-3" src="/breakfast/logo.png" alt="Breakfast" />
       <h2 class="mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">
