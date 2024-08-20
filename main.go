@@ -7,6 +7,7 @@ import (
 	"breakfast/services/events"
 	"breakfast/services/pages"
 	"breakfast/services/saas"
+	"breakfast/services/scenes"
 	"breakfast/www"
 	"log"
 
@@ -35,6 +36,7 @@ func main() {
 	account.RegisterService(app)
 	auth.RegisterService(app, scheduler)
 	events.RegisterService(app)
+	scenes.RegisterService(app)
 	pages.RegisterService(app)
 
 	app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
