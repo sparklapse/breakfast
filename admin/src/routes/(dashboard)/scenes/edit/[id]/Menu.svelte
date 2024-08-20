@@ -2,11 +2,11 @@
   import clsx from "clsx";
   import toast from "svelte-french-toast";
   import { fly } from "svelte/transition";
-  import { useEditor } from "$lib/hooks/editor";
+  import { Trash2 } from "lucide-svelte";
+  import { useEditor } from "$lib/editor/contexts";
   import { page } from "$app/stores";
   import { goto } from "$app/navigation";
   import type { BreakfastPocketBase } from "$lib/connections/pocketbase";
-  import { Trash2 } from "lucide-svelte";
 
   export let pb: BreakfastPocketBase;
 
@@ -106,7 +106,15 @@
     {#each $scripts as script}
       <li class="flex items-center justify-between">
         <span>{script.filename}</span>
-        <button><Trash2 size="1rem" /></button>
+        {#if !script.builtin}
+          <button
+            on:click={() => {
+              removeScript(script.filename);
+            }}
+          >
+            <Trash2 size="1rem" />
+          </button>
+        {/if}
       </li>
     {/each}
     {#if $scripts.length === 0}

@@ -3,18 +3,17 @@
   import { onMount } from "svelte";
   import { fly } from "svelte/transition";
   import { Pin, PinOff } from "lucide-svelte";
-  import { useEditor } from "$lib/hooks/editor";
+  import { useEditor } from "$lib/editor/contexts";
+  import { INSPECTORS } from "$lib/editor/sources";
 
   const {
-    sources: { sources },
+    sources: { sources, definitions },
     selection: { selectedIds, selectedSources, singleSelect, addSelect, deselect },
   } = useEditor();
 
   let showInspector = false;
   let pinOpen = true;
   let tab: "source" | "scene" = "scene";
-
-  $: localStorage.setItem("editor.inspector.pinOpen", JSON.stringify(pinOpen));
 
   onMount(() => {
     const saved = localStorage.getItem("editor.inspector.pinOpen");
@@ -27,6 +26,9 @@
       }
     }
   });
+
+  // Used for keying a rerender of the inspector based on whats being edited
+  $: editingSource = $selectedIds.length === 1 ? $selectedIds[0] : "none";
 </script>
 
 <div
@@ -50,11 +52,12 @@
 >
   <button
     class={clsx([
-      "absolute left-2 top-2 transition-opacity",
+      "absolute left-1 top-1 z-10 p-1 transition-opacity",
       !(showInspector || pinOpen) && "opacity-25",
     ])}
     on:click={() => {
       pinOpen = !pinOpen;
+      localStorage.setItem("editor.inspector.pinOpen", JSON.stringify(pinOpen));
     }}
   >
     {#if pinOpen}
@@ -90,6 +93,7 @@
   {#if tab === "scene"}
     <ul>
       {#each $sources as source}
+        {@const def = $definitions.find((d) => d.tag === source.tag)}
         <li class={clsx([$selectedIds.includes(source.id) && "bg-blue-50"])}>
           <button
             class="w-full text-left"
@@ -111,7 +115,7 @@
               } else singleSelect(source.id);
             }}
           >
-            {source.tag}
+            {def?.label ?? "Unknown Element"}
           </button>
         </li>
       {/each}
@@ -119,6 +123,10 @@
   {:else if tab === "source"}
     {#if $selectedIds.length !== 1}
       <p class="text-center text-sm text-slate-700">{$selectedIds.length} Sources selected</p>
+    {:else}
+      {#key editingSource}
+        <svelte:component this={INSPECTORS[$selectedSources[0].tag]} />
+      {/key}
     {/if}
   {/if}
 </div>

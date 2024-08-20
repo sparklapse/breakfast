@@ -1,37 +1,19 @@
 <script lang="ts">
   import Fuse from "fuse.js";
   import { scale } from "svelte/transition";
-  import { useViewport } from "$lib/hooks/viewport";
+  import { useViewport } from "$lib/editor/contexts";
   import { avgPoints, transformFromPoints } from "$lib/math";
   import { sourceId } from "$lib/editor/naming";
   import type { Point } from "$lib/math";
-  import type { Source } from "$lib/editor/types";
+  import type { Source, SourceDef } from "$lib/editor/types";
 
   const {
     utils: { screenToLocal },
   } = useViewport();
 
   export let canCreate = true;
-  export let sourceTypes: { label: string; subLabel: string; tag: string }[] = [
-    {
-      label: "Textetauhsntoeh untaoehu nstaoehusntaoh usnetah notseeu",
-      subLabel: "Bread n Butter tnaoehuah oentuhantoehuuntaheuntahoentuhantoeeu",
-      tag: "bnb-text",
-    },
-    { label: "Image", subLabel: "Bread n Butter", tag: "bnb-image" },
-    { label: "Chat", subLabel: "Bread n Butter", tag: "bnb-chat" },
-    { label: "Text", subLabel: "Bread n Butter", tag: "bnb-text" },
-    { label: "Image", subLabel: "Bread n Butter", tag: "bnb-image" },
-    { label: "Chat", subLabel: "Bread n Butter", tag: "bnb-chat" },
-    { label: "Text", subLabel: "Bread n Butter", tag: "bnb-text" },
-    { label: "Image", subLabel: "Bread n Butter", tag: "bnb-image" },
-    { label: "Chat", subLabel: "Bread n Butter", tag: "bnb-chat" },
-    { label: "Text", subLabel: "Bread n Butter", tag: "bnb-text" },
-    { label: "Image", subLabel: "Bread n Butter", tag: "bnb-image" },
-    { label: "Chat", subLabel: "Bread n Butter", tag: "bnb-chat" },
-    { label: "Text", subLabel: "Bread n Butter", tag: "bnb-text" },
-    { label: "Image", subLabel: "Bread n Butter", tag: "bnb-image" },
-    { label: "Chat", subLabel: "Bread n Butter", tag: "bnb-chat" },
+  export let sourceTypes: SourceDef[] = [
+    { label: "Text", subLabel: "HTML", tag: "p", fields: [] },
   ];
 
   let isCreating = false;
@@ -111,6 +93,7 @@
       tag: tag ?? filteredSourceTypes[0].tag,
       transform,
       props: {},
+      style: {},
       children: [],
     });
     showCreateMenu = false;

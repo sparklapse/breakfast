@@ -1,8 +1,7 @@
 <script lang="ts">
   import clsx from "clsx";
   import { Hand, Maximize, MousePointer2, PlusSquare } from "lucide-svelte";
-  import { createEditor } from "$lib/hooks/editor";
-  import { createViewport } from "$lib/hooks/viewport";
+  import { createViewport, createEditor } from "$lib/editor/contexts";
   import Viewport, { DEFAULT_GRID, DEFAULT_VIEW } from "./Viewport.svelte";
   import Menu from "./Menu.svelte";
   import Selector from "./Selector.svelte";
@@ -19,10 +18,11 @@
   } = createViewport({ initialView: DEFAULT_VIEW });
   const {
     mount,
-    sources: { sources, addSource },
+    sources: { sources, addSource, removeSource },
     selection: { action, selectedIds, singleSelect, addSelect, selectAll, areaSelect, deselect },
   } = createEditor({
     label: data.scene.label,
+    scripts: data.scene.scripts,
     scene: data.scene.sources,
   });
 
@@ -45,14 +45,22 @@
 
 <svelte:window
   on:keydown={(ev) => {
+    if (ev.target instanceof HTMLInputElement || ev.target instanceof HTMLTextAreaElement) return;
+
     if (ev.key === "1") baseTool = "select";
     if (ev.key === "2") baseTool = "pan";
     if (ev.key === "3") baseTool = "create";
     if (ev.key === "a" && ev.ctrlKey) {
-      if (ev.target instanceof HTMLInputElement) return;
-
       ev.preventDefault();
       selectAll();
+    }
+
+    if (ev.key === "Backspace" || ev.key === "Delete") {
+      if ($selectedIds.length === 0) return;
+
+      for (const id of $selectedIds) {
+        removeSource(id);
+      }
     }
 
     if (ev.key === "Shift") isShifting = true;
@@ -78,11 +86,12 @@
       <div
         class={clsx([
           "absolute grid place-content-center rounded-[1px] outline-none transition-colors",
-          tool === "select" && [
-            isShifting && "bg-black/10",
-            $action === "selecting" &&
-              "cursor-pointer border-slate-900/10 hover:border hover:bg-black/10",
-          ],
+          tool === "select" &&
+            !$selectedIds.includes(source.id) && [
+              isShifting && "bg-black/10",
+              $action === "selecting" &&
+                "cursor-pointer border-slate-900/10 hover:border hover:bg-black/10",
+            ],
           $selectedIds.includes(source.id) && [
             "border",
             $action === "selecting" && "border-blue-600",

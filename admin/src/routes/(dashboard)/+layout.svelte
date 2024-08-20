@@ -188,7 +188,7 @@
     </a>
   </div>
 
-  <main class="min-h-full bg-slate-50 py-10 lg:pl-72">
+  <main class="min-h-full bg-slate-50 py-10 lg:pl-72" transition:fade|global={{ duration: 100 }}>
     <div class="px-4 sm:px-6 lg:px-8">
       <slot />
     </div>

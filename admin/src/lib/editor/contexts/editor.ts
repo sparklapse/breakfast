@@ -1,4 +1,4 @@
-import { writable, derived, get } from "svelte/store";
+import { writable, derived, get, type Readable } from "svelte/store";
 import { useViewport } from "./viewport";
 import { getContext, onMount, setContext } from "svelte";
 import {
@@ -11,13 +11,34 @@ import {
   transformToPoints,
 } from "$lib/math";
 import { radToDeg } from "$lib/math/units";
+import { BUILTIN_DEFINITIONS } from "$lib/editor/sources";
+import { CSS_RESET_SCRIPT } from "$lib/editor/scripts/css-reset";
 import type { Point, Transform } from "$lib/math";
-import type { Source, Script } from "$lib/editor/types";
+import type { Source, Script, SourceDef } from "$lib/editor/types";
 
-export function createEditor(initial?: { label?: string; scene?: string }) {
+const MANAGED_STYLES = ["top", "left", "width", "height", "transform"];
+
+export function createEditor(initial?: {
+  label?: string;
+  scene?: string;
+  scripts?: Script[];
+  sourceDefs?: SourceDef[];
+}) {
   const viewport = useViewport(true);
 
   const label = writable(initial?.label ?? "");
+  const definitions = writable([...BUILTIN_DEFINITIONS, ...(initial?.sourceDefs ?? [])]);
+  const addDefinition = (def: SourceDef) => {
+    definitions.update((defs) => {
+      if (defs.find((d) => d.tag === def.tag)) throw new Error("Definition already exists");
+      return [...defs, def];
+    });
+  };
+
+  const removeDefinition = (tag: string) => {
+    definitions.update((defs) => defs.filter((d) => d.tag !== tag));
+  };
+
   const managedScene = writable<{ fragment: DocumentFragment | HTMLElement }>({
     fragment: new DocumentFragment(),
   });
@@ -26,11 +47,16 @@ export function createEditor(initial?: { label?: string; scene?: string }) {
     return Array.from(fragment.childNodes).map((child) => xtojSource(child as HTMLElement));
   });
   const updateElementWithSource = (element: HTMLElement, source: Source) => {
+    element.id = source.id;
+
     for (const [prop, value] of Object.entries(source.props)) {
       element.setAttribute(prop, value);
     }
 
-    element.id = source.id;
+    for (const [prop, value] of Object.entries(source.style)) {
+      element.style.setProperty(prop, value);
+    }
+
     element.style.position = "absolute";
     element.style.left = `${source.transform.x}px`;
     element.style.top = `${source.transform.y}px`;
@@ -52,6 +78,10 @@ export function createEditor(initial?: { label?: string; scene?: string }) {
           );
         }
       }
+    } else {
+      element.replaceChildren(
+        ...source.children.map((s) => (typeof s === "string" ? s : jtoxSource(s))),
+      );
     }
   };
   const jtoxSource = (source: Source): HTMLElement => {
@@ -82,6 +112,12 @@ export function createEditor(initial?: { label?: string; scene?: string }) {
       rotation: parseInt(source.style.transform.match(/(?<=rotate\()[-0-9.]+(?=deg)/)?.[0] || "0"),
     };
 
+    let style: Record<string, string> = {};
+    for (const prop of source.style) {
+      if (MANAGED_STYLES.includes(prop)) continue;
+      style[prop] = source.style.getPropertyValue(prop);
+    }
+
     const children: (Source | string)[] = [];
     for (const child of source.childNodes) {
       if (typeof child === "string") {
@@ -107,6 +143,7 @@ export function createEditor(initial?: { label?: string; scene?: string }) {
       tag: source.tagName.toLowerCase(),
       transform,
       props,
+      style,
       children,
     };
   };
@@ -125,13 +162,34 @@ export function createEditor(initial?: { label?: string; scene?: string }) {
     }
   }
 
-  const addSource = (source: Source) =>
+  const addSource = (source: Source) => {
     managedScene.update(({ fragment }) => {
       fragment.append(jtoxSource(source));
       return { fragment };
     });
+  };
 
-  const managedScripts = writable<{ scripts: Script[] }>({ scripts: [] });
+  const updateSource = (id: string, source: Source) => {
+    managedScene.update(({ fragment }) => {
+      const element = fragment.querySelector(`#${id}`);
+      if (!element) return { fragment };
+
+      updateElementWithSource(element as HTMLElement, source);
+      return { fragment };
+    });
+  };
+
+  const removeSource = (id: string) => {
+    selectedIds.update((ids) => ids.filter((i) => i !== id));
+    managedScene.update(({ fragment }) => {
+      fragment.querySelector(`#${id}`)?.remove();
+      return { fragment };
+    });
+  };
+
+  const managedScripts = writable<{ scripts: Script[] }>({
+    scripts: [...(initial?.scripts ?? [])],
+  });
   const scripts = derived(managedScripts, ({ scripts }) => scripts);
 
   const addScript = (script: Script) => {
@@ -147,6 +205,8 @@ export function createEditor(initial?: { label?: string; scene?: string }) {
   const removeScript = (filename: string) => {
     managedScripts.update(({ scripts }) => {
       const idx = scripts.findIndex((s) => s.filename === filename);
+      if (scripts[idx].builtin === true) throw new Error("Script is builtin and cannot be removed");
+
       if (idx !== -1) scripts.splice(idx, 1);
       return { scripts };
     });
@@ -167,10 +227,16 @@ export function createEditor(initial?: { label?: string; scene?: string }) {
       });
 
       const $scripts = get(scripts);
-      for (const { script } of $scripts) {
-        const s = cw.document.createElement("script");
-        s.innerHTML = script;
-        cw.document.head.append(s);
+      for (const { filename, script } of $scripts) {
+        if (filename.endsWith(".js")) {
+          const s = cw.document.createElement("script");
+          s.innerHTML = script;
+          cw.document.head.append(s);
+        } else if (filename.endsWith(".css")) {
+          const s = cw.document.createElement("style");
+          s.innerHTML = script;
+          cw.document.head.append(s);
+        }
       }
     };
     frame.addEventListener("load", load);
@@ -197,6 +263,9 @@ export function createEditor(initial?: { label?: string; scene?: string }) {
   const selectedSources = derived([selectedIds, managedScene], ([$ids, { fragment }]) =>
     $ids.map((i) => xtojSource(fragment.querySelector(`#${i}`)! as HTMLElement)),
   );
+  const selectedSource = derived(selectedSources, ($selectedSources) => {
+    return $selectedSources.at(0);
+  });
   const selectionBounds = derived(selectedSources, ($selectedSources) =>
     $selectedSources.length > 0
       ? getTransformBounds(...$selectedSources.map((s) => s.transform))
@@ -488,12 +557,20 @@ export function createEditor(initial?: { label?: string; scene?: string }) {
     sources: {
       sources,
       addSource,
+      updateSource,
+      removeSource,
+      definitions: {
+        subscribe: definitions.subscribe,
+      } as Readable<SourceDef[]>,
+      addDefinition,
+      removeDefinition,
     },
     label,
     selection: {
       action,
       selectedIds,
       selectedSources,
+      selectedSource,
       selectionBounds,
       singleSelect,
       addSelect,

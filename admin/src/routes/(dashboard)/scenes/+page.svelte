@@ -1,29 +1,18 @@
 <script lang="ts">
   import clsx from "clsx";
   import toast from "svelte-french-toast";
-  import { fly, slide } from "svelte/transition";
+  import { fly } from "svelte/transition";
   import { DropdownMenu } from "bits-ui";
   import { PlusSquare } from "lucide-svelte";
   import { navigating } from "$app/stores";
   import { goto } from "$app/navigation";
-  // import { beforeNavigate } from "$app/navigation";
+  import { CSS_RESET_SCRIPT } from "$lib/editor/scripts/css-reset";
 
   import type { PageData } from "./$types";
   export let data: PageData;
   const { user } = data;
 
   let localScenes = data.suspense.initial.then((i) => i.scenes);
-
-  // TODO: Create bug report of beforeNavigate triggering multiple times
-  // beforeNavigate(({ to, complete }) => {
-  //   if (to?.route.id === "/(dashboard)/scenes/edit/[id]")
-  //     toast.promise(complete, {
-  //       loading: "Opening scene...",
-  //       success: "Scene opened",
-  //       error: (err) => `Failed to open scene: ${err?.message}`,
-  //     });
-  // });
-
   let rename: string = "";
 
   const focus = (el: HTMLElement) => {
@@ -42,7 +31,7 @@
         .create({
           owner: $user?.id,
           label: "Untitled Scene",
-          scripts: [],
+          scripts: [CSS_RESET_SCRIPT],
           sources: "",
           visibility: "PRIVATE",
         })

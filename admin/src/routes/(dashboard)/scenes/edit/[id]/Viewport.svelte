@@ -16,7 +16,7 @@
 <script lang="ts">
   import clsx from "clsx";
   import { onMount } from "svelte";
-  import { useViewport } from "$lib/hooks/viewport";
+  import { useViewport } from "$lib/editor/contexts";
 
   const {
     stores: { disableMouseControls, transform, offset },

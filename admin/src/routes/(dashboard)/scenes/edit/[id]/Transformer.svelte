@@ -1,7 +1,6 @@
 <script lang="ts">
   import clsx from "clsx";
-  import { useEditor } from "$lib/hooks/editor";
-  import { useViewport } from "$lib/hooks/viewport";
+  import { useViewport, useEditor } from "$lib/editor/contexts";
 
   const {
     selection: {
