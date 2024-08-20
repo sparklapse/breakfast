@@ -1,35 +1,33 @@
 <script lang="ts">
   import Fuse from "fuse.js";
   import { scale } from "svelte/transition";
-  import { useViewport } from "$lib/editor/contexts";
+  import { useEditor, useViewport } from "$lib/editor/contexts";
   import { avgPoints, transformFromPoints } from "$lib/math";
   import { sourceId } from "$lib/editor/naming";
   import type { Point } from "$lib/math";
-  import type { Source, SourceDef } from "$lib/editor/types";
+  import type { Source } from "$lib/editor/types";
 
   const {
     utils: { screenToLocal },
   } = useViewport();
+  const { sources: { definitions } } = useEditor();
 
   export let canCreate = true;
-  export let sourceTypes: SourceDef[] = [
-    { label: "Text", subLabel: "HTML", tag: "p", fields: [] },
-  ];
 
   let isCreating = false;
   let createStart: Point = [0, 0];
   let createEnd: Point = [0, 0];
   let showCreateMenu = false;
   let search = "";
-  const fuse = new Fuse(sourceTypes, {
+  const fuse = new Fuse($definitions, {
     keys: [
       { name: "label", weight: 4 },
       { name: "subLabel", weight: 2 },
       { name: "tag", weight: 1 },
     ],
   });
-  $: if (sourceTypes) fuse.setCollection(sourceTypes);
-  $: filteredSourceTypes = search ? fuse.search(search).map((r) => r.item) : sourceTypes;
+  $: if ($definitions) fuse.setCollection($definitions);
+  $: filteredSourceTypes = search ? fuse.search(search).map((r) => r.item) : $definitions;
 
   $: if (!canCreate) {
     isCreating = false;
