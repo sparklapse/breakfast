@@ -4,37 +4,15 @@
   import { fly } from "svelte/transition";
   import { Trash2 } from "lucide-svelte";
   import { useEditor } from "$lib/editor/contexts";
-  import { page } from "$app/stores";
   import { goto } from "$app/navigation";
-  import type { BreakfastPocketBase } from "$lib/connections/pocketbase";
-
-  export let pb: BreakfastPocketBase;
+  import { utils } from "./+page@.svelte";
 
   const {
     label,
-    scene,
     scripts: { scripts, addScript, removeScript },
   } = useEditor();
 
   let showMenu = false;
-
-  const save = async () => {
-    const clone = $scene.cloneNode(true);
-    let sources: string;
-    if (clone.nodeType === Node.ELEMENT_NODE) {
-      sources = (clone as HTMLElement).innerHTML;
-      (clone as HTMLElement).remove();
-    } else {
-      const tmp = document.createElement("div");
-      tmp.append(clone);
-      sources = tmp.innerHTML;
-      tmp.remove();
-    }
-
-    await pb.collection("scenes").update($page.params.id, {
-      sources,
-    });
-  };
 </script>
 
 <div
@@ -61,11 +39,11 @@
     <button
       class="rounded-sm bg-slate-700 px-2 py-1 text-white shadow"
       on:click={async () => {
-        await toast.promise(save(), {
+        if (!utils.save) return;
+
+        await toast.promise(utils.save(), {
           loading: "Saving...",
-          success: () => {
-            return "Scene saved!";
-          },
+          success: "Scene saved!",
           error: (err) => `Failed to save scene: ${err.message}`,
         });
         goto("/breakfast/scenes");

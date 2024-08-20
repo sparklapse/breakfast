@@ -1,15 +1,23 @@
+<script lang="ts" context="module">
+  export const utils: { save?: () => Promise<void> } = {
+    save: undefined,
+  };
+</script>
+
 <script lang="ts">
   import clsx from "clsx";
   import { Hand, Maximize, MousePointer2, PlusSquare } from "lucide-svelte";
   import { createViewport, createEditor } from "$lib/editor/contexts";
+  import { page } from "$app/stores";
   import Viewport, { DEFAULT_GRID, DEFAULT_VIEW } from "./Viewport.svelte";
   import Menu from "./Menu.svelte";
   import Selector from "./Selector.svelte";
   import Transformer from "./Transformer.svelte";
   import Creator from "./Creator.svelte";
+  import Inspector from "./Inspector.svelte";
 
   import type { PageData } from "./$types";
-  import Inspector from "./Inspector.svelte";
+  import { onMount } from "svelte";
   export let data: PageData;
 
   const {
@@ -18,6 +26,7 @@
   } = createViewport({ initialView: DEFAULT_VIEW });
   const {
     mount,
+    scene,
     sources: { sources, addSource, removeSource },
     selection: { action, selectedIds, singleSelect, addSelect, selectAll, areaSelect, deselect },
   } = createEditor({
@@ -25,6 +34,25 @@
     scripts: data.scene.scripts,
     scene: data.scene.sources,
   });
+
+  utils.save = async () => {
+    const clone = $scene.cloneNode(true);
+    let sources: string;
+    if (clone.nodeType === Node.ELEMENT_NODE) {
+      sources = (clone as HTMLElement).innerHTML;
+      (clone as HTMLElement).remove();
+    } else {
+      const tmp = document.createElement("div");
+      tmp.append(clone);
+      sources = tmp.innerHTML;
+      tmp.remove();
+    }
+
+    localStorage.setItem(`autosave.${$page.params.id}.sources`, sources);
+    await data.pb.collection("scenes").update($page.params.id, {
+      sources,
+    });
+  };
 
   type Tools = "select" | "pan" | "create";
   let baseTool: Tools = "select";
@@ -41,6 +69,40 @@
     if (tool === "pan") $disableMouseControls = false;
     else $disableMouseControls = true;
   }
+
+  let saveTimeout: ReturnType<typeof setTimeout> | undefined;
+  $: if ($sources) {
+    if (saveTimeout) clearTimeout(saveTimeout);
+    saveTimeout = setTimeout(() => {
+      if (!utils.save) return;
+      utils
+        .save()
+        .catch(() => {
+          // err
+        })
+        .finally(() => {
+          saveTimeout = undefined;
+        });
+    }, 3000);
+  }
+  onMount(() => {
+    const interval = setInterval(() => {
+      if (!utils.save) return;
+      utils
+        .save()
+        .catch(() => {
+          // err
+        })
+        .finally(() => {
+          // We can safely cancel the shorter timer since PB will cancel this save if new changes come through
+          saveTimeout = undefined;
+        });
+    }, 30_000);
+
+    return () => {
+      clearInterval(interval);
+    };
+  });
 </script>
 
 <svelte:window
@@ -133,7 +195,7 @@
     }}
   />
   <!-- Menu -->
-  <Menu pb={data.pb} />
+  <Menu />
   <!-- Inspector -->
   <Inspector />
   <!-- Controls -->
