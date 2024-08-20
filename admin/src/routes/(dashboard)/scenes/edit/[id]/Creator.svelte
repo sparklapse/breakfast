@@ -10,7 +10,9 @@
   const {
     utils: { screenToLocal },
   } = useViewport();
-  const { sources: { definitions } } = useEditor();
+  const {
+    sources: { definitions },
+  } = useEditor();
 
   export let canCreate = true;
 
@@ -123,6 +125,13 @@
 {/if}
 
 {#if showCreateMenu}
+  <div
+    class="fixed inset-0"
+    on:pointerdown={() => {
+      showCreateMenu = false;
+    }}
+  />
+
   {@const center = avgPoints(createStart, createEnd)}
   <div
     class="absolute z-10 flex w-full max-w-sm -translate-x-1/2 -translate-y-1/2 flex-col rounded bg-white shadow"

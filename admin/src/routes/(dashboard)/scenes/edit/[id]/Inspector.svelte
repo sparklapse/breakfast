@@ -5,10 +5,13 @@
   import { Pin, PinOff } from "lucide-svelte";
   import { useEditor } from "$lib/editor/contexts";
   import { INSPECTORS } from "$lib/editor/sources";
+  import Text from "$lib/editor/sources/Fields/Text.svelte";
+  import FieldRowGroup from "$lib/editor/sources/Fields/FieldRowGroup.svelte";
+  import Number from "$lib/editor/sources/Fields/Number.svelte";
 
   const {
-    sources: { sources, definitions },
-    selection: { selectedIds, selectedSources, singleSelect, addSelect, deselect },
+    sources: { definitions, sources, updateSourceField },
+    selection: { selectedIds, selectedSource, singleSelect, addSelect, deselect },
   } = useEditor();
 
   let showInspector = false;
@@ -115,17 +118,65 @@
               } else singleSelect(source.id);
             }}
           >
-            {def?.label ?? "Unknown Element"}
+            {source.props.label || (def?.label ?? "Unknown Element")}
           </button>
         </li>
       {/each}
     </ul>
   {:else if tab === "source"}
-    {#if $selectedIds.length !== 1}
+    {#if !$selectedSource}
       <p class="text-center text-sm text-slate-700">{$selectedIds.length} Sources selected</p>
     {:else}
+      <FieldRowGroup>
+        <Text
+          label="Source Label"
+          value={$selectedSource.props.label ?? ""}
+          options={{ placeholder: "Unnamed source" }}
+          onchange={(t) => {
+            updateSourceField($selectedSource.id, "props.label", t);
+          }}
+        />
+        <Number
+          label="Rotation"
+          value={$selectedSource.transform.rotation}
+          onchange={(n) => {
+            updateSourceField($selectedSource.id, "transform.rotation", n);
+          }}
+        />
+      </FieldRowGroup>
+      <FieldRowGroup>
+        <Number
+          label="X"
+          value={$selectedSource.transform.x}
+          onchange={(n) => {
+            updateSourceField($selectedSource.id, "transform.x", n);
+          }}
+        />
+        <Number
+          label="Y"
+          value={$selectedSource.transform.y}
+          onchange={(n) => {
+            updateSourceField($selectedSource.id, "transform.y", n);
+          }}
+        />
+        <Number
+          label="Width"
+          value={$selectedSource.transform.width}
+          onchange={(n) => {
+            updateSourceField($selectedSource.id, "transform.width", n);
+          }}
+        />
+        <Number
+          label="Height"
+          value={$selectedSource.transform.height}
+          onchange={(n) => {
+            updateSourceField($selectedSource.id, "transform.height", n);
+          }}
+        />
+      </FieldRowGroup>
+
       {#key editingSource}
-        <svelte:component this={INSPECTORS[$selectedSources[0].tag]} />
+        <svelte:component this={INSPECTORS[$selectedSource.tag]} />
       {/key}
     {/if}
   {/if}

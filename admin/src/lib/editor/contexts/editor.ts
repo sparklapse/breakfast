@@ -179,6 +179,73 @@ export function createEditor(initial?: {
     });
   };
 
+  const updateSourceField = (id: string, field: string, value: any) => {
+    managedScene.update(({ fragment }) => {
+      const element = fragment.querySelector(`#${id}`) as HTMLElement;
+      if (!element) return { fragment };
+
+      const [root, ...selector] = field.split(".") as [keyof Source, ...string[]];
+      switch (root) {
+        case "id": {
+          element.id = value;
+          break;
+        }
+        case "style": {
+          if (!selector[0]) throw new Error("Must specify a style property to update");
+          const style = selector[0];
+          if (MANAGED_STYLES.includes(style)) throw new Error("Use transform to update this style");
+
+          element.style.setProperty(style, value);
+          break;
+        }
+        case "transform": {
+          if (!selector[0]) throw new Error("Must specify a transform property to update");
+          const transform = selector[0] as keyof Source["transform"];
+          switch (transform) {
+            case "x":
+              element.style.setProperty("left", `${value}px`);
+              break;
+            case "y":
+              element.style.setProperty("top", `${value}px`);
+              break;
+            case "width":
+            case "height":
+              element.style.setProperty(transform, `${value}px`);
+              break;
+            case "rotation":
+              element.style.setProperty("transform", `rotate(${value}deg)`);
+              break;
+            default:
+              throw new Error("Invalid transform value being set");
+          }
+          break;
+        }
+        case "props": {
+          if (!selector[0]) throw new Error("Must specify a property to update");
+          const property = selector[0];
+          if (property === "style") throw new Error("Use style to update this prop");
+          element.setAttribute(property, value);
+          break;
+        }
+        case "children": {
+          if (!Array.isArray(value)) throw new Error("Children must be an array");
+          const children = value.map((v) => {
+            if (typeof v === "string") return v;
+            return jtoxSource(v);
+          });
+          element.replaceChildren(...children);
+          break;
+        }
+        case "tag":
+          throw new Error("Not allowed to change tag");
+        default:
+          throw new Error("Updating non-existant field");
+      }
+
+      return { fragment };
+    });
+  };
+
   const removeSource = (id: string) => {
     selectedIds.update((ids) => ids.filter((i) => i !== id));
     managedScene.update(({ fragment }) => {
@@ -558,6 +625,7 @@ export function createEditor(initial?: {
       sources,
       addSource,
       updateSource,
+      updateSourceField,
       removeSource,
       definitions: {
         subscribe: definitions.subscribe,
