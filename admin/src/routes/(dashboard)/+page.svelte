@@ -2,7 +2,7 @@
   import type { ComponentType } from "svelte";
 
   import type { PageData } from "./$types";
-  import { Layers3 } from "lucide-svelte";
+  import { Layers3, File } from "lucide-svelte";
   export let data: PageData;
   const { user } = data;
 
@@ -27,7 +27,7 @@
       label: "Pages",
       description: "Give your community a place to go to find your socials",
       href: "/breakfast/pages",
-      icon: Layers3,
+      icon: File,
       color: { text: "#4f509b", bg: "#c6c7ff" },
     },
   ];

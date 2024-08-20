@@ -1,6 +1,7 @@
 <script lang="ts" context="module">
-  export const utils: { save?: () => Promise<void> } = {
+  export const utils: { save?: () => Promise<void>; clearAutosave?: () => void } = {
     save: undefined,
+    clearAutosave: undefined,
   };
 </script>
 
@@ -83,7 +84,7 @@
         .finally(() => {
           saveTimeout = undefined;
         });
-    }, 3000);
+    }, 5_000);
   }
   onMount(() => {
     const interval = setInterval(() => {
@@ -99,6 +100,10 @@
         });
     }, 30_000);
 
+    utils.clearAutosave = () => {
+      clearInterval(interval);
+      clearTimeout(saveTimeout);
+    };
     return () => {
       clearInterval(interval);
     };

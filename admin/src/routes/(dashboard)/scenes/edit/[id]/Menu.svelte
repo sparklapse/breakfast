@@ -39,8 +39,9 @@
     <button
       class="rounded-sm bg-slate-700 px-2 py-1 text-white shadow"
       on:click={async () => {
-        if (!utils.save) return;
+        if (!utils.save || !utils.clearAutosave) return;
 
+        utils.clearAutosave();
         await toast.promise(utils.save(), {
           loading: "Saving...",
           success: "Scene saved!",

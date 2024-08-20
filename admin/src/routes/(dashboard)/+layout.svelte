@@ -2,7 +2,7 @@
   import clsx from "clsx";
   import type { ComponentType } from "svelte";
   import { fade, fly } from "svelte/transition";
-  import { Home, Layers } from "lucide-svelte";
+  import { Home, Layers, File, Image } from "lucide-svelte";
   import { page } from "$app/stores";
 
   import type { LayoutData } from "./$types";
@@ -12,6 +12,8 @@
   const navItems: { label: string; icon: ComponentType; href: string; route?: string }[] = [
     { label: "Dashboard", icon: Home, href: "/breakfast/", route: "/(dashboard)" },
     { label: "Scenes", icon: Layers, href: "/breakfast/scenes", route: "/(dashboard)/scenes" },
+    { label: "Pages", icon: File, href: "/breakfast/pages", route: "/(dashboard)/pages" },
+    { label: "Assets", icon: Image, href: "/breakfast/assets", route: "/(dashboard)/assets" },
   ];
 
   let mobileMenuOpen = false;
@@ -180,7 +182,7 @@
       </svg>
     </button>
     <div class="flex-1 text-sm font-semibold leading-6 text-gray-900">
-      {navItems.find((i) => $page.route.id === i.route)?.label}
+      {navItems.find((i) => $page.route.id === i.route)?.label ?? ""}
     </div>
     <a href="/breakfast/account">
       <span class="sr-only">Your profile</span>
