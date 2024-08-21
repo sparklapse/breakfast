@@ -71,44 +71,63 @@
     else $disableMouseControls = true;
   }
 
-  let saveTimeout: ReturnType<typeof setTimeout> | undefined;
+  let abort: () => void | undefined;
   $: if ($sources) {
-    if (saveTimeout) clearTimeout(saveTimeout);
-    saveTimeout = setTimeout(() => {
-      if (!utils.save) return;
-      utils
-        .save()
-        .catch(() => {
-          // err
-        })
-        .finally(() => {
-          saveTimeout = undefined;
-        });
-    }, 5_000);
+    abort?.();
+    new Promise<void>((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        resolve();
+      }, 1000);
+
+      abort = () => {
+        clearTimeout(timeout);
+        reject();
+      };
+    })
+      .then(() => utils.save?.())
+      .catch(() => {
+        // Cancelled
+      });
   }
-  onMount(() => {
-    const interval = setInterval(() => {
-      if (!utils.save) return;
-      utils
-        .save()
-        .catch(() => {
-          // err
-        })
-        .finally(() => {
-          // We can safely cancel the shorter timer since PB will cancel this save if new changes come through
-          saveTimeout = undefined;
-        });
-    }, 30_000);
 
-    utils.clearAutosave = () => {
-      clearInterval(interval);
-      clearTimeout(saveTimeout);
-    };
+  // let saveTimeout: ReturnType<typeof setTimeout> | undefined;
+  // $: if ($sources) {
+  //   if (saveTimeout) clearTimeout(saveTimeout);
+  //   saveTimeout = setTimeout(() => {
+  //     if (!utils.save) return;
+  //     utils
+  //       .save()
+  //       .catch(() => {
+  //         // err
+  //       })
+  //       .finally(() => {
+  //         saveTimeout = undefined;
+  //       });
+  //   }, 5_000);
+  // }
+  // onMount(() => {
+  //   const interval = setInterval(() => {
+  //     if (!utils.save) return;
+  //     utils
+  //       .save()
+  //       .catch(() => {
+  //         // err
+  //       })
+  //       .finally(() => {
+  //         // We can safely cancel the shorter timer since PB will cancel this save if new changes come through
+  //         saveTimeout = undefined;
+  //       });
+  //   }, 30_000);
 
-    return () => {
-      utils.clearAutosave?.();
-    };
-  });
+  //   utils.clearAutosave = () => {
+  //     clearInterval(interval);
+  //     clearTimeout(saveTimeout);
+  //   };
+
+  //   return () => {
+  //     utils.clearAutosave?.();
+  //   };
+  // });
 </script>
 
 <svelte:window
@@ -200,10 +219,6 @@
       baseTool = "select";
     }}
   />
-  <!-- Menu -->
-  <Menu />
-  <!-- Inspector -->
-  <Inspector />
   <!-- Controls -->
   <div
     class="fixed bottom-4 left-1/2 flex -translate-x-1/2 items-center gap-1 rounded border border-slate-200 bg-white p-2 text-slate-700 shadow"
@@ -246,4 +261,8 @@
       <Maximize />
     </button>
   </div>
+  <!-- Inspector -->
+  <Inspector />
+  <!-- Menu -->
+  <Menu />
 </div>

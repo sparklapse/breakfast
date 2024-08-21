@@ -19,7 +19,7 @@
     <textarea
       class="w-full rounded border border-slate-400 px-1"
       placeholder={options?.placeholder}
-      {value}
+      value={value ?? ""}
       on:input={input}
     />
   {:else}
@@ -27,7 +27,7 @@
       class="w-full rounded border border-slate-400 px-1"
       type="text"
       placeholder={options?.placeholder}
-      {value}
+      value={value ?? ""}
       on:input={input}
     />
   {/if}

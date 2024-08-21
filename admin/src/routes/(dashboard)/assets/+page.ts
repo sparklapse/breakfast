@@ -5,10 +5,10 @@ export const load: PageLoad = async ({ parent }) => {
   const data = await parent();
 
   const initial = data.pb
-    .collection("scenes")
-    .getList(1, 10, { sort: "-updated", requestKey: nanoid() })
+    .collection("assets")
+    .getList(1, 100, { sort: "-created", requestKey: nanoid() })
     .then((query) => ({
-      scenes: query.items,
+      assets: query.items,
       totalPages: query.totalPages,
     }));
 

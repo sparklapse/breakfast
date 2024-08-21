@@ -17,7 +17,7 @@
 
 <div
   class={clsx([
-    "fixed inset-y-4 left-4 z-50 w-full max-w-md overflow-y-auto rounded border border-slate-200 bg-white p-4 shadow transition-transform",
+    "fixed inset-y-4 left-4 w-full max-w-md overflow-y-auto rounded border border-slate-200 bg-white p-4 shadow transition-transform",
     !showMenu && "-translate-x-[90%]",
   ])}
   on:pointerenter={() => {

@@ -3,10 +3,10 @@
   import toast from "svelte-french-toast";
   import { fly } from "svelte/transition";
   import { DropdownMenu } from "bits-ui";
-  import { PlusSquare } from "lucide-svelte";
+  import { EllipsisVertical, PlusSquare } from "lucide-svelte";
   import { navigating } from "$app/stores";
   import { goto } from "$app/navigation";
-  import { CSS_RESET_SCRIPT } from "$lib/editor/scripts/css-reset";
+  import { DEFAULT_SCRIPTS } from "$lib/editor/scripts";
 
   import type { PageData } from "./$types";
   export let data: PageData;
@@ -31,7 +31,7 @@
         .create({
           owner: $user?.id,
           label: "Untitled Scene",
-          scripts: [CSS_RESET_SCRIPT],
+          scripts: [...DEFAULT_SCRIPTS],
           sources: "",
           visibility: "PRIVATE",
         })
@@ -52,6 +52,9 @@
   {#await localScenes}
     <p>Loading</p>
   {:then scenes}
+    {#if scenes.length === 0}
+      <p>No scenes yet!</p>
+    {/if}
     {#each scenes as scene, idx}
       <li
         class={clsx([
@@ -107,11 +110,7 @@
             <DropdownMenu.Root>
               <DropdownMenu.Trigger class="-m-2.5 block p-2.5 text-gray-500 hover:text-gray-900">
                 <span class="sr-only">Open options</span>
-                <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                  <path
-                    d="M10 3a1.5 1.5 0 110 3 1.5 1.5 0 010-3zM10 8.5a1.5 1.5 0 110 3 1.5 1.5 0 010-3zM11.5 15.5a1.5 1.5 0 10-3 0 1.5 1.5 0 003 0z"
-                  />
-                </svg>
+                <EllipsisVertical class="h-5 w-5" />
               </DropdownMenu.Trigger>
               <DropdownMenu.Content
                 class="w-32 origin-top-right rounded-md bg-white py-2 shadow-lg ring-1 ring-gray-900/5 focus:outline-none"
