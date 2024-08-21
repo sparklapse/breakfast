@@ -12,7 +12,6 @@
   const navItems: { label: string; icon: ComponentType; href: string; route?: string }[] = [
     { label: "Dashboard", icon: Home, href: "/breakfast/", route: "/(dashboard)" },
     { label: "Scenes", icon: Layers, href: "/breakfast/scenes", route: "/(dashboard)/scenes" },
-    { label: "Pages", icon: File, href: "/breakfast/pages", route: "/(dashboard)/pages" },
     { label: "Assets", icon: Image, href: "/breakfast/assets", route: "/(dashboard)/assets" },
   ];
 
