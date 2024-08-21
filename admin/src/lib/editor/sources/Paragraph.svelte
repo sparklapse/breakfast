@@ -3,6 +3,7 @@
   import ColorPicker from "./Fields/ColorPicker.svelte";
   import FieldRowGroup from "./Fields/FieldRowGroup.svelte";
   import Number from "./Fields/Number.svelte";
+  import Select from "./Fields/Select.svelte";
   import Text from "./Fields/Text.svelte";
 
   const {
@@ -32,21 +33,36 @@
         updateSourceField($selectedSource.id, "style.color", c.hex());
       }}
     />
-    <Text
-      label="Font Family"
-      value={$selectedSource.style["font-family"]}
-      onchange={(t) => {
-        updateSourceField($selectedSource.id, "style.font-family", t);
+    <Select
+      label="Align"
+      options={{
+        options: [
+          { label: "Left", value: "left" },
+          { label: "Center", value: "center" },
+          { label: "Right", value: "right" },
+        ],
+      }}
+      value={$selectedSource.style["text-align"]}
+      onchange={(n) => {
+        console.log(n);
+        updateSourceField($selectedSource.id, "style.text-align", n);
       }}
     />
-  </FieldRowGroup>
-  <FieldRowGroup>
     <Number
       label="Size"
       options={{ min: 0 }}
       value={parseInt($selectedSource.style["font-size"])}
       onchange={(n) => {
         updateSourceField($selectedSource.id, "style.font-size", `${n}px`);
+      }}
+    />
+  </FieldRowGroup>
+  <FieldRowGroup>
+    <Text
+      label="Font Family"
+      value={$selectedSource.style["font-family"]}
+      onchange={(t) => {
+        updateSourceField($selectedSource.id, "style.font-family", t);
       }}
     />
     <Number
