@@ -104,8 +104,9 @@
       clearInterval(interval);
       clearTimeout(saveTimeout);
     };
+
     return () => {
-      clearInterval(interval);
+      utils.clearAutosave?.();
     };
   });
 </script>
