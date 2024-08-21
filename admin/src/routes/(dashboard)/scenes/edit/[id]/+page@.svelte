@@ -18,7 +18,6 @@
   import Inspector from "./Inspector.svelte";
 
   import type { PageData } from "./$types";
-  import { onMount } from "svelte";
   export let data: PageData;
 
   const {
@@ -28,7 +27,15 @@
   const {
     mount,
     scene,
-    sources: { sources, addSource, removeSource },
+    sources: {
+      sources,
+      addSource,
+      removeSource,
+      moveSourceUp,
+      moveSourceDown,
+      moveSourceToTop,
+      moveSourceToBottom,
+    },
     selection: { action, selectedIds, singleSelect, addSelect, selectAll, areaSelect, deselect },
   } = createEditor({
     label: data.scene.label,
@@ -83,51 +90,13 @@
         clearTimeout(timeout);
         reject();
       };
+      utils.clearAutosave = abort;
     })
       .then(() => utils.save?.())
       .catch(() => {
         // Cancelled
       });
   }
-
-  // let saveTimeout: ReturnType<typeof setTimeout> | undefined;
-  // $: if ($sources) {
-  //   if (saveTimeout) clearTimeout(saveTimeout);
-  //   saveTimeout = setTimeout(() => {
-  //     if (!utils.save) return;
-  //     utils
-  //       .save()
-  //       .catch(() => {
-  //         // err
-  //       })
-  //       .finally(() => {
-  //         saveTimeout = undefined;
-  //       });
-  //   }, 5_000);
-  // }
-  // onMount(() => {
-  //   const interval = setInterval(() => {
-  //     if (!utils.save) return;
-  //     utils
-  //       .save()
-  //       .catch(() => {
-  //         // err
-  //       })
-  //       .finally(() => {
-  //         // We can safely cancel the shorter timer since PB will cancel this save if new changes come through
-  //         saveTimeout = undefined;
-  //       });
-  //   }, 30_000);
-
-  //   utils.clearAutosave = () => {
-  //     clearInterval(interval);
-  //     clearTimeout(saveTimeout);
-  //   };
-
-  //   return () => {
-  //     utils.clearAutosave?.();
-  //   };
-  // });
 </script>
 
 <svelte:window
@@ -147,6 +116,22 @@
 
       for (const id of $selectedIds) {
         removeSource(id);
+      }
+    }
+
+    if (ev.ctrlKey && ev.key === "[") {
+      if ($selectedIds.length === 0) return;
+
+      for (const source of $sources.filter((s) => $selectedIds.includes(s.id))) {
+        moveSourceDown(source.id);
+      }
+    }
+
+    if (ev.ctrlKey && ev.key === "]") {
+      if ($selectedIds.length === 0) return;
+
+      for (const source of $sources.filter((s) => $selectedIds.includes(s.id)).reverse()) {
+        moveSourceUp(source.id);
       }
     }
 

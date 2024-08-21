@@ -2,7 +2,7 @@
   import clsx from "clsx";
   import { onMount } from "svelte";
   import { fly } from "svelte/transition";
-  import { Pin, PinOff } from "lucide-svelte";
+  import { ArrowDown, ArrowUp, Pin, PinOff } from "lucide-svelte";
   import { useEditor } from "$lib/editor/contexts";
   import { INSPECTORS } from "$lib/editor/sources";
   import Text from "$lib/editor/sources/Fields/Text.svelte";
@@ -10,7 +10,15 @@
   import Number from "$lib/editor/sources/Fields/Number.svelte";
 
   const {
-    sources: { definitions, sources, updateSourceField },
+    sources: {
+      definitions,
+      sources,
+      updateSourceField,
+      moveSourceUp,
+      moveSourceDown,
+      moveSourceToTop,
+      moveSourceToBottom,
+    },
     selection: { selectedIds, selectedSource, singleSelect, addSelect, deselect },
   } = useEditor();
 
@@ -95,11 +103,11 @@
   </div>
   {#if tab === "scene"}
     <ul>
-      {#each $sources as source}
+      {#each structuredClone($sources).reverse() as source}
         {@const def = $definitions.find((d) => d.tag === source.tag)}
         <li class={clsx([$selectedIds.includes(source.id) && "bg-blue-50"])}>
           <button
-            class="w-full text-left"
+            class="flex w-full items-center justify-between"
             on:click={(ev) => {
               if (ev.shiftKey) {
                 if ($selectedIds.length === 0) singleSelect(source.id);
@@ -118,7 +126,27 @@
               } else singleSelect(source.id);
             }}
           >
-            {source.props.label || (def?.label ?? "Unknown Element")}
+            <span>{source.props.label || (def?.label ?? "Unknown Element")}</span>
+            <div class="flex items-center gap-1">
+              <button
+                on:click={(ev) => {
+                  ev.stopPropagation();
+                  if (ev.shiftKey) moveSourceToTop(source.id);
+                  else moveSourceUp(source.id);
+                }}
+              >
+                <ArrowUp size="1rem" />
+              </button>
+              <button
+                on:click={(ev) => {
+                  ev.stopPropagation();
+                  if (ev.shiftKey) moveSourceToBottom(source.id);
+                  else moveSourceDown(source.id);
+                }}
+              >
+                <ArrowDown size="1rem" />
+              </button>
+            </div>
           </button>
         </li>
       {/each}

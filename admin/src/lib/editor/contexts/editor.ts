@@ -12,7 +12,6 @@ import {
 } from "$lib/math";
 import { radToDeg } from "$lib/math/units";
 import { BUILTIN_DEFINITIONS } from "$lib/editor/sources";
-import { CSS_RESET_SCRIPT } from "$lib/editor/scripts/css-reset";
 import type { Point, Transform } from "$lib/math";
 import type { Source, Script, SourceDef } from "$lib/editor/types";
 
@@ -27,6 +26,8 @@ export function createEditor(initial?: {
   const viewport = useViewport(true);
 
   const label = writable(initial?.label ?? "");
+
+  // MARK: Definitions
   const definitions = writable([...BUILTIN_DEFINITIONS, ...(initial?.sourceDefs ?? [])]);
   const addDefinition = (def: SourceDef) => {
     definitions.update((defs) => {
@@ -39,10 +40,13 @@ export function createEditor(initial?: {
     definitions.update((defs) => defs.filter((d) => d.tag !== tag));
   };
 
+  // MARK: Scene
   const managedScene = writable<{ fragment: DocumentFragment | HTMLElement }>({
     fragment: new DocumentFragment(),
   });
   const scene = derived(managedScene, ({ fragment }) => fragment);
+
+  // MARK: Sources
   const sources = derived(managedScene, ({ fragment }) => {
     return Array.from(fragment.childNodes).map((child) => xtojSource(child as HTMLElement));
   });
@@ -162,6 +166,7 @@ export function createEditor(initial?: {
     }
   }
 
+  // MARK: Source Manipulation
   const addSource = (source: Source) => {
     managedScene.update(({ fragment }) => {
       fragment.append(jtoxSource(source));
@@ -246,6 +251,46 @@ export function createEditor(initial?: {
     });
   };
 
+  const moveSourceUp = (id: string) => {
+    managedScene.update(({ fragment }) => {
+      const element = fragment.querySelector(`#${id}`) as HTMLElement;
+      if (!element) throw new Error("Element with that id does not exist");
+
+      if (element.nextSibling) (element.nextSibling as Element).after(element);
+      return { fragment };
+    });
+  };
+
+  const moveSourceDown = (id: string) => {
+    managedScene.update(({ fragment }) => {
+      const element = fragment.querySelector(`#${id}`) as HTMLElement;
+      if (!element) throw new Error("Element with that id does not exist");
+
+      if (element.previousSibling) (element.previousSibling as Element).before(element);
+      return { fragment };
+    });
+  };
+
+  const moveSourceToTop = (id: string) => {
+    managedScene.update(({ fragment }) => {
+      const element = fragment.querySelector(`#${id}`) as HTMLElement;
+      if (!element) throw new Error("Element with that id does not exist");
+
+      if (element.parentNode) element.parentNode.append(element);
+      return { fragment };
+    });
+  };
+
+  const moveSourceToBottom = (id: string) => {
+    managedScene.update(({ fragment }) => {
+      const element = fragment.querySelector(`#${id}`) as HTMLElement;
+      if (!element) throw new Error("Element with that id does not exist");
+
+      if (element.parentNode) element.parentNode.prepend(element);
+      return { fragment };
+    });
+  };
+
   const removeSource = (id: string) => {
     selectedIds.update((ids) => ids.filter((i) => i !== id));
     managedScene.update(({ fragment }) => {
@@ -254,6 +299,7 @@ export function createEditor(initial?: {
     });
   };
 
+  // MARK: Scripts
   const managedScripts = writable<{ scripts: Script[] }>({
     scripts: [...(initial?.scripts ?? [])],
   });
@@ -279,6 +325,7 @@ export function createEditor(initial?: {
     });
   };
 
+  // MARK: Mount
   const mount = (frame: HTMLIFrameElement) => {
     const cw = frame.contentWindow;
     if (!cw) throw new Error("Frame content window is unavailable");
@@ -305,6 +352,8 @@ export function createEditor(initial?: {
           cw.document.head.append(s);
         }
       }
+
+      cw.document.body.style.overflow = "hidden";
     };
     frame.addEventListener("load", load);
 
@@ -324,6 +373,7 @@ export function createEditor(initial?: {
     };
   };
 
+  // MARK: Actions
   const action = writable<"selecting" | "translating" | "rotating" | "resizing">("selecting");
 
   const selectedIds = writable<string[]>([]);
@@ -626,6 +676,10 @@ export function createEditor(initial?: {
       addSource,
       updateSource,
       updateSourceField,
+      moveSourceUp,
+      moveSourceDown,
+      moveSourceToTop,
+      moveSourceToBottom,
       removeSource,
       definitions: {
         subscribe: definitions.subscribe,
