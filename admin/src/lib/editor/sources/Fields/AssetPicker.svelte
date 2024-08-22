@@ -44,14 +44,19 @@
         />
       </Dialog.Overlay>
       <Dialog.Content
-        class="fixed left-1/2 top-1/2 w-full max-w-md -translate-x-1/2 -translate-y-1/2 rounded-lg bg-white p-4 shadow"
+        class="fixed left-1/2 top-1/2 max-h-48 w-full max-w-md -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-lg bg-white p-4 shadow"
         on:pointerdown={(ev) => {
           ev.stopPropagation();
         }}
         transition={fade}
         transitionConfig={{ duration: 100 }}
       >
-        <Dialog.Title>Asset Picker</Dialog.Title>
+        <div class="mb-2 flex items-center justify-between">
+          <Dialog.Title>Asset Picker</Dialog.Title>
+          <Dialog.Close>
+            <X class="size-5" />
+          </Dialog.Close>
+        </div>
         <div class="mb-2 flex items-center justify-between gap-2">
           <input
             class="w-full rounded border border-slate-400 px-1"
@@ -108,9 +113,6 @@
             {/each}
           </div>
         {/await}
-        <Dialog.Close class="absolute right-2 top-2 p-2">
-          <X />
-        </Dialog.Close>
       </Dialog.Content>
     </Dialog.Portal>
   </Dialog.Root>
