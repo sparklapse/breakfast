@@ -2,7 +2,7 @@
   import clsx from "clsx";
   import type { ComponentType } from "svelte";
   import { fade, fly } from "svelte/transition";
-  import { Home, Layers, File, Image } from "lucide-svelte";
+  import { Home, Layers, File, Image, SquareGanttChart } from "lucide-svelte";
   import { page } from "$app/stores";
 
   import type { LayoutData } from "./$types";
@@ -11,6 +11,7 @@
 
   const navItems: { label: string; icon: ComponentType; href: string; route?: string }[] = [
     { label: "Dashboard", icon: Home, href: "/breakfast/", route: "/(dashboard)" },
+    { label: "Events", icon: SquareGanttChart, href: "/breakfast/events", route: "/(dashboard)/events" },
     { label: "Overlays", icon: Layers, href: "/breakfast/overlays", route: "/(dashboard)/overlays" },
     { label: "Assets", icon: Image, href: "/breakfast/assets", route: "/(dashboard)/assets" },
   ];
