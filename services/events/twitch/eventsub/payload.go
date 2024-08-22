@@ -1,9 +1,71 @@
-package twitch
+package eventsub
 
 import (
 	"breakfast/services/events/types"
 	"errors"
 )
+
+func PayloadToStreamOnline(payload map[string]any) (*types.StreamOnline, error) {
+	id, valid := payload["id"].(string)
+	if !valid {
+		return nil, errors.New("id field was not of the correct type")
+	}
+
+	broadcaster_user_id, valid := payload["broadcaster_user_id"].(string)
+	if !valid {
+		return nil, errors.New("broadcaster_user_id field was not of the correct type")
+	}
+
+	broadcaster_user_login, valid := payload["broadcaster_user_login"].(string)
+	if !valid {
+		return nil, errors.New("broadcaster_user_login field was not of the correct type")
+	}
+
+	broadcaster_user_name, valid := payload["broadcaster_user_name"].(string)
+	if !valid {
+		return nil, errors.New("broadcaster_user_name field was not of the correct type")
+	}
+
+	started_at, valid := payload["started_at"].(string)
+	if !valid {
+		return nil, errors.New("started_at field was not of the correct type")
+	}
+
+	return &types.StreamOnline{
+		Id: id,
+		Channel: types.User{
+			Id:          broadcaster_user_id,
+			Username:    broadcaster_user_login,
+			DisplayName: broadcaster_user_name,
+		},
+		StartedAt: started_at,
+	}, nil
+}
+
+func PayloadToStreamOffline(payload map[string]any) (*types.StreamOffline, error) {
+	broadcaster_user_id, valid := payload["broadcaster_user_id"].(string)
+	if !valid {
+		return nil, errors.New("broadcaster_user_id field was not of the correct type")
+	}
+
+	broadcaster_user_login, valid := payload["broadcaster_user_login"].(string)
+	if !valid {
+		return nil, errors.New("broadcaster_user_login field was not of the correct type")
+	}
+
+	broadcaster_user_name, valid := payload["broadcaster_user_name"].(string)
+	if !valid {
+		return nil, errors.New("broadcaster_user_name field was not of the correct type")
+	}
+
+	return &types.StreamOffline{
+		Channel: types.User{
+			Id:          broadcaster_user_id,
+			Username:    broadcaster_user_login,
+			DisplayName: broadcaster_user_name,
+		},
+	}, nil
+}
 
 func PayloadToChatMessage(payload map[string]any) (*types.ChatMessage, error) {
 	event, valid := payload["event"].(map[string]any)
@@ -109,7 +171,7 @@ func PayloadToChatMessage(payload map[string]any) (*types.ChatMessage, error) {
 
 		reply = &types.ChatMessageReply{
 			RepliedToMessageId: replied_to_message_id,
-			RepliedToChatter: types.ChatMessageUser{
+			RepliedToChatter: types.User{
 				Id:          replied_to_chatter_id,
 				Username:    replied_to_chatter_login,
 				DisplayName: replied_to_chatter_name,
@@ -123,12 +185,12 @@ func PayloadToChatMessage(payload map[string]any) (*types.ChatMessage, error) {
 		Reply:     reply,
 		Fragments: chat_fragments,
 		Color:     color,
-		Channel: types.ChatMessageUser{
+		Channel: types.User{
 			Id:          broadcaster_user_id,
 			Username:    broadcaster_user_login,
 			DisplayName: broadcaster_user_name,
 		},
-		Chatter: types.ChatMessageUser{
+		Chatter: types.User{
 			Id:          chatter_user_id,
 			Username:    chatter_user_login,
 			DisplayName: chatter_user_name,

@@ -6,10 +6,21 @@ type SubscriptionConfig struct {
 	Condition map[string]string
 }
 
+// Create an array events for most common things users would listen to
+func CreateDefaultSubscriptions(twitch_user_id string) []SubscriptionConfig {
+	return []SubscriptionConfig{
+		CreateChannelChatMessageSubscription(twitch_user_id, twitch_user_id),
+		CreateStreamOfflineSubscription(twitch_user_id),
+		CreateStreamOnlineSubscription(twitch_user_id),
+	}
+}
+
 // Broadcaster goes live
+const SubscriptionTypeStreamOnline = "stream.online"
+
 func CreateStreamOnlineSubscription(twitch_broadcaster_id string) SubscriptionConfig {
 	return SubscriptionConfig{
-		Type:    "stream.online",
+		Type:    SubscriptionTypeStreamOnline,
 		Version: "1",
 		Condition: map[string]string{
 			"broadcaster_user_id": twitch_broadcaster_id,
@@ -18,9 +29,11 @@ func CreateStreamOnlineSubscription(twitch_broadcaster_id string) SubscriptionCo
 }
 
 // Broadcaster goes offline
+const SubscriptionTypeStreamOffline = "stream.offline"
+
 func CreateStreamOfflineSubscription(twitch_broadcaster_id string) SubscriptionConfig {
 	return SubscriptionConfig{
-		Type:    "stream.offline",
+		Type:    SubscriptionTypeStreamOffline,
 		Version: "1",
 		Condition: map[string]string{
 			"broadcaster_user_id": twitch_broadcaster_id,
@@ -29,9 +42,11 @@ func CreateStreamOfflineSubscription(twitch_broadcaster_id string) SubscriptionC
 }
 
 // Message sent in chat
+const SubscriptionTypeChannelChatMessage = "channel.chat.message"
+
 func CreateChannelChatMessageSubscription(twitch_broadcaster_id string, twitch_user_id string) SubscriptionConfig {
 	return SubscriptionConfig{
-		Type:    "channel.chat.message",
+		Type:    SubscriptionTypeChannelChatMessage,
 		Version: "1",
 		Condition: map[string]string{
 			"broadcaster_user_id": twitch_broadcaster_id,
@@ -41,9 +56,11 @@ func CreateChannelChatMessageSubscription(twitch_broadcaster_id string, twitch_u
 }
 
 // Broadcaster shouts someone out
+const SubscriptionTypeChannelShoutoutCreate = "channel.shoutout.create"
+
 func CreateShoutoutCreateSubscription(twitch_broadcaster_id string, moderator_twitch_id string) SubscriptionConfig {
 	return SubscriptionConfig{
-		Type:    "channel.shoutout.create",
+		Type:    SubscriptionTypeChannelShoutoutCreate,
 		Version: "1",
 		Condition: map[string]string{
 			"broadcaster_user_id": twitch_broadcaster_id,
@@ -53,20 +70,15 @@ func CreateShoutoutCreateSubscription(twitch_broadcaster_id string, moderator_tw
 }
 
 // Broadcaster receives a shoutout
+const SubscriptionTypeChannelShoutoutReceive = "channel.shoutout.receive"
+
 func CreateShoutoutReceiveSubscription(twitch_broadcaster_id string, moderator_twitch_id string) SubscriptionConfig {
 	return SubscriptionConfig{
-		Type:    "channel.shoutout.receive",
+		Type:    SubscriptionTypeChannelShoutoutReceive,
 		Version: "1",
 		Condition: map[string]string{
 			"broadcaster_user_id": twitch_broadcaster_id,
 			"moderator_user_id":   moderator_twitch_id,
 		},
-	}
-}
-
-// Create an array events for most common things users would listen to
-func CreateDefaultSubscriptions(twitch_user_id string) []SubscriptionConfig {
-	return []SubscriptionConfig{
-		CreateChannelChatMessageSubscription(twitch_user_id, twitch_user_id),
 	}
 }

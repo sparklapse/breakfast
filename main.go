@@ -34,10 +34,13 @@ func main() {
 	// Setup Services
 	saas.RegisterService(app)
 	account.RegisterService(app)
-	auth.RegisterService(app, scheduler)
+	auth.RegisterService(app)
 	events.RegisterService(app)
 	overlays.RegisterService(app)
 	pages.RegisterService(app)
+
+	// Setup jobs
+	auth.RegisterJobs(app, scheduler)
 
 	app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
 		scheduler.Start()

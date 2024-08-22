@@ -1,6 +1,6 @@
 package types
 
-const BreakfastEventsKey = "breakfast/events"
+const BreakfastEventsKey = "@breakfast/events"
 
 type BreakfastEvent struct {
 	Type string `json:"type"`
