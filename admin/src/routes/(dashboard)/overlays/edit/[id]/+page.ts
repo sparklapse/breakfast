@@ -4,8 +4,8 @@ import type { PageLoad } from "./$types";
 export const load: PageLoad = async ({ parent, params }) => {
   const { pb } = await parent();
 
-  const [scene, err] = await pb
-    .collection("scenes")
+  const [overlay, err] = await pb
+    .collection("overlays")
     .getOne(params.id)
     .then((v) => [v, null])
     .catch((e) => [null, e]);
@@ -13,6 +13,6 @@ export const load: PageLoad = async ({ parent, params }) => {
   if (err) error(404, err?.message ?? "Not Found");
 
   return {
-    scene,
+    overlay,
   };
 };

@@ -1,6 +1,6 @@
 <script lang="ts">
   import clsx from "clsx";
-  import { useViewport, useEditor } from "$lib/editor/contexts";
+  import { useViewport, useEditor } from "$lib/overlay-editor/contexts";
 
   const {
     selection: {

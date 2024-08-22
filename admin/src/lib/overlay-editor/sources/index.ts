@@ -2,7 +2,7 @@ import Paragraph from "./Paragraph.svelte";
 import Image from "./Image.svelte";
 
 import type { ComponentType } from "svelte";
-import type { SourceDef } from "$lib/editor/types";
+import type { SourceDef } from "$lib/overlay-editor/types";
 
 export const BUILTIN_DEFINITIONS: SourceDef[] = [
   {

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { useEditor } from "$lib/editor/contexts";
+  import { useEditor } from "$lib/overlay-editor/contexts";
   import AssetPicker from "./Fields/AssetPicker.svelte";
   import FieldRowGroup from "./Fields/FieldRowGroup.svelte";
   import Select from "./Fields/Select.svelte";

@@ -1,14 +1,12 @@
 import { z } from "zod";
 
-export const sourceType = z.object({});
-
-export const sceneType = z.object({
+export const overlayType = z.object({
   id: z.string().optional(),
   label: z.string(),
   plugins: z.string().array(),
-  sources: sourceType.array(),
+  sources: z.string(),
   created: z.coerce.date().optional(),
   updated: z.coerce.date().optional(),
 });
 
-export type Scene = z.infer<typeof sceneType>;
+export type Overlay = z.infer<typeof overlayType>;

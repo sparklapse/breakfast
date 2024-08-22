@@ -11,12 +11,12 @@ import (
 
 func init() {
 	m.Register(func(db dbx.Builder) error {
-		// Create a new users collection
+		// Create a new overlays collection
 		{
 			dao := daos.New(db)
 
 			collection := &models.Collection{
-				Name:       "scenes",
+				Name:       "overlays",
 				Type:       "base",
 				System:     true,
 				ListRule:   types.Pointer("owner.id = @request.auth.id || visibility = \"PUBLIC\""),
@@ -25,7 +25,7 @@ func init() {
 				UpdateRule: types.Pointer("owner.id = @request.auth.id"),
 				DeleteRule: types.Pointer("owner.id = @request.auth.id"),
 				Indexes: types.JsonArray[string]{
-					"CREATE INDEX scenes_owner_idx ON scenes (owner)",
+					"CREATE INDEX overlays_owner_idx ON overlays (owner)",
 				},
 				Options: types.JsonMap{},
 				Schema: schema.NewSchema(
@@ -105,7 +105,7 @@ func init() {
 				),
 			}
 
-			collection.SetId("scenes")
+			collection.SetId("overlays")
 
 			dao.SaveCollection(collection)
 		}

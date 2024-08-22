@@ -4,11 +4,9 @@ import PocketBase, {
   getTokenPayload,
   isTokenExpired,
   RealtimeService,
-  type AuthModel,
 } from "pocketbase";
 import { customAlphabet } from "nanoid";
 import { TWITCH_AUTH_SCOPES } from "./auth";
-import { sceneType } from "./types";
 import { PUBLIC_FEATURE_PROXY_AUTH_REDIRECT } from "$env/static/public";
 import type { Readable } from "svelte/store";
 
@@ -142,16 +140,6 @@ export class BreakfastPocketBase extends PocketBase {
         throw new Error("Failed to reset stream key");
       }
       this.collection("users").authRefresh();
-    },
-    scenes: {
-      getSceneWithStreamKey: async (id: string, sk: string) => {
-        const scene = await this.collection("scenes").getOne(id, { query: { sk } });
-
-        const parsed = sceneType.safeParse(scene);
-        if (!parsed.success) throw new Error("API returned invalid scene");
-
-        return parsed.data;
-      },
     },
     auth: {
       sso: {

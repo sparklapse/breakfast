@@ -1,4 +1,4 @@
-package scenes
+package overlays
 
 import (
 	_ "embed"
@@ -12,20 +12,20 @@ import (
 	"github.com/pocketbase/pocketbase/tools/types"
 )
 
-//go:embed scene.html
-var sceneTemplateRaw string
-var sceneTemplate *template.Template
+//go:embed overlay.html
+var overlayTemplateRaw string
+var overlayTemplate *template.Template
 
 func init() {
-	tmpl, err := template.New("scene").Parse(sceneTemplateRaw)
+	tmpl, err := template.New("overlay").Parse(overlayTemplateRaw)
 	if err != nil {
-		panic("scene template is invalid")
+		panic("overlay template is invalid")
 	}
 
-	sceneTemplate = tmpl
+	overlayTemplate = tmpl
 }
 
-type SceneTemplateData struct {
+type OverlayTemplateData struct {
 	Label string
 	Head  string
 	Body  string
@@ -33,18 +33,18 @@ type SceneTemplateData struct {
 
 func RegisterService(app *pocketbase.PocketBase) {
 	app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
-		e.Router.GET("/scenes/render/:id", func(c echo.Context) error {
-			sceneId := c.PathParam("id")
-			if sceneId == "" {
-				return c.JSON(404, map[string]string{"message": "Scene not found"})
+		e.Router.GET("/overlays/render/:id", func(c echo.Context) error {
+			overlayId := c.PathParam("id")
+			if overlayId == "" {
+				return c.JSON(404, map[string]string{"message": "Overlay not found"})
 			}
 
-			scene, err := app.Dao().FindRecordById("scenes", sceneId)
+			overlay, err := app.Dao().FindRecordById("overlays", overlayId)
 			if err != nil {
-				return c.JSON(404, map[string]string{"message": "Scene not found"})
+				return c.JSON(404, map[string]string{"message": "Overlay not found"})
 			}
 
-			label := scene.GetString("label")
+			label := overlay.GetString("label")
 
 			head := ""
 			body := ""
@@ -55,9 +55,9 @@ func RegisterService(app *pocketbase.PocketBase) {
 			}
 
 			{
-				err := json.Unmarshal(scene.Get("scripts").(types.JsonRaw), &scripts)
+				err := json.Unmarshal(overlay.Get("scripts").(types.JsonRaw), &scripts)
 				if err != nil {
-					return c.JSON(500, map[string]string{"message": "Bad scene"})
+					return c.JSON(500, map[string]string{"message": "Bad overlay"})
 				}
 			}
 
@@ -73,9 +73,9 @@ func RegisterService(app *pocketbase.PocketBase) {
 				}
 			}
 
-			body += scene.GetString("sources")
+			body += overlay.GetString("sources")
 
-			return sceneTemplate.Execute(c.Response().Writer, SceneTemplateData{
+			return overlayTemplate.Execute(c.Response().Writer, OverlayTemplateData{
 				Label: label,
 				Head:  head,
 				Body:  body,

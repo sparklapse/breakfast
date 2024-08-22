@@ -6,13 +6,13 @@
   import { EllipsisVertical, PlusSquare } from "lucide-svelte";
   import { navigating } from "$app/stores";
   import { goto } from "$app/navigation";
-  import { DEFAULT_SCRIPTS } from "$lib/editor/scripts";
+  import { DEFAULT_SCRIPTS } from "$lib/overlay-editor/scripts";
 
   import type { PageData } from "./$types";
   export let data: PageData;
   const { user } = data;
 
-  let localScenes = data.suspense.initial.then((i) => i.scenes);
+  let localOverlays = data.suspense.initial.then((i) => i.overlays);
   let rename: string = "";
 
   const focus = (el: HTMLElement) => {
@@ -27,84 +27,84 @@
   on:click={async () => {
     await toast.promise(
       data.pb
-        .collection("scenes")
+        .collection("overlays")
         .create({
           owner: $user?.id,
-          label: "Untitled Scene",
+          label: "Untitled Overlay",
           scripts: [...DEFAULT_SCRIPTS],
           sources: "",
           visibility: "PRIVATE",
         })
-        .then((scene) => goto(`/breakfast/scenes/edit/${scene.id}`)),
+        .then((overlay) => goto(`/breakfast/overlays/edit/${overlay.id}`)),
       {
-        loading: "Creating new scene....",
-        success: "New scene created!",
-        error: (err) => `Failed to create new scene: ${err.message}`,
+        loading: "Creating new overlay....",
+        success: "New overlay created!",
+        error: (err) => `Failed to create new overlay: ${err.message}`,
       },
     );
   }}
 >
-  <p>New Scene</p>
+  <p>New Overlay</p>
   <PlusSquare />
 </button>
 
 <ul role="list" class="divide-y divide-gray-100">
-  {#await localScenes}
+  {#await localOverlays}
     <p>Loading</p>
-  {:then scenes}
-    {#if scenes.length === 0}
-      <p>No scenes yet!</p>
+  {:then overlays}
+    {#if overlays.length === 0}
+      <p>No overlays yet!</p>
     {/if}
-    {#each scenes as scene, idx}
+    {#each overlays as overlay, idx}
       <li
         class={clsx([
           "flex items-center justify-between gap-x-6 py-5 first:pt-0 last:pb-0",
-          $navigating?.to?.route.id === "/(dashboard)/scenes/edit/[id]" &&
-            $navigating.to.params?.id === scene.id &&
+          $navigating?.to?.route.id === "/(dashboard)/overlays/edit/[id]" &&
+            $navigating.to.params?.id === overlay.id &&
             "animate-pulse",
         ])}
       >
         <div class="min-w-0">
           <div class="flex items-start gap-x-3">
-            {#if rename === scene.id}
+            {#if rename === overlay.id}
               <input
                 class="text-sm font-semibold leading-6 text-gray-900"
-                value={scene.label}
+                value={overlay.label}
                 on:keydown={({ key, currentTarget }) => {
                   if (key === "Enter") currentTarget.blur();
                 }}
                 on:blur={({ currentTarget: { value } }) => {
-                  if (value !== scene.label) {
+                  if (value !== overlay.label) {
                     toast.promise(
-                      data.pb.collection("scenes").update(scene.id, {
+                      data.pb.collection("overlays").update(overlay.id, {
                         label: value,
                       }),
                       {
-                        loading: "Renaming scene...",
-                        success: "Scene renamed!",
-                        error: (err) => `Failed to rename scene: ${err.message}`,
+                        loading: "Renaming overlay...",
+                        success: "Overlay renamed!",
+                        error: (err) => `Failed to rename overlay: ${err.message}`,
                       },
                     );
-                    scene.label = value;
+                    overlay.label = value;
                   }
                   rename = "";
                 }}
                 use:focus
               />
             {:else}
-              <p class="text-sm font-semibold leading-6 text-gray-900">{scene.label}</p>
+              <p class="text-sm font-semibold leading-6 text-gray-900">{overlay.label}</p>
             {/if}
           </div>
           <div class="mt-1 flex items-center gap-x-2 text-xs leading-5 text-gray-500">
-            <p class="truncate">{scene.visibility} | Created by {$user?.username}</p>
+            <p class="truncate">{overlay.visibility} | Created by {$user?.username}</p>
           </div>
         </div>
         <div class="flex flex-none items-center gap-x-4">
           <a
-            href="/breakfast/scenes/edit/{scene.id}"
+            href="/breakfast/overlays/edit/{overlay.id}"
             class="hidden rounded-md bg-white px-2.5 py-1.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:block"
           >
-            Edit Scene
+            Edit Overlay
           </a>
           <div class="relative flex-none">
             <DropdownMenu.Root>
@@ -119,21 +119,21 @@
               >
                 <DropdownMenu.Item
                   class="block px-3 py-1 text-sm leading-6 text-gray-900"
-                  href="/breakfast/scenes/edit/{scene.id}"
+                  href="/breakfast/overlays/edit/{overlay.id}"
                 >
                   Edit
                 </DropdownMenu.Item>
                 <DropdownMenu.Item
                   class="block cursor-pointer px-3 py-1 text-sm leading-6 text-gray-900"
                   on:click={() => {
-                    rename = scene.id;
+                    rename = overlay.id;
                   }}
                 >
                   Rename
                 </DropdownMenu.Item>
                 <DropdownMenu.Item
                   class="block px-3 py-1 text-sm leading-6 text-gray-900"
-                  href="/scenes/render/{scene.id}"
+                  href="/overlays/render/{overlay.id}"
                   target="_blank"
                 >
                   View
@@ -142,13 +142,13 @@
                 <DropdownMenu.Item
                   class="block cursor-pointer px-3 py-1 text-sm leading-6 text-red-900"
                   on:click={async () => {
-                    await toast.promise(data.pb.collection("scenes").delete(scene.id), {
-                      loading: "Deleting scene...",
-                      success: "Scene deleted!",
-                      error: (err) => `Failed to delete scene: ${err.message}`,
+                    await toast.promise(data.pb.collection("overlays").delete(overlay.id), {
+                      loading: "Deleting overlay...",
+                      success: "Overlay deleted!",
+                      error: (err) => `Failed to delete overlay: ${err.message}`,
                     });
-                    scenes.splice(idx, 1);
-                    localScenes = Promise.resolve(scenes);
+                    overlays.splice(idx, 1);
+                    localOverlays = Promise.resolve(overlays);
                   }}
                 >
                   Delete

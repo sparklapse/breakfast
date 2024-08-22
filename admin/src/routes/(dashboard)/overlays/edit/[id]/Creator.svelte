@@ -1,11 +1,11 @@
 <script lang="ts">
   import Fuse from "fuse.js";
   import { scale } from "svelte/transition";
-  import { useEditor, useViewport } from "$lib/editor/contexts";
+  import { useEditor, useViewport } from "$lib/overlay-editor/contexts";
   import { avgPoints, transformFromPoints } from "$lib/math";
-  import { sourceId } from "$lib/editor/naming";
+  import { sourceId } from "$lib/overlay-editor/naming";
   import type { Point } from "$lib/math";
-  import type { Source } from "$lib/editor/types";
+  import type { Source } from "$lib/overlay-editor/types";
 
   const {
     utils: { screenToLocal },

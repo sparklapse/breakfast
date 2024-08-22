@@ -8,7 +8,7 @@
 <script lang="ts">
   import clsx from "clsx";
   import { Hand, Maximize, MousePointer2, PlusSquare } from "lucide-svelte";
-  import { createViewport, createEditor } from "$lib/editor/contexts";
+  import { createViewport, createEditor } from "$lib/overlay-editor/contexts";
   import { page } from "$app/stores";
   import Viewport, { DEFAULT_GRID, DEFAULT_VIEW } from "./Viewport.svelte";
   import Menu from "./Menu.svelte";
@@ -26,7 +26,7 @@
   } = createViewport({ initialView: DEFAULT_VIEW });
   const {
     mount,
-    scene,
+    overlay,
     sources: {
       sources,
       addSource,
@@ -38,13 +38,13 @@
     },
     selection: { action, selectedIds, singleSelect, addSelect, selectAll, areaSelect, deselect },
   } = createEditor({
-    label: data.scene.label,
-    scripts: data.scene.scripts,
-    scene: data.scene.sources,
+    label: data.overlay.label,
+    scripts: data.overlay.scripts,
+    overlay: data.overlay.sources,
   });
 
   utils.save = async () => {
-    const clone = $scene.cloneNode(true);
+    const clone = $overlay.cloneNode(true);
     let sources: string;
     if (clone.nodeType === Node.ELEMENT_NODE) {
       sources = (clone as HTMLElement).innerHTML;
@@ -57,7 +57,7 @@
     }
 
     localStorage.setItem(`autosave.${$page.params.id}.sources`, sources);
-    await data.pb.collection("scenes").update($page.params.id, {
+    await data.pb.collection("overlays").update($page.params.id, {
       sources,
     });
   };

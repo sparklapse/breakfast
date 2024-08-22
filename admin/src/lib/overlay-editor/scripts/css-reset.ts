@@ -1,4 +1,4 @@
-import type { Script } from "$lib/editor/types";
+import type { Script } from "$lib/overlay-editor/types";
 
 /**
  * Script is the css reset created but the tailwind team

@@ -3,7 +3,7 @@
   import toast from "svelte-french-toast";
   import { fly } from "svelte/transition";
   import { Trash2 } from "lucide-svelte";
-  import { useEditor } from "$lib/editor/contexts";
+  import { useEditor } from "$lib/overlay-editor/contexts";
   import { goto } from "$app/navigation";
   import { utils } from "./+page@.svelte";
 
@@ -44,10 +44,10 @@
         utils.clearAutosave();
         await toast.promise(utils.save(), {
           loading: "Saving...",
-          success: "Scene saved!",
-          error: (err) => `Failed to save scene: ${err.message}`,
+          success: "Overlay saved!",
+          error: (err) => `Failed to save overlay: ${err.message}`,
         });
-        goto("/breakfast/scenes");
+        goto("/breakfast/overlays");
       }}
     >
       Save & Close

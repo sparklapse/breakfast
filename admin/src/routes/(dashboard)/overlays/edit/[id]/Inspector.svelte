@@ -3,11 +3,11 @@
   import { onMount } from "svelte";
   import { fly } from "svelte/transition";
   import { ArrowDown, ArrowUp, Pin, PinOff } from "lucide-svelte";
-  import { useEditor } from "$lib/editor/contexts";
-  import { INSPECTORS } from "$lib/editor/sources";
-  import Text from "$lib/editor/sources/Fields/Text.svelte";
-  import FieldRowGroup from "$lib/editor/sources/Fields/FieldRowGroup.svelte";
-  import Number from "$lib/editor/sources/Fields/Number.svelte";
+  import { useEditor } from "$lib/overlay-editor/contexts";
+  import { INSPECTORS } from "$lib/overlay-editor/sources";
+  import Text from "$lib/overlay-editor/sources/Fields/Text.svelte";
+  import FieldRowGroup from "$lib/overlay-editor/sources/Fields/FieldRowGroup.svelte";
+  import Number from "$lib/overlay-editor/sources/Fields/Number.svelte";
 
   const {
     sources: {
@@ -24,7 +24,7 @@
 
   let showInspector = false;
   let pinOpen = true;
-  let tab: "source" | "scene" = "scene";
+  let tab: "source" | "overlay" = "overlay";
 
   onMount(() => {
     const saved = localStorage.getItem("editor.inspector.pinOpen");
@@ -81,10 +81,10 @@
     <button
       class="w-full"
       on:click={() => {
-        tab = "scene";
+        tab = "overlay";
       }}
     >
-      Scene
+      Overlay
     </button>
     <button
       class="w-full"
@@ -97,11 +97,11 @@
     <div
       class={clsx([
         "absolute bottom-0 h-0.5 w-1/2 bg-slate-700 transition-[left]",
-        tab === "scene" ? "left-0" : "left-1/2",
+        tab === "overlay" ? "left-0" : "left-1/2",
       ])}
     />
   </div>
-  {#if tab === "scene"}
+  {#if tab === "overlay"}
     <ul>
       {#each structuredClone($sources).reverse() as source}
         {@const def = $definitions.find((d) => d.tag === source.tag)}

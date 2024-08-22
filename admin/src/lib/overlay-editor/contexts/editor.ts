@@ -11,15 +11,15 @@ import {
   transformToPoints,
 } from "$lib/math";
 import { radToDeg } from "$lib/math/units";
-import { BUILTIN_DEFINITIONS } from "$lib/editor/sources";
+import { BUILTIN_DEFINITIONS } from "$lib/overlay-editor/sources";
 import type { Point, Transform } from "$lib/math";
-import type { Source, Script, SourceDef } from "$lib/editor/types";
+import type { Source, Script, SourceDef } from "$lib/overlay-editor/types";
 
 const MANAGED_STYLES = ["top", "left", "width", "height", "transform"];
 
 export function createEditor(initial?: {
   label?: string;
-  scene?: string;
+  overlay?: string;
   scripts?: Script[];
   sourceDefs?: SourceDef[];
 }) {
@@ -40,14 +40,14 @@ export function createEditor(initial?: {
     definitions.update((defs) => defs.filter((d) => d.tag !== tag));
   };
 
-  // MARK: Scene
-  const managedScene = writable<{ fragment: DocumentFragment | HTMLElement }>({
+  // MARK: Overlay
+  const managedOverlay = writable<{ fragment: DocumentFragment | HTMLElement }>({
     fragment: new DocumentFragment(),
   });
-  const scene = derived(managedScene, ({ fragment }) => fragment);
+  const overlay = derived(managedOverlay, ({ fragment }) => fragment);
 
   // MARK: Sources
-  const sources = derived(managedScene, ({ fragment }) => {
+  const sources = derived(managedOverlay, ({ fragment }) => {
     return Array.from(fragment.childNodes).map((child) => xtojSource(child as HTMLElement));
   });
   const updateElementWithSource = (element: HTMLElement, source: Source) => {
@@ -152,30 +152,30 @@ export function createEditor(initial?: {
     };
   };
 
-  if (initial?.scene) {
+  if (initial?.overlay) {
     try {
-      const fragment = document.createRange().createContextualFragment(initial.scene!);
+      const fragment = document.createRange().createContextualFragment(initial.overlay!);
       for (const node of fragment.childNodes) {
         if (node.nodeType === Node.ELEMENT_NODE) xtojSource(node as HTMLElement);
         else if (node.nodeType === Node.TEXT_NODE) continue;
         else throw new Error("A node was not parsable by xtoj");
       }
-      managedScene.set({ fragment });
+      managedOverlay.set({ fragment });
     } catch (err) {
-      console.error("Initial scene failed to load", err);
+      console.error("Initial overlay failed to load", err);
     }
   }
 
   // MARK: Source Manipulation
   const addSource = (source: Source) => {
-    managedScene.update(({ fragment }) => {
+    managedOverlay.update(({ fragment }) => {
       fragment.append(jtoxSource(source));
       return { fragment };
     });
   };
 
   const updateSource = (id: string, source: Source) => {
-    managedScene.update(({ fragment }) => {
+    managedOverlay.update(({ fragment }) => {
       const element = fragment.querySelector(`#${id}`);
       if (!element) return { fragment };
 
@@ -185,7 +185,7 @@ export function createEditor(initial?: {
   };
 
   const updateSourceField = (id: string, field: string, value: any) => {
-    managedScene.update(({ fragment }) => {
+    managedOverlay.update(({ fragment }) => {
       const element = fragment.querySelector(`#${id}`) as HTMLElement;
       if (!element) return { fragment };
 
@@ -252,7 +252,7 @@ export function createEditor(initial?: {
   };
 
   const moveSourceUp = (id: string) => {
-    managedScene.update(({ fragment }) => {
+    managedOverlay.update(({ fragment }) => {
       const element = fragment.querySelector(`#${id}`) as HTMLElement;
       if (!element) throw new Error("Element with that id does not exist");
 
@@ -262,7 +262,7 @@ export function createEditor(initial?: {
   };
 
   const moveSourceDown = (id: string) => {
-    managedScene.update(({ fragment }) => {
+    managedOverlay.update(({ fragment }) => {
       const element = fragment.querySelector(`#${id}`) as HTMLElement;
       if (!element) throw new Error("Element with that id does not exist");
 
@@ -272,7 +272,7 @@ export function createEditor(initial?: {
   };
 
   const moveSourceToTop = (id: string) => {
-    managedScene.update(({ fragment }) => {
+    managedOverlay.update(({ fragment }) => {
       const element = fragment.querySelector(`#${id}`) as HTMLElement;
       if (!element) throw new Error("Element with that id does not exist");
 
@@ -282,7 +282,7 @@ export function createEditor(initial?: {
   };
 
   const moveSourceToBottom = (id: string) => {
-    managedScene.update(({ fragment }) => {
+    managedOverlay.update(({ fragment }) => {
       const element = fragment.querySelector(`#${id}`) as HTMLElement;
       if (!element) throw new Error("Element with that id does not exist");
 
@@ -293,7 +293,7 @@ export function createEditor(initial?: {
 
   const removeSource = (id: string) => {
     selectedIds.update((ids) => ids.filter((i) => i !== id));
-    managedScene.update(({ fragment }) => {
+    managedOverlay.update(({ fragment }) => {
       fragment.querySelector(`#${id}`)?.remove();
       return { fragment };
     });
@@ -331,7 +331,7 @@ export function createEditor(initial?: {
     if (!cw) throw new Error("Frame content window is unavailable");
 
     const load = () => {
-      managedScene.update(({ fragment }) => {
+      managedOverlay.update(({ fragment }) => {
         if (fragment.nodeType === Node.ELEMENT_NODE) cw.document.body.replaceWith(fragment);
         else if (fragment.nodeType === Node.DOCUMENT_FRAGMENT_NODE)
           cw.document.body.replaceChildren(fragment);
@@ -359,7 +359,7 @@ export function createEditor(initial?: {
 
     const unsubscribe = scripts.subscribe((p) => {
       // Pull the fragment out of the iframe and into memory where it wont be destroyed on reload
-      managedScene.update(({ fragment }) => {
+      managedOverlay.update(({ fragment }) => {
         return { fragment: fragment.cloneNode(true) as DocumentFragment | HTMLElement };
       });
       cw.location.reload();
@@ -377,7 +377,7 @@ export function createEditor(initial?: {
   const action = writable<"selecting" | "translating" | "rotating" | "resizing">("selecting");
 
   const selectedIds = writable<string[]>([]);
-  const selectedSources = derived([selectedIds, managedScene], ([$ids, { fragment }]) =>
+  const selectedSources = derived([selectedIds, managedOverlay], ([$ids, { fragment }]) =>
     $ids.map((i) => xtojSource(fragment.querySelector(`#${i}`)! as HTMLElement)),
   );
   const selectedSource = derived(selectedSources, ($selectedSources) => {
@@ -431,7 +431,7 @@ export function createEditor(initial?: {
         y: (ev.clientY - translationStart.clientY) / viewportScale,
       };
 
-      managedScene.update(({ fragment }) => {
+      managedOverlay.update(({ fragment }) => {
         const ids = get(selectedIds);
         for (let i = 0; i < ids.length; i++) {
           const id = ids[i];
@@ -513,7 +513,7 @@ export function createEditor(initial?: {
       rotationDelta.set(angle);
       calcDistance({ clientX, clientY });
 
-      managedScene.update(({ fragment }) => {
+      managedOverlay.update(({ fragment }) => {
         for (const source of selectedSnapshot) {
           const rotated = rotatePoint([source.transform.x, source.transform.y], rad, [
             pivot[0] - source.transform.width / 2,
@@ -572,7 +572,7 @@ export function createEditor(initial?: {
 
       const mouseLocal = viewport.utils.screenToLocal([clientX, clientY]);
 
-      managedScene.update(({ fragment }) => {
+      managedOverlay.update(({ fragment }) => {
         if (isResizing === false) throw new Error("Bad resize value");
 
         const ids = get(selectedIds);
@@ -664,7 +664,7 @@ export function createEditor(initial?: {
   // #endregion
 
   const ctx = {
-    scene,
+    overlay,
     mount,
     scripts: {
       scripts,
