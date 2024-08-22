@@ -84,7 +84,10 @@
                 if (identities.twitch) {
                   if (!$user) return;
                   toast.promise(
-                    data.pb.collection("users").unlinkExternalAuth($user.id, "twitch"),
+                    data.pb
+                      .collection("users")
+                      .unlinkExternalAuth($user.id, "twitch")
+                      .then(() => invalidate("pb:account")),
                     {
                       loading: "Unlinking account...",
                       success: "Unlinked twitch account!",
@@ -95,9 +98,7 @@
                 }
 
                 toast.promise(
-                  data.pb.breakfast.auth.sso.twitch().then(() => {
-                    invalidate("pb:account");
-                  }),
+                  data.pb.breakfast.auth.sso.twitch().then(() => invalidate("pb:account")),
                   {
                     loading: "Linking twitch account",
                     success: "Twitch account linked!",
