@@ -46,6 +46,7 @@
   "type": "module",
   "dependencies": {
     "@fontsource-variable/gabarito": "^5.0.5",
+    "@std/uuid": "npm:@jsr/std__uuid",
     "bits-ui": "^0.21.13",
     "clsx": "^2.1.1",
     "color": "^4.2.3",
@@ -55,6 +56,7 @@
     "d3-zoom": "^3.0.0",
     "fuse.js": "^7.0.0",
     "lucide-svelte": "^0.427.0",
+    "msgpackr": "^1.11.0",
     "nanoid": "^5.0.7",
     "pocketbase": "^0.21.4",
     "simple-icons": "^13.5.0",
