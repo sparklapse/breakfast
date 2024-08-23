@@ -10,6 +10,12 @@ import (
 )
 
 func RegisterService(app *pocketbase.PocketBase) {
+	// Refresh any existing tokens before anything else
+	app.OnBeforeServe().PreAdd(func(e *core.ServeEvent) error {
+		tokens.RefreshExpiredTwitchTokens(app)
+		return nil
+	})
+
 	// Don't create accounts with OAuth
 	app.OnRecordBeforeAuthWithOAuth2Request("users").PreAdd(func(e *core.RecordAuthWithOAuth2Event) error {
 		if e.IsNewRecord {
@@ -26,7 +32,6 @@ func RegisterService(app *pocketbase.PocketBase) {
 
 func RegisterJobs(app *pocketbase.PocketBase, scheduler *cron.Cron) {
 	app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
-		tokens.RefreshExpiredTwitchTokens(app)
 		tokens.ScheduleTwitchTokenRefresh(app, scheduler)
 		return nil
 	})
