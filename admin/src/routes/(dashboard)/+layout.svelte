@@ -2,8 +2,9 @@
   import clsx from "clsx";
   import type { ComponentType } from "svelte";
   import { fade, fly } from "svelte/transition";
-  import { Home, Layers, File, Image, SquareGanttChart } from "lucide-svelte";
+  import { Home, Layers, Image, SquareGanttChart } from "lucide-svelte";
   import { page } from "$app/stores";
+  import Obs from "$lib/components/icons/OBS.svelte";
 
   import type { LayoutData } from "./$types";
   export let data: LayoutData;
@@ -14,6 +15,7 @@
     { label: "Events", icon: SquareGanttChart, href: "/breakfast/events", route: "/(dashboard)/events" },
     { label: "Overlays", icon: Layers, href: "/breakfast/overlays", route: "/(dashboard)/overlays" },
     { label: "Assets", icon: Image, href: "/breakfast/assets", route: "/(dashboard)/assets" },
+    { label: "OBS", icon: Obs, href: "/breakfast/obs", route: "/(dashboard)/obs" },
   ];
 
   let mobileMenuOpen = false;
@@ -190,7 +192,7 @@
     </a>
   </div>
 
-  <main class="min-h-full bg-slate-50 py-10 lg:pl-72" transition:fade|global={{ duration: 100 }}>
+  <main class="min-h-full bg-slate-100 py-10 lg:pl-72" transition:fade|global={{ duration: 100 }}>
     <div class="px-4 sm:px-6 lg:px-8">
       <slot />
     </div>

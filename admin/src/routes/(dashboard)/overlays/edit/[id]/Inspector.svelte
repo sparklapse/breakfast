@@ -3,11 +3,11 @@
   import { onMount } from "svelte";
   import { fly } from "svelte/transition";
   import { ArrowDown, ArrowUp, Pin, PinOff } from "lucide-svelte";
-  import { useEditor } from "$lib/overlay-editor/contexts";
-  import { INSPECTORS } from "$lib/overlay-editor/sources";
-  import Text from "$lib/overlay-editor/sources/Fields/Text.svelte";
-  import FieldRowGroup from "$lib/overlay-editor/sources/Fields/FieldRowGroup.svelte";
-  import Number from "$lib/overlay-editor/sources/Fields/Number.svelte";
+  import { useEditor } from "$lib/overlay/contexts";
+  import { INSPECTORS } from "$lib/overlay/sources";
+  import Text from "$lib/overlay/sources/Fields/Text.svelte";
+  import FieldRowGroup from "$lib/overlay/sources/Fields/FieldRowGroup.svelte";
+  import Number from "$lib/overlay/sources/Fields/Number.svelte";
 
   const {
     sources: {

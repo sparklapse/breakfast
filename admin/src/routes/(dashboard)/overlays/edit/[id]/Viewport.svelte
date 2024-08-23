@@ -16,7 +16,7 @@
 <script lang="ts">
   import clsx from "clsx";
   import { onMount } from "svelte";
-  import { useViewport } from "$lib/overlay-editor/contexts";
+  import { useViewport } from "$lib/overlay/contexts";
 
   const {
     stores: { disableMouseControls, transform, offset },

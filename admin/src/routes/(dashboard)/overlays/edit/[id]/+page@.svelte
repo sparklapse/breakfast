@@ -8,7 +8,7 @@
 <script lang="ts">
   import clsx from "clsx";
   import { Hand, Maximize, MousePointer2, PlusSquare } from "lucide-svelte";
-  import { createViewport, createEditor } from "$lib/overlay-editor/contexts";
+  import { createViewport, createEditor } from "$lib/overlay/contexts";
   import { page } from "$app/stores";
   import Viewport, { DEFAULT_GRID, DEFAULT_VIEW } from "./Viewport.svelte";
   import Menu from "./Menu.svelte";

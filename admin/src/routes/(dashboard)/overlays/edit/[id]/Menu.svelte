@@ -3,7 +3,7 @@
   import toast from "svelte-french-toast";
   import { fly } from "svelte/transition";
   import { Trash2 } from "lucide-svelte";
-  import { useEditor } from "$lib/overlay-editor/contexts";
+  import { useEditor } from "$lib/overlay/contexts";
   import { goto } from "$app/navigation";
   import { utils } from "./+page@.svelte";
 

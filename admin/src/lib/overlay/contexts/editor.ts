@@ -11,9 +11,9 @@ import {
   transformToPoints,
 } from "$lib/math";
 import { radToDeg } from "$lib/math/units";
-import { BUILTIN_DEFINITIONS } from "$lib/overlay-editor/sources";
+import { BUILTIN_DEFINITIONS } from "$lib/overlay/sources";
 import type { Point, Transform } from "$lib/math";
-import type { Source, Script, SourceDef } from "$lib/overlay-editor/types";
+import type { Source, Script, SourceDef } from "$lib/overlay/types";
 
 const MANAGED_STYLES = ["top", "left", "width", "height", "transform"];
 

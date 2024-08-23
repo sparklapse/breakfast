@@ -1,11 +1,16 @@
 import { BreakfastPocketBase } from "$lib/connections/pocketbase";
 import { redirect } from "@sveltejs/kit";
 import type { LayoutLoad } from "./$types";
+import { OBSWebSocket } from "$lib/connections/obs";
 
 export const ssr = false;
 
 export const load: LayoutLoad = async ({ route, fetch }) => {
   const pb = new BreakfastPocketBase(fetch);
+  const obs = new OBSWebSocket();
+
+  const obsPassword = localStorage.getItem("obs.password");
+  if (obsPassword !== null) obs.connect(obsPassword);
 
   if (!pb.authStore.isAuthenticated()) {
     const isSetup = await pb.breakfast.setup.isSetup();
@@ -18,5 +23,6 @@ export const load: LayoutLoad = async ({ route, fetch }) => {
   return {
     pb,
     user,
+    obs,
   };
 };
