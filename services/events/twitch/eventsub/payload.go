@@ -6,11 +6,6 @@ import (
 )
 
 func PayloadToStreamOnline(payload map[string]any) (*types.StreamOnline, error) {
-	id, valid := payload["id"].(string)
-	if !valid {
-		return nil, errors.New("id field was not of the correct type")
-	}
-
 	broadcaster_user_id, valid := payload["broadcaster_user_id"].(string)
 	if !valid {
 		return nil, errors.New("broadcaster_user_id field was not of the correct type")
@@ -26,19 +21,12 @@ func PayloadToStreamOnline(payload map[string]any) (*types.StreamOnline, error) 
 		return nil, errors.New("broadcaster_user_name field was not of the correct type")
 	}
 
-	started_at, valid := payload["started_at"].(string)
-	if !valid {
-		return nil, errors.New("started_at field was not of the correct type")
-	}
-
 	return &types.StreamOnline{
-		Id: id,
 		Channel: types.User{
 			Id:          broadcaster_user_id,
 			Username:    broadcaster_user_login,
 			DisplayName: broadcaster_user_name,
 		},
-		StartedAt: started_at,
 	}, nil
 }
 
