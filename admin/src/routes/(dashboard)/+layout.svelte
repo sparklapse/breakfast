@@ -2,7 +2,7 @@
   import clsx from "clsx";
   import type { ComponentType } from "svelte";
   import { fade, fly } from "svelte/transition";
-  import { Home, Layers, Image, SquareGanttChart } from "lucide-svelte";
+  import { Home, Layers, Image, SquareGanttChart, Menu } from "lucide-svelte";
   import { page } from "$app/stores";
   import Obs from "$lib/components/icons/OBS.svelte";
 
@@ -12,8 +12,18 @@
 
   const navItems: { label: string; icon: ComponentType; href: string; route?: string }[] = [
     { label: "Dashboard", icon: Home, href: "/breakfast/", route: "/(dashboard)" },
-    { label: "Events", icon: SquareGanttChart, href: "/breakfast/events", route: "/(dashboard)/events" },
-    { label: "Overlays", icon: Layers, href: "/breakfast/overlays", route: "/(dashboard)/overlays" },
+    {
+      label: "Events",
+      icon: SquareGanttChart,
+      href: "/breakfast/events",
+      route: "/(dashboard)/events",
+    },
+    {
+      label: "Overlays",
+      icon: Layers,
+      href: "/breakfast/overlays",
+      route: "/(dashboard)/overlays",
+    },
     { label: "Assets", icon: Image, href: "/breakfast/assets", route: "/(dashboard)/assets" },
     { label: "OBS", icon: Obs, href: "/breakfast/obs", route: "/(dashboard)/obs" },
   ];
@@ -22,7 +32,7 @@
   $: if ($page) mobileMenuOpen = false;
 </script>
 
-<div class="absolute inset-0">
+<div class="absolute inset-0 bg-slate-100">
   {#if mobileMenuOpen}
     <div class="relative z-50 lg:hidden" role="dialog" aria-modal="true">
       <div
@@ -157,8 +167,9 @@
     </div>
   </div>
 
+  <!-- Mobile Top Nav -->
   <div
-    class="sticky top-0 z-40 flex items-center gap-x-6 bg-white px-4 py-4 shadow-sm sm:px-6 lg:hidden"
+    class="sticky top-0 z-40 flex h-16 items-center gap-x-6 bg-white px-4 py-4 shadow-sm sm:px-6 lg:hidden"
   >
     <button
       type="button"
@@ -168,20 +179,7 @@
       }}
     >
       <span class="sr-only">Open sidebar</span>
-      <svg
-        class="h-6 w-6"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke-width="1.5"
-        stroke="currentColor"
-        aria-hidden="true"
-      >
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
-        />
-      </svg>
+      <Menu class="h-6 w-6" />
     </button>
     <div class="flex-1 text-sm font-semibold leading-6 text-gray-900">
       {navItems.find((i) => $page.route.id === i.route)?.label ?? ""}
@@ -192,9 +190,12 @@
     </a>
   </div>
 
-  <main class="min-h-full bg-slate-100 py-10 lg:pl-72" transition:fade|global={{ duration: 100 }}>
-    <div class="px-4 sm:px-6 lg:px-8">
-      <slot />
-    </div>
+  <main
+    class="relative min-h-[calc(100%-4rem)] px-4 py-10 sm:px-6 lg:ml-72 lg:min-h-full lg:px-8"
+    transition:fade|global={{ duration: 100 }}
+  >
+    <!-- <div class="px-4 sm:px-6 lg:px-8"> -->
+    <slot />
+    <!-- </div> -->
   </main>
 </div>
