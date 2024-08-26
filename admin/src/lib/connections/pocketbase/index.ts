@@ -196,6 +196,41 @@ export class BreakfastPocketBase extends PocketBase {
         },
       },
     },
+    events: {
+      purge: async (category: "old" | "all" = "old") => {
+        await this.send(`/api/breakfast/events/purge-${category}`, {});
+      },
+      getStoredDuration: async (): Promise<{ duration: string }> => {
+        return await this.send("/api/breakfast/events/settings/stored-duration", {});
+      },
+      setStoredDuration: async (duration: string) => {
+        await this.send("/api/breakfast/events/settings/stored-duration", {
+          method: "POST",
+          body: JSON.stringify({ duration }),
+        });
+      },
+      getSavedTypes: async (): Promise<{ saved: string[]; available: string[] }> => {
+        return await this.send("/api/breakfast/events/settings/saved-types", {});
+      },
+      setSavedTypes: async (types: string[]) => {
+        await this.send("/api/breakfast/events/settings/saved-types", {
+          method: "POST",
+          body: JSON.stringify({ types }),
+        });
+      },
+      twitch: {
+        listPools: async (): Promise<{
+          [key: string]: { status: string; subscriptions: number };
+        }> => {
+          return await this.send("/api/breakfast/events/twitch/eventsub/pools", {});
+        },
+        listSubscriptions: async (): Promise<{
+          subscriptions: { id: string; type: string; condition: string }[];
+        }> => {
+          return await this.send("/api/breakfast/events/twitch/eventsub/subscriptions", {});
+        },
+      },
+    },
   };
 
   authStore: SvelteAuthStore;

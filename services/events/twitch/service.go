@@ -55,14 +55,21 @@ func RegisterService(app *pocketbase.PocketBase) {
 			return
 		}
 
-		if eventData == nil {
-			app.Logger().Error("EVENTS Twitch eventsub processed an event but didn't assign data")
+		if eventData == nil || eventType == "" {
+			app.Logger().Error(
+				"EVENTS Twitch eventsub processed an event but didn't assign data",
+				"type", eventType,
+			)
 			return
 		}
 
-		listener.EmitEvent(types.BreakfastEvent{
-			Type: eventType,
-			Data: eventData,
-		})
+		listener.EmitEvent(
+			"twitch-eventsub",
+			message.Metadata.MessageId,
+			types.BreakfastEvent{
+				Type: eventType,
+				Data: eventData,
+			},
+		)
 	})
 }

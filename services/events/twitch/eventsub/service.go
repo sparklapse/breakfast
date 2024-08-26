@@ -6,6 +6,7 @@ import (
 	"github.com/labstack/echo/v5"
 	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase"
+	"github.com/pocketbase/pocketbase/apis"
 	"github.com/pocketbase/pocketbase/core"
 )
 
@@ -173,6 +174,17 @@ func RegisterService(app *pocketbase.PocketBase, eventHook func(message *EventSu
 	// Status APIs
 	app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
 		e.Router.GET("/api/breakfast/events/twitch/eventsub/pools", func(c echo.Context) error {
+			info := apis.RequestInfo(c)
+			user := info.AuthRecord
+
+			if user == nil {
+				return c.JSON(http.StatusUnauthorized, map[string]string{"message": "Unauthorized"})
+			}
+
+			if user.Collection().Id != "users" {
+				return c.JSON(http.StatusUnauthorized, map[string]string{"message": "Unauthorized"})
+			}
+
 			status := map[string]any{}
 			for key, pool := range Pools {
 				status[key] = map[string]any{
@@ -185,6 +197,17 @@ func RegisterService(app *pocketbase.PocketBase, eventHook func(message *EventSu
 		})
 
 		e.Router.GET("/api/breakfast/events/twitch/eventsub/subscriptions", func(c echo.Context) error {
+			info := apis.RequestInfo(c)
+			user := info.AuthRecord
+
+			if user == nil {
+				return c.JSON(http.StatusUnauthorized, map[string]string{"message": "Unauthorized"})
+			}
+
+			if user.Collection().Id != "users" {
+				return c.JSON(http.StatusUnauthorized, map[string]string{"message": "Unauthorized"})
+			}
+
 			subscriptions := []map[string]any{}
 			for s := range Subscriptions {
 				subscriptions = append(subscriptions, map[string]any{

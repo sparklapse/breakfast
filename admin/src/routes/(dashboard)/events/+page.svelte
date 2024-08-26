@@ -29,9 +29,9 @@
     <button class="rounded bg-red-700 px-2 text-white">Purge All Events</button> -->
   </div>
   <div class="flex items-center">
-    <button class="aspect-square">
+    <a href="/breakfast/events/settings" class="aspect-square">
       <Settings />
-    </button>
+    </a>
   </div>
 </div>
 

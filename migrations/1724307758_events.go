@@ -36,7 +36,7 @@ func init() {
 			_, err := db.Insert("_params", dbx.Params{
 				"id":      security.RandomString(15),
 				"key":     "breakfast-events-stored-duration",
-				"value":   "3d",
+				"value":   "72h",
 				"created": time.Now().UTC().Format(types.DefaultDateLayout),
 				"updated": time.Now().UTC().Format(types.DefaultDateLayout),
 			}).Execute()
@@ -59,9 +59,35 @@ func init() {
 				CreateRule: types.Pointer("@request.auth.verified = true && @request.auth.collectionName = \"users\""),
 				UpdateRule: types.Pointer("@request.auth.verified = true && @request.auth.collectionName = \"users\""),
 				DeleteRule: types.Pointer("@request.auth.verified = true && @request.auth.collectionName = \"users\""),
-				Indexes:    types.JsonArray[string]{},
-				Options:    types.JsonMap{},
+				Indexes: types.JsonArray[string]{
+					"CREATE INDEX events_provider_id_idx ON events (providerId, provider)",
+				},
+				Options: types.JsonMap{},
 				Schema: schema.NewSchema(
+					&schema.SchemaField{
+						Id:          "provider",
+						Name:        "provider",
+						Type:        schema.FieldTypeText,
+						Required:    false,
+						Presentable: false,
+						Options: types.JsonMap{
+							"min":     nil,
+							"max":     nil,
+							"pattern": "",
+						},
+					},
+					&schema.SchemaField{
+						Id:          "providerId",
+						Name:        "providerId",
+						Type:        schema.FieldTypeText,
+						Required:    false,
+						Presentable: false,
+						Options: types.JsonMap{
+							"min":     nil,
+							"max":     nil,
+							"pattern": "",
+						},
+					},
 					&schema.SchemaField{
 						Id:          "type",
 						Name:        "type",

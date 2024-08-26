@@ -5,6 +5,7 @@ import (
 	"breakfast/services/events/twitch"
 	"breakfast/services/events/types"
 	"net/http"
+	"slices"
 	"strings"
 	"time"
 
@@ -133,11 +134,11 @@ func RegisterService(app *pocketbase.PocketBase) {
 			err := app.Dao().DB().
 				Select("value").
 				From("_params").
-				Where(dbx.NewExp("key = 'breakfast-events-stored-duration")).
+				Where(dbx.NewExp("key = 'breakfast-events-stored-duration'")).
 				One(&query)
 
 			if err != nil {
-				return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Failed te get storage duration from db"})
+				return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Failed te get storage duration from db", "error": err.Error()})
 			}
 
 			return c.JSON(http.StatusOK, map[string]string{
@@ -168,21 +169,25 @@ func RegisterService(app *pocketbase.PocketBase) {
 				}
 			}
 
+			println(saved.Duration)
+
 			{
 				_, err := time.ParseDuration(saved.Duration)
 				if err != nil {
-					return c.JSON(400, map[string]string{"message": "Bad duration"})
+					return c.JSON(400, map[string]string{"message": "Bad duration", "error": err.Error()})
 				}
 			}
 
 			{
-				err := app.Dao().DB().Update(
-					"_params",
-					dbx.Params{"value": saved.Duration},
-					dbx.NewExp("key = 'breakfast-events-stored-duration'"),
-				)
+				_, err := app.Dao().DB().
+					Update(
+						"_params",
+						dbx.Params{"value": saved.Duration},
+						dbx.NewExp("key = 'breakfast-events-stored-duration'"),
+					).
+					Execute()
 				if err != nil {
-					return c.JSON(500, map[string]string{"message": "Failed to saved settings"})
+					return c.JSON(500, map[string]string{"message": "Failed to saved settings", "error": err.Error()})
 				}
 			}
 
@@ -233,17 +238,26 @@ func RegisterService(app *pocketbase.PocketBase) {
 				}
 			}
 
-			{
-				err := app.Dao().DB().Update(
-					"_params",
-					dbx.Params{"value": strings.Join(saved.Types, ",")},
-					dbx.NewExp("key = 'breakfast-events-saved-types'"),
-				)
-				if err != nil {
-					return c.JSON(500, map[string]string{"message": "Failed to saved settings"})
+			for _, t := range saved.Types {
+				if !slices.Contains(types.AllEventTypes, t) {
+					return c.JSON(400, map[string]string{"message": "Invalid type"})
 				}
 			}
 
+			{
+				_, err := app.Dao().DB().
+					Update(
+						"_params",
+						dbx.Params{"value": strings.Join(saved.Types, ",")},
+						dbx.NewExp("key = 'breakfast-events-saved-types'"),
+					).
+					Execute()
+				if err != nil {
+					return c.JSON(500, map[string]string{"message": "Failed to saved settings", "error": err.Error()})
+				}
+			}
+
+			// Update memory cache to save having to query the database for every event coming in
 			listener.SavedEventTypes = saved.Types
 
 			return c.JSON(200, map[string]string{
