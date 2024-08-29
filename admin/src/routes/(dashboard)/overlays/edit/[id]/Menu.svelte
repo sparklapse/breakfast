@@ -2,15 +2,14 @@
   import clsx from "clsx";
   import toast from "svelte-french-toast";
   import { fly } from "svelte/transition";
-  import { Trash2 } from "lucide-svelte";
   import { useEditor } from "$lib/overlay/contexts";
   import { goto } from "$app/navigation";
-  import { utils } from "./+page@.svelte";
+  import Sync from "./Sync.svelte";
 
-  const {
-    label,
-    scripts: { scripts, addScript, removeScript },
-  } = useEditor();
+  export let save: () => Promise<void>;
+  export let abortAS: (() => void) | undefined;
+
+  const { label } = useEditor();
 
   let showMenu = false;
 </script>
@@ -39,10 +38,8 @@
     <button
       class="rounded-sm bg-slate-700 px-2 py-1 text-white shadow"
       on:click={async () => {
-        if (!utils.save || !utils.clearAutosave) return;
-
-        utils.clearAutosave();
-        await toast.promise(utils.save(), {
+        abortAS?.();
+        await toast.promise(save(), {
           loading: "Saving...",
           success: "Overlay saved!",
           error: (err) => `Failed to save overlay: ${err.message}`,
@@ -55,49 +52,5 @@
   </div>
   <hr class="my-2" />
   <h3 class="font-semibold">OBS Sync</h3>
-  <div class="flex items-center justify-between">
-    <h3 class="font-semibold">Scripts</h3>
-    <div>
-      <label
-        class="cursor-pointer rounded-sm bg-slate-700 px-2 py-1 text-sm text-white shadow"
-        for="script-installer"
-      >
-        Install Scripts
-      </label>
-      <input
-        id="script-installer"
-        class="hidden"
-        type="file"
-        accept=".js"
-        multiple
-        on:input={async (ev) => {
-          const files = ev.currentTarget.files;
-          if (!files) return;
-
-          for (const file of files) {
-            addScript({ filename: file.name, script: await file.text() });
-          }
-        }}
-      />
-    </div>
-  </div>
-  <ul>
-    {#each $scripts as script}
-      <li class="flex items-center justify-between">
-        <span>{script.filename}</span>
-        {#if !script.builtin}
-          <button
-            on:click={() => {
-              removeScript(script.filename);
-            }}
-          >
-            <Trash2 size="1rem" />
-          </button>
-        {/if}
-      </li>
-    {/each}
-    {#if $scripts.length === 0}
-      <li class="text-center text-sm text-slate-400">No scripts installed</li>
-    {/if}
-  </ul>
+  <Sync {abortAS} {save} />
 </div>

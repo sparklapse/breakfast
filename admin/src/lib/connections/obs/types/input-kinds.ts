@@ -1,6 +1,5 @@
 export type Kinds = {
-  browser: {
-    kind: "browser_source";
+  browser_source: {
     settings: {
       css: string;
       fps: number;
@@ -12,13 +11,9 @@ export type Kinds = {
       url: string;
       webpage_control_level: number;
       width: number;
+      [key: string]: any;
     };
-  };
-  unknown: {
-    kind: string;
-    settings: unknown;
   };
 };
 
-export type InputKinds<K extends keyof Kinds = keyof Kinds> = Kinds[K]["kind"];
 export type InputKindSettings<K extends keyof Kinds = keyof Kinds> = Kinds[K]["settings"];

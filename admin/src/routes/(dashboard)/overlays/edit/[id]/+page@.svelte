@@ -1,10 +1,3 @@
-<script lang="ts" context="module">
-  export const utils: { save?: () => Promise<void>; clearAutosave?: () => void } = {
-    save: undefined,
-    clearAutosave: undefined,
-  };
-</script>
-
 <script lang="ts">
   import clsx from "clsx";
   import { Hand, Maximize, MousePointer2, PlusSquare } from "lucide-svelte";
@@ -27,15 +20,7 @@
   const {
     mount,
     overlay,
-    sources: {
-      sources,
-      addSource,
-      removeSource,
-      moveSourceUp,
-      moveSourceDown,
-      moveSourceToTop,
-      moveSourceToBottom,
-    },
+    sources: { sources, addSource, removeSource, moveSourceUp, moveSourceDown },
     selection: { action, selectedIds, singleSelect, addSelect, selectAll, areaSelect, deselect },
   } = createEditor({
     label: data.overlay.label,
@@ -43,7 +28,7 @@
     overlay: data.overlay.sources,
   });
 
-  utils.save = async () => {
+  const save = async () => {
     const clone = $overlay.cloneNode(true);
     let sources: string;
     if (clone.nodeType === Node.ELEMENT_NODE) {
@@ -90,9 +75,8 @@
         clearTimeout(timeout);
         reject();
       };
-      utils.clearAutosave = abort;
     })
-      .then(() => utils.save?.())
+      .then(() => save())
       .catch(() => {
         // Cancelled
       });
@@ -249,5 +233,5 @@
   <!-- Inspector -->
   <Inspector />
   <!-- Menu -->
-  <Menu />
+  <Menu abortAS={abort} {save} />
 </div>

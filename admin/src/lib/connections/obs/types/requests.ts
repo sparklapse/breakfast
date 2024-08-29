@@ -8,7 +8,7 @@ type SourceIdentifier = { sourceName: string } | { sourceUuid: string };
 
 export type CreateInputOptions<K extends keyof Kinds = keyof Kinds> = {
   inputName: string;
-  inputKind: Kinds[K]["kind"];
+  inputKind: K;
   inputSettings?: Partial<Kinds[K]["settings"]>;
   sceneItemEnabled?: boolean;
 };
@@ -41,6 +41,10 @@ type Requests = {
   GetInputSettings: {
     options: InputIdentifier;
     response: { inputKind: string; inputSettings: any };
+  };
+  SetInputName: {
+    options: InputIdentifier & { newInputName: string };
+    response: unknown;
   };
   SetInputSettings: {
     options: InputIdentifier & { inputSettings: any; overlay?: boolean };

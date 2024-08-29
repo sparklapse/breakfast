@@ -8,6 +8,9 @@ export default defineConfig({
   },
   server: {
     proxy: {
+      "/overlays": {
+        target: "http://localhost:8090",
+      },
       "/api": {
         target: "http://localhost:8090",
       },
