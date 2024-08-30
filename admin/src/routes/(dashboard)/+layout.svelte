@@ -2,7 +2,7 @@
   import clsx from "clsx";
   import type { ComponentType } from "svelte";
   import { fade, fly } from "svelte/transition";
-  import { Home, Layers, Image, SquareGanttChart, Menu } from "lucide-svelte";
+  import { Home, Layers, Image, SquareGanttChart, Menu, UsersRound } from "lucide-svelte";
   import { page } from "$app/stores";
   import Obs from "$lib/components/icons/OBS.svelte";
 
@@ -11,7 +11,13 @@
   const { user } = data;
 
   const navItems: { label: string; icon: ComponentType; href: string; route?: string }[] = [
-    { label: "Dashboard", icon: Home, href: "/breakfast/", route: "/(dashboard)" },
+    { label: "Dashboard", icon: Home, href: "/breakfast", route: "/(dashboard)" },
+    {
+      label: "Community",
+      icon: UsersRound,
+      href: "/breakfast/community",
+      route: "/(dashboard)/community",
+    },
     {
       label: "Events",
       icon: SquareGanttChart,
