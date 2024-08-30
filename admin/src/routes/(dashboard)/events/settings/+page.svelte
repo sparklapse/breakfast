@@ -75,6 +75,11 @@
               {/each}
             </Select.Content>
           </Select.Root>
+          {#if selected.map((s) => s.value).includes("chat-message")}
+            <p class="text-xs text-red-900">
+              Warning: Saving every message can fill up storage quickly if abused
+            </p>
+          {/if}
         </dd>
       </div>
       <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
