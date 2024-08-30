@@ -3,11 +3,13 @@ package main
 import (
 	_ "breakfast/migrations"
 	"breakfast/services/account"
+	"breakfast/services/apis"
 	"breakfast/services/auth"
 	"breakfast/services/events"
 	"breakfast/services/overlays"
 	"breakfast/services/pages"
 	"breakfast/services/saas"
+	"breakfast/services/viewers"
 	"breakfast/www"
 	"log"
 
@@ -29,6 +31,8 @@ func main() {
 	saas.RegisterService(app)
 	auth.RegisterService(app)
 	account.RegisterService(app)
+	apis.RegisterService(app)
+	viewers.RegisterService(app)
 	events.RegisterService(app)
 	overlays.RegisterService(app)
 	pages.RegisterService(app)

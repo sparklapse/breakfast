@@ -3,6 +3,7 @@ package listener
 import (
 	"breakfast/services/events/types"
 	"encoding/json"
+	"errors"
 	"slices"
 	"strings"
 
@@ -15,6 +16,8 @@ import (
 
 var pb *pocketbase.PocketBase
 var SavedEventTypes []string
+
+var listeners map[string]func(event *types.BreakfastEvent)
 
 func SetupListener(app *pocketbase.PocketBase) {
 	pb = app
@@ -38,7 +41,18 @@ func SetupListener(app *pocketbase.PocketBase) {
 
 }
 
-func EmitEvent(provider string, providerId string, event types.BreakfastEvent) {
+func AddEventListener(id string, listener func(event *types.BreakfastEvent)) error {
+	_, exists := listeners[id]
+	if exists {
+		return errors.New("a listener with that id already exists")
+	}
+
+	listeners[id] = listener
+
+	return nil
+}
+
+func EmitEvent(provider string, providerId string, event types.BreakfastEvent, initiatorId string) {
 	// Save event to database (if configured to)
 	if slices.Contains(SavedEventTypes, event.Type) {
 		go func() {
@@ -76,6 +90,9 @@ func EmitEvent(provider string, providerId string, event types.BreakfastEvent) {
 			record.Set("providerId", providerId)
 			record.Set("type", event.Type)
 			record.Set("data", event.Data)
+			if initiatorId != "" {
+				record.Set("initiator", initiatorId)
+			}
 
 			{
 				err := pb.Dao().Save(record)
@@ -87,6 +104,11 @@ func EmitEvent(provider string, providerId string, event types.BreakfastEvent) {
 				}
 			}
 		}()
+	}
+
+	// Call registered listeners
+	for _, listener := range listeners {
+		go listener(&event)
 	}
 
 	// Send event to all clients

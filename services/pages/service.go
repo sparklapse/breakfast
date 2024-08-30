@@ -1,8 +1,6 @@
 package pages
 
 import (
-	"breakfast/www"
-
 	"github.com/labstack/echo/v5"
 	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase"
@@ -33,9 +31,9 @@ func RegisterService(app *pocketbase.PocketBase) {
 			}
 
 			if len(records) == 0 {
-				if path == "/" {
-					return c.HTML(200, www.Templates["welcome"])
-				}
+				// if path == "/" {
+				// 	return c.HTML(200, www.Templates["welcome"])
+				// }
 
 				return apis.NewNotFoundError("Not Found.", nil)
 			}
