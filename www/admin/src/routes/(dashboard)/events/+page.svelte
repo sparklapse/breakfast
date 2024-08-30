@@ -1,10 +1,9 @@
 <script lang="ts">
-  import clsx from "clsx";
+  import toast from "svelte-french-toast";
   import { onMount } from "svelte";
   import { fly } from "svelte/transition";
   import { DropdownMenu } from "bits-ui";
   import { EllipsisVertical, Settings } from "lucide-svelte";
-  import { navigating } from "$app/stores";
 
   import type { PageData } from "./$types";
   export let data: PageData;
@@ -42,7 +41,7 @@
     {#if events.length === 0}
       <p>No events yet!</p>
     {/if}
-    {#each events as event}
+    {#each events as event, idx}
       <li class="flex items-center justify-between gap-x-6 py-5 first:pt-0 last:pb-0">
         <div class="min-w-0">
           <div class="flex items-start gap-x-3">
@@ -72,7 +71,7 @@
                 <DropdownMenu.Item class="block px-3 py-1 text-sm leading-6 text-gray-900">
                   View Full Data
                 </DropdownMenu.Item>
-                <!-- <DropdownMenu.Item
+                <DropdownMenu.Item
                   class="block cursor-pointer px-3 py-1 text-sm leading-6 text-red-900"
                   on:click={async () => {
                     if (event.id)
@@ -86,7 +85,7 @@
                   }}
                 >
                   Delete
-                </DropdownMenu.Item> -->
+                </DropdownMenu.Item>
               </DropdownMenu.Content>
             </DropdownMenu.Root>
           </div>
