@@ -25,19 +25,14 @@ func main() {
 		Dir: "migrations",
 	})
 
-	// Setup UI
-	app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
-		www.RegisterBreakfastAdmin(e)
-		return nil
-	})
-
 	// Setup Services
 	saas.RegisterService(app)
-	account.RegisterService(app)
 	auth.RegisterService(app)
+	account.RegisterService(app)
 	events.RegisterService(app)
 	overlays.RegisterService(app)
 	pages.RegisterService(app)
+	www.RegisterService(app)
 
 	// Setup jobs
 	auth.RegisterJobs(app, scheduler)
