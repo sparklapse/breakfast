@@ -15,7 +15,7 @@
       <img class="absolute inset-x-0 top-0 blur" src={toolsMenu} alt="" />
       <img class="clip absolute inset-x-0" src={toolsMenu} alt="" />
     </div>
-    <p class="text-xl">Open up OBS and select "Tools" the "WebSocket Server Settings"</p>
+    <p class="text-xl">Open up OBS and select "Tools" then "WebSocket Server Settings"</p>
     <button class="rounded bg-slate-700 px-2 text-xl text-white" on:click={nextStep}>Next</button>
   </div>
 </div>
@@ -26,11 +26,13 @@
       clip-path: polygon(0% 8%, 100% 8%, 100% 15%, 0% 15%);
     }
 
-    20%,50% {
+    20%,
+    50% {
       clip-path: polygon(60% 8%, 70% 8%, 70% 15%, 60% 15%);
     }
 
-    70%,80% {
+    70%,
+    80% {
       clip-path: polygon(60% 8%, 96% 8%, 96% 95%, 60% 95%);
     }
 
