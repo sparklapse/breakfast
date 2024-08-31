@@ -44,7 +44,7 @@
 
 <div
   class={clsx([
-    "fixed right-4 top-4 h-full max-h-72 w-full max-w-md overflow-y-auto rounded border border-slate-200 bg-white p-4 shadow transition-transform",
+    "fixed right-4 top-4 h-full max-h-[24rem] w-full max-w-md overflow-y-auto rounded border border-slate-200 bg-white p-4 shadow transition-transform",
     !(showInspector || pinOpen) && "translate-x-[90%]",
   ])}
   on:pointerenter={() => {
