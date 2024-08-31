@@ -6,7 +6,6 @@
   import { EllipsisVertical, PlusSquare } from "lucide-svelte";
   import { navigating } from "$app/stores";
   import { goto } from "$app/navigation";
-  import { DEFAULT_SCRIPTS } from "$lib/overlay/scripts";
 
   import type { PageData } from "./$types";
   export let data: PageData;
@@ -31,7 +30,7 @@
         .create({
           owner: $user?.id,
           label: "Untitled Overlay",
-          scripts: [...DEFAULT_SCRIPTS],
+          scripts: [],
           sources: "",
           visibility: "PRIVATE",
         })
