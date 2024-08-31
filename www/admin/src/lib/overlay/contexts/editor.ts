@@ -109,11 +109,13 @@ export function createEditor(initial?: {
     }
     const { id, ...props } = attributes;
     const transform: Transform = {
-      x: parseInt(source.style.left),
-      y: parseInt(source.style.top),
-      width: parseInt(source.style.width),
-      height: parseInt(source.style.height),
-      rotation: parseInt(source.style.transform.match(/(?<=rotate\()[-0-9.]+(?=deg)/)?.[0] || "0"),
+      x: parseFloat(source.style.left),
+      y: parseFloat(source.style.top),
+      width: parseFloat(source.style.width),
+      height: parseFloat(source.style.height),
+      rotation: parseFloat(
+        source.style.transform.match(/(?<=rotate\()[-0-9.]+(?=deg)/)?.[0] || "0",
+      ),
     };
 
     let style: Record<string, string> = {};

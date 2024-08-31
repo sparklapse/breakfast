@@ -52,7 +52,7 @@ func AddEventListener(id string, listener func(event *types.BreakfastEvent)) err
 	return nil
 }
 
-func EmitEvent(provider string, providerId string, event types.BreakfastEvent, initiatorId string) {
+func EmitEvent(provider string, providerId string, event types.BreakfastEvent) {
 	// Save event to database (if configured to)
 	if slices.Contains(SavedEventTypes, event.Type) {
 		go func() {
@@ -90,8 +90,8 @@ func EmitEvent(provider string, providerId string, event types.BreakfastEvent, i
 			record.Set("providerId", providerId)
 			record.Set("type", event.Type)
 			record.Set("data", event.Data)
-			if initiatorId != "" {
-				record.Set("initiator", initiatorId)
+			if event.Initiator != "" {
+				record.Set("initiator", event.Initiator)
 			}
 
 			{

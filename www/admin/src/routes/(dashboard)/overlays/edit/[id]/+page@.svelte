@@ -134,6 +134,7 @@
     grid={DEFAULT_GRID}
   >
     <iframe
+      src="{window.location.origin}/overlays/template"
       title="overlay"
       class="pointer-events-none absolute left-0 top-0 h-[1080px] w-[1920px] select-none rounded-[1px] outline outline-zinc-700"
       use:mount

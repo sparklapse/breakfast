@@ -79,10 +79,10 @@ func RegisterService(app *pocketbase.PocketBase) {
 			"twitch-eventsub",
 			message.Metadata.MessageId,
 			types.BreakfastEvent{
-				Type: eventType,
-				Data: eventData,
+				Type:      eventType,
+				Initiator: initiatorId,
+				Data:      eventData,
 			},
-			initiatorId,
 		)
 	})
 }
