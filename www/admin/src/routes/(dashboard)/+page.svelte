@@ -48,8 +48,14 @@
     </div>
     <dl class="-my-3 divide-y divide-gray-100 px-6 py-4 text-sm leading-6">
       <div class="flex justify-between gap-x-4 py-3">
-        <dt class="text-gray-500">Members</dt>
-        <dd class="text-gray-700">12345</dd>
+        <dt class="text-gray-500">Viewers</dt>
+        <dd class="text-gray-700">
+          {#await data.suspense.viewerCount}
+            ...
+          {:then count}
+            {count}
+          {/await}
+        </dd>
       </div>
     </dl>
   </div>
