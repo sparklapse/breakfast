@@ -27,9 +27,15 @@ func CreateViewerByProviderId(provider string, id string) (string, error) {
 			return err
 		}
 		viewer := models.NewRecord(collection)
-		viewer.RefreshId()
 		viewer.MarkAsNew()
+		viewer.RefreshId()
 		viewer.SetUsername(security.RandomStringWithAlphabet(21, "abcdefghijklmnopqrstuvwxyz"))
+		viewer.Set("inventory", map[string]any{
+			"currencies": map[string]int{
+				"dots": 5,
+			},
+			"items": []map[string]any{},
+		})
 		viewerId = viewer.Id
 
 		switch provider {
