@@ -5,11 +5,16 @@
   import { useEditor } from "$lib/overlay/contexts";
   import { goto } from "$app/navigation";
   import Sync from "./Sync.svelte";
+  import { DEFAULT_SCRIPTS } from "$lib/overlay/scripts";
 
   export let save: () => Promise<void>;
   export let abortAS: (() => void) | undefined;
 
-  const { label } = useEditor();
+  const {
+    label,
+    reloadFrame,
+    scripts: { scripts, definitions, addScript, removeScript },
+  } = useEditor();
 
   let showMenu = false;
 </script>
@@ -53,4 +58,25 @@
   <hr class="my-2" />
   <h3 class="font-semibold">OBS Sync</h3>
   <Sync {abortAS} {save} />
+  <div class="mt-6 flex items-center gap-2">
+    <h3 class="font-semibold">Scripts</h3>
+    <p class="text-sm text-slate-400">(Components {$definitions.length})</p>
+  </div>
+  <ul>
+    {#each $scripts as script}
+      <li title={script.id}>{script.label}</li>
+    {/each}
+  </ul>
+  <button
+    class="w-full rounded border border-slate-700 text-sm text-slate-700"
+    on:click={() => {
+      for (const s of DEFAULT_SCRIPTS) {
+        removeScript(s.id);
+        addScript(s);
+      }
+      reloadFrame();
+    }}
+  >
+    Reinstall Basics
+  </button>
 </div>

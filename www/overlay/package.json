@@ -2,6 +2,7 @@
   "name": "overlay",
   "private": true,
   "version": "0.0.0",
+  "types": "src/global.d.ts",
   "type": "module",
   "scripts": {
     "dev": "vite",

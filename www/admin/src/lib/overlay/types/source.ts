@@ -9,19 +9,27 @@ const baseSourceType = z.object({
   style: z.record(z.string()),
 });
 
+const sourceType: z.ZodType<Source> = baseSourceType.extend({
+  children: z.lazy(() => sourceType.array()),
+});
+
 export type Source = z.infer<typeof baseSourceType> & {
   children: (Source | string)[];
 };
 
-const sourceType: z.ZodType<Source> = baseSourceType.extend({
-  children: z.lazy(() => sourceType.array()),
+export const sourceFieldType = z.object({
+  type: z.string(),
+  label: z.string().optional(),
+  options: z.record(z.any()).optional(),
 });
+
+export type SourceField = z.infer<typeof sourceFieldType>;
 
 export const sourceDefType = z.object({
   label: z.string(),
   subLabel: z.string(),
   tag: z.string(),
-  fields: z.unknown().array(),
+  fields: sourceFieldType.array(),
 });
 
 export type SourceDef = z.infer<typeof sourceDefType>;

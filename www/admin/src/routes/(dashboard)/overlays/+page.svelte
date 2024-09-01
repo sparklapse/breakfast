@@ -8,6 +8,7 @@
   import { goto } from "$app/navigation";
 
   import type { PageData } from "./$types";
+  import { DEFAULT_SCRIPTS } from "$lib/overlay/scripts";
   export let data: PageData;
   const { user } = data;
 
@@ -30,7 +31,7 @@
         .create({
           owner: $user?.id,
           label: "Untitled Overlay",
-          scripts: [],
+          scripts: [...DEFAULT_SCRIPTS],
           sources: "",
           visibility: "PRIVATE",
         })

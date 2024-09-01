@@ -11,7 +11,6 @@
 
   const {
     sources: {
-      definitions,
       sources,
       updateSourceField,
       moveSourceUp,
@@ -20,6 +19,7 @@
       moveSourceToBottom,
     },
     selection: { selectedIds, selectedSource, singleSelect, addSelect, deselect },
+    scripts: { definitions },
   } = useEditor();
 
   let showInspector = false;

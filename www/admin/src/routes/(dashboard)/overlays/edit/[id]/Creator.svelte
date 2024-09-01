@@ -11,7 +11,7 @@
     utils: { screenToLocal },
   } = useViewport();
   const {
-    sources: { definitions },
+    scripts: { definitions },
   } = useEditor();
 
   export let canCreate = true;
@@ -30,6 +30,10 @@
   });
   $: if ($definitions) fuse.setCollection($definitions);
   $: filteredSourceTypes = search ? fuse.search(search).map((r) => r.item) : $definitions;
+
+  $: if (!isCreating) {
+    search = "";
+  }
 
   $: if (!canCreate) {
     isCreating = false;

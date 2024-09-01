@@ -1,9 +1,12 @@
 import { z } from "zod";
+import { sourceDefType } from "./source";
 
 export const scriptType = z.object({
-  filename: z.string(),
+  id: z.string(),
+  label: z.string(),
+  version: z.number(),
   script: z.string(),
-  builtin: z.boolean().optional(),
+  components: sourceDefType.array().optional(),
 });
 
 export type Script = z.infer<typeof scriptType>;

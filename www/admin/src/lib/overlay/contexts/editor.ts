@@ -17,28 +17,10 @@ import type { Source, Script, SourceDef } from "$lib/overlay/types";
 
 const MANAGED_STYLES = ["top", "left", "width", "height", "transform"];
 
-export function createEditor(initial?: {
-  label?: string;
-  overlay?: string;
-  scripts?: Script[];
-  sourceDefs?: SourceDef[];
-}) {
+export function createEditor(initial?: { label?: string; overlay?: string; scripts?: Script[] }) {
   const viewport = useViewport(true);
 
   const label = writable(initial?.label ?? "");
-
-  // MARK: Definitions
-  const definitions = writable([...BUILTIN_DEFINITIONS, ...(initial?.sourceDefs ?? [])]);
-  const addDefinition = (def: SourceDef) => {
-    definitions.update((defs) => {
-      if (defs.find((d) => d.tag === def.tag)) throw new Error("Definition already exists");
-      return [...defs, def];
-    });
-  };
-
-  const removeDefinition = (tag: string) => {
-    definitions.update((defs) => defs.filter((d) => d.tag !== tag));
-  };
 
   // MARK: Overlay
   const managedOverlay = writable<{ fragment: DocumentFragment | HTMLElement }>({
@@ -141,7 +123,7 @@ export function createEditor(initial?: {
         continue;
       }
 
-      console.error("Child is not a valid type");
+      console.error("Child is not a valid type", child);
     }
 
     return {
@@ -306,10 +288,17 @@ export function createEditor(initial?: {
     scripts: [...(initial?.scripts ?? [])],
   });
   const scripts = derived(managedScripts, ({ scripts }) => scripts);
+  const definitions = derived(managedScripts, ({ scripts }) => {
+    const defs: SourceDef[] = [...BUILTIN_DEFINITIONS];
+    for (const s of scripts) {
+      if (!s.components) continue;
+      defs.push(...s.components);
+    }
+    return defs;
+  });
 
   const addScript = (script: Script) => {
-    if (get(scripts).find((s) => s.filename === script.filename))
-      throw new Error("Script already exists");
+    if (get(scripts).find((s) => s.id === script.id)) throw new Error("Script already exists");
 
     managedScripts.update(({ scripts }) => {
       scripts.push(script);
@@ -317,24 +306,24 @@ export function createEditor(initial?: {
     });
   };
 
-  const removeScript = (filename: string) => {
+  const removeScript = (id: string) => {
     managedScripts.update(({ scripts }) => {
-      const idx = scripts.findIndex((s) => s.filename === filename);
-      if (scripts[idx].builtin === true) throw new Error("Script is builtin and cannot be removed");
-
+      const idx = scripts.findIndex((s) => s.id === id);
       if (idx !== -1) scripts.splice(idx, 1);
       return { scripts };
     });
   };
 
-  // MARK: Mount
+  // MARK: Frame
+  let frameWindow: Window | undefined = undefined;
   const mount = (frame: HTMLIFrameElement) => {
     const cw = frame.contentWindow;
     if (!cw) throw new Error("Frame content window is unavailable");
+    frameWindow = cw;
 
     const load = () => {
       managedOverlay.update(({ fragment }) => {
-        if (fragment.nodeType === Node.ELEMENT_NODE) cw.document.body.replaceWith(fragment);
+        if (fragment.nodeType === Node.ELEMENT_NODE) cw.document.body.replaceWith(fragment.cloneNode(true));
         else if (fragment.nodeType === Node.DOCUMENT_FRAGMENT_NODE)
           cw.document.body.replaceChildren(fragment);
         else throw new Error("Bad fragment type");
@@ -343,36 +332,28 @@ export function createEditor(initial?: {
       });
 
       const $scripts = get(scripts);
-      for (const { filename, script } of $scripts) {
-        if (filename.endsWith(".js")) {
-          const s = cw.document.createElement("script");
-          s.innerHTML = script;
-          cw.document.head.append(s);
-        } else if (filename.endsWith(".css")) {
-          const s = cw.document.createElement("style");
-          s.innerHTML = script;
-          cw.document.head.append(s);
-        }
+      for (const { script } of $scripts) {
+        const s = cw.document.createElement("script");
+        s.innerHTML = script;
+        cw.document.head.append(s);
       }
-
-      cw.document.body.style.overflow = "hidden";
     };
     frame.addEventListener("load", load);
 
-    const unsubscribe = scripts.subscribe((p) => {
-      // Pull the fragment out of the iframe and into memory where it wont be destroyed on reload
-      managedOverlay.update(({ fragment }) => {
-        return { fragment: fragment.cloneNode(true) as DocumentFragment | HTMLElement };
-      });
-      cw.location.reload();
-    });
-
     return {
       destroy: () => {
-        unsubscribe();
         frame.removeEventListener("load", load);
       },
     };
+  };
+
+  const reloadFrame = () => {
+    if (!frameWindow) return;
+
+    managedOverlay.update(({ fragment }) => {
+      return { fragment: fragment.cloneNode(true) as DocumentFragment | HTMLElement };
+    });
+    frameWindow.location.reload();
   };
 
   // MARK: Actions
@@ -668,8 +649,10 @@ export function createEditor(initial?: {
   const ctx = {
     overlay,
     mount,
+    reloadFrame,
     scripts: {
       scripts,
+      definitions,
       addScript,
       removeScript,
     },
@@ -683,11 +666,6 @@ export function createEditor(initial?: {
       moveSourceToTop,
       moveSourceToBottom,
       removeSource,
-      definitions: {
-        subscribe: definitions.subscribe,
-      } as Readable<SourceDef[]>,
-      addDefinition,
-      removeDefinition,
     },
     label,
     selection: {

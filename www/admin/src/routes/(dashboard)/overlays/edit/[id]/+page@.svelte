@@ -12,6 +12,7 @@
 
   import type { PageData } from "./$types";
   export let data: PageData;
+  const { user } = data;
 
   const {
     stores: { disableMouseControls },
@@ -20,6 +21,7 @@
   const {
     mount,
     overlay,
+    scripts: { scripts },
     sources: { sources, addSource, removeSource, moveSourceUp, moveSourceDown },
     selection: { action, selectedIds, singleSelect, addSelect, selectAll, areaSelect, deselect },
   } = createEditor({
@@ -44,6 +46,7 @@
     localStorage.setItem(`autosave.${$page.params.id}.sources`, sources);
     await data.pb.collection("overlays").update($page.params.id, {
       sources,
+      scripts: $scripts,
     });
   };
 
@@ -134,7 +137,7 @@
     grid={DEFAULT_GRID}
   >
     <iframe
-      src="{window.location.origin}/overlays/template"
+      src="{window.location.origin}/overlays/template?sk={$user?.streamKey}"
       title="overlay"
       class="pointer-events-none absolute left-0 top-0 h-[1080px] w-[1920px] select-none rounded-[1px] outline outline-zinc-700"
       use:mount
