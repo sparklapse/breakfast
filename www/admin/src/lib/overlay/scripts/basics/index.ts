@@ -26,32 +26,13 @@ export const basics: OverlayScript = {
               target: "style.font-weight",
               options: { min: 100, step: 100, max: 1000 },
             },
-            {
-              type: "select",
-              label: "Testing",
-              target: "props.test",
-              options: {
-                options: [
-                  {
-                    label: "Disabled",
-                    value: "disabled",
-                  },
-                  {
-                    label: "Light",
-                    value: "light",
-                  },
-                  {
-                    label: "Medium",
-                    value: "medium",
-                  },
-                  {
-                    label: "Heavy",
-                    value: "heavy",
-                  },
-                ],
-              },
-            },
           ],
+        },
+        {
+          type: "number",
+          label: "Display Time",
+          target: "props.removeTime",
+          options: { min: 0 },
         },
       ],
     },

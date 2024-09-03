@@ -8,6 +8,9 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import type { ChatEvent } from "@sparklapse/breakfast/overlay";
+  import { fade, fly } from "svelte/transition";
+
+  export let removeTime: string = "3000";
 
   $$restProps;
 
@@ -20,6 +23,14 @@
       const { m } = messages;
       m.push(ev);
       messages = { m };
+      setTimeout(
+        () => {
+          const { m } = messages;
+          m.shift();
+          messages = { m };
+        },
+        parseInt(removeTime) || 3000,
+      );
     });
 
     return () => {
@@ -31,8 +42,8 @@
 <reference types="@sparklapse/breakfast/overlay" />
 
 <div class="container">
-  {#each messages.m as msg}
-    <p>
+  {#each messages.m as msg (msg.data.id)}
+    <p in:fly={{ x: -40, duration: 100 }} out:fade={{ duration: 2000 }}>
       <span style:color={msg.data.color}>{msg.data.chatter.displayName}</span>: {msg.data.text}
     </p>
   {/each}
