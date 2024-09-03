@@ -404,7 +404,6 @@ func FindOrCreateAvailablePool() (*Pool, error) {
 	}
 
 	if available_pool == nil {
-		println("failed to find an existing pool, creating...")
 		new_pool, err := NewPool()
 		if err != nil {
 			return nil, err

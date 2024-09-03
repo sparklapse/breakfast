@@ -27,18 +27,15 @@ func RegisterService(app *pocketbase.PocketBase) {
 		}
 
 		for _, sub := range subscriptions {
-			id := sub.Id
-			go func() {
-				_, err := Subscribe(id)
-				if err != nil {
-					app.Dao().DB().
-						Delete(
-							"twitch_event_subscriptions",
-							dbx.NewExp("id = {:id}", dbx.Params{"id": id}),
-						).
-						Execute()
-				}
-			}()
+			_, err := Subscribe(sub.Id)
+			if err != nil {
+				app.Dao().DB().
+					Delete(
+						"twitch_event_subscriptions",
+						dbx.NewExp("id = {:id}", dbx.Params{"id": sub.Id}),
+					).
+					Execute()
+			}
 		}
 
 		return nil
