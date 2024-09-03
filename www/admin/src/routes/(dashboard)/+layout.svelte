@@ -197,7 +197,7 @@
   </div>
 
   <main
-    class="relative min-h-[calc(100%-4rem)] px-4 py-10 sm:px-6 lg:ml-72 lg:min-h-full lg:px-8"
+    class="relative h-[calc(100%-4rem)] overflow-y-auto px-4 py-10 sm:px-6 lg:ml-72 lg:h-full lg:px-8"
     transition:fade|global={{ duration: 100 }}
   >
     <!-- <div class="px-4 sm:px-6 lg:px-8"> -->
