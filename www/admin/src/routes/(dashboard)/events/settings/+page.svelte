@@ -9,6 +9,8 @@
   const available = data.types.available.map((a) => ({ value: a }));
   let selected = data.types.saved.map((s) => ({ value: s }));
 
+  let twitchCreateDialogOpen = false;
+
   const twitchEventSubTypes = [
     {
       label: "Chat Message",
@@ -39,7 +41,10 @@
       }),
       {
         loading: "Creating subscription...",
-        success: "Subscription created!",
+        success: () => {
+          twitchCreateDialogOpen = false;
+          return "Subscription created!";
+        },
         error: (err) => `Failed to create subscription: ${err.message}`,
       },
     );
@@ -124,7 +129,7 @@
       <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
         <dt class="text-sm leading-6 text-gray-900">Subscriptions</dt>
         <div>
-          <Dialog.Root>
+          <Dialog.Root bind:open={twitchCreateDialogOpen}>
             <Dialog.Trigger class="text-sm underline">Add Subscription</Dialog.Trigger>
             <Dialog.Portal>
               <Dialog.Overlay class="fixed inset-0 backdrop-blur-sm backdrop-brightness-95" />
