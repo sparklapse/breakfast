@@ -3,11 +3,14 @@ package eventsub
 import (
 	bapis "breakfast/services/apis"
 	"breakfast/services/events/twitch/eventsub/subscriptions"
+	"database/sql"
 	"encoding/json"
+	"errors"
 	"io"
 	"net/http"
 
 	"github.com/labstack/echo/v5"
+	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase"
 	"github.com/pocketbase/pocketbase/apis"
 	"github.com/pocketbase/pocketbase/core"
@@ -87,6 +90,21 @@ func RegisterAPIs(app *pocketbase.PocketBase) {
 			// Configure the subscription type
 			switch request.Type {
 			case subscriptions.TypeChannelChatMessage:
+				existing, err := app.Dao().FindFirstRecordByFilter(
+					"twitch_event_subscriptions",
+					"config.type = {:type} && config.conditions.broadcaster_user_id = {:broadcasterId}",
+					dbx.Params{
+						"type":          subscriptions.TypeChannelChatMessage,
+						"broadcasterId": id,
+					},
+				)
+				if existing != nil {
+					return c.JSON(409, map[string]string{"message": "A subscription for that already exists"})
+				}
+				if err != nil && !errors.Is(err, sql.ErrNoRows) {
+					return c.JSON(500, map[string]string{"message": "Failed to check for existing subscriptions", "error": err.Error()})
+				}
+
 				config := subscriptions.CreateChannelChatMessageSubscription(id, userTwitchRecord.ProviderId)
 				record.Set("config", config)
 			default:
