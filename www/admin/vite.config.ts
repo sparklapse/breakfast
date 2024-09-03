@@ -1,8 +1,9 @@
 import { sveltekit } from "@sveltejs/kit/vite";
 import { defineConfig } from "vitest/config";
+import swc from "rollup-plugin-svelte-wc";
 
 export default defineConfig({
-  plugins: [sveltekit()],
+  plugins: [swc(), sveltekit()],
   test: {
     include: ["src/**/*.{test,spec}.{js,ts}"],
   },

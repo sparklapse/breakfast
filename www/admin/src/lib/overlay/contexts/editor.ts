@@ -12,12 +12,13 @@ import {
 } from "$lib/math";
 import { radToDeg } from "$lib/math/units";
 import { BUILTIN_DEFINITIONS } from "$lib/overlay/sources";
+import type { OverlayScript, SourceDefinition } from "@sparklapse/breakfast/scripts";
 import type { Point, Transform } from "$lib/math";
-import type { Source, Script, SourceDef } from "$lib/overlay/types";
+import type { Source } from "$lib/overlay/types";
 
 const MANAGED_STYLES = ["top", "left", "width", "height", "transform"];
 
-export function createEditor(initial?: { label?: string; overlay?: string; scripts?: Script[] }) {
+export function createEditor(initial?: { label?: string; overlay?: string; scripts?: OverlayScript[] }) {
   const viewport = useViewport(true);
 
   const label = writable(initial?.label ?? "");
@@ -168,6 +169,38 @@ export function createEditor(initial?: { label?: string; overlay?: string; scrip
     });
   };
 
+  const getSourceField = (id: string, field: string): any => {
+    const source = get(managedOverlay).fragment.querySelector(`#${id}`) as HTMLElement | null;
+    if (!source) throw new Error("Failed to get source by id");
+
+    const [root, ...selector] = field.split(".") as [keyof Source, ...string[]];
+    switch (root) {
+      case "id":
+        return source.id;
+      case "tag":
+        return source.tagName.toLowerCase();
+      case "transform":
+        const transform: Transform = {
+          x: parseFloat(source.style.left),
+          y: parseFloat(source.style.top),
+          width: parseFloat(source.style.width),
+          height: parseFloat(source.style.height),
+          rotation: parseFloat(
+            source.style.transform.match(/(?<=rotate\()[-0-9.]+(?=deg)/)?.[0] || "0",
+          ),
+        };
+
+        const field = selector.join(".");
+        if (Object.keys(field).includes(field)) return transform[field as keyof Transform];
+      case "props":
+        return source.getAttribute(selector.join(".")) ?? undefined;
+      case "style":
+        return source.style.getPropertyValue(selector.join("."));
+      case "children":
+        throw new Error("Not implemented");
+    }
+  };
+
   const updateSourceField = (id: string, field: string, value: any) => {
     managedOverlay.update(({ fragment }) => {
       const element = fragment.querySelector(`#${id}`) as HTMLElement;
@@ -284,20 +317,20 @@ export function createEditor(initial?: { label?: string; overlay?: string; scrip
   };
 
   // MARK: Scripts
-  const managedScripts = writable<{ scripts: Script[] }>({
+  const managedScripts = writable<{ scripts: OverlayScript[] }>({
     scripts: [...(initial?.scripts ?? [])],
   });
   const scripts = derived(managedScripts, ({ scripts }) => scripts);
   const definitions = derived(managedScripts, ({ scripts }) => {
-    const defs: SourceDef[] = [...BUILTIN_DEFINITIONS];
+    const defs: SourceDefinition[] = [...BUILTIN_DEFINITIONS];
     for (const s of scripts) {
-      if (!s.components) continue;
-      defs.push(...s.components);
+      if (!s.sources) continue;
+      defs.push(...s.sources);
     }
     return defs;
   });
 
-  const addScript = (script: Script) => {
+  const addScript = (script: OverlayScript) => {
     if (get(scripts).find((s) => s.id === script.id)) throw new Error("Script already exists");
 
     managedScripts.update(({ scripts }) => {
@@ -323,8 +356,10 @@ export function createEditor(initial?: { label?: string; overlay?: string; scrip
 
     const load = () => {
       managedOverlay.update(({ fragment }) => {
-        if (fragment.nodeType === Node.ELEMENT_NODE) cw.document.body.replaceWith(fragment.cloneNode(true));
-        else if (fragment.nodeType === Node.DOCUMENT_FRAGMENT_NODE)
+        if (fragment.nodeType === Node.ELEMENT_NODE) {
+          cw.document.body.replaceWith(fragment.cloneNode(true));
+          fragment.querySelectorAll("*").forEach((e) => e.remove());
+        } else if (fragment.nodeType === Node.DOCUMENT_FRAGMENT_NODE)
           cw.document.body.replaceChildren(fragment);
         else throw new Error("Bad fragment type");
 
@@ -351,7 +386,9 @@ export function createEditor(initial?: { label?: string; overlay?: string; scrip
     if (!frameWindow) return;
 
     managedOverlay.update(({ fragment }) => {
-      return { fragment: fragment.cloneNode(true) as DocumentFragment | HTMLElement };
+      const clone = fragment.cloneNode(true) as DocumentFragment | HTMLElement;
+      fragment.querySelectorAll("*").forEach((e) => e.remove());
+      return { fragment: clone };
     });
     frameWindow.location.reload();
   };
@@ -659,6 +696,7 @@ export function createEditor(initial?: { label?: string; overlay?: string; scrip
     sources: {
       sources,
       addSource,
+      getSourceField,
       updateSource,
       updateSourceField,
       moveSourceUp,

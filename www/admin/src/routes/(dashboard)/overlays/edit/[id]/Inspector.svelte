@@ -5,9 +5,10 @@
   import { ArrowDown, ArrowUp, Pin, PinOff } from "lucide-svelte";
   import { useEditor } from "$lib/overlay/contexts";
   import { INSPECTORS } from "$lib/overlay/sources";
-  import Text from "$lib/overlay/sources/Fields/Text.svelte";
-  import FieldRowGroup from "$lib/overlay/sources/Fields/FieldRowGroup.svelte";
-  import Number from "$lib/overlay/sources/Fields/Number.svelte";
+  import FieldRowGroup from "$lib/overlay/sources/helpers/FieldRowGroup.svelte";
+  import Text from "$lib/overlay/sources/fields/Text.svelte";
+  import Number from "$lib/overlay/sources/fields/Number.svelte";
+  import DefinedEditor from "$lib/overlay/sources/DefinedEditor.svelte";
 
   const {
     sources: {
@@ -203,8 +204,14 @@
         />
       </FieldRowGroup>
 
+      {@const builtinInspector = INSPECTORS[$selectedSource.tag]}
+      {@const definition = $definitions.find((d) => d.tag === $selectedSource.tag)}
       {#key editingSource}
-        <svelte:component this={INSPECTORS[$selectedSource.tag]} />
+        {#if builtinInspector}
+          <svelte:component this={builtinInspector} />
+        {:else if definition}
+          <DefinedEditor {definition} />
+        {/if}
       {/key}
     {/if}
   {/if}

@@ -1,10 +1,10 @@
 <script lang="ts">
   import { useEditor } from "$lib/overlay/contexts";
-  import ColorPicker from "./Fields/ColorPicker.svelte";
-  import FieldRowGroup from "./Fields/FieldRowGroup.svelte";
-  import Number from "./Fields/Number.svelte";
-  import Select from "./Fields/Select.svelte";
-  import Text from "./Fields/Text.svelte";
+  import FieldRowGroup from "./helpers/FieldRowGroup.svelte";
+  import ColorPicker from "./fields/ColorPicker.svelte";
+  import Number from "./fields/Number.svelte";
+  import Select from "./fields/Select.svelte";
+  import Text from "./fields/Text.svelte";
 
   const {
     sources: { updateSourceField },

@@ -1,3 +1,4 @@
+import "@fontsource-variable/gabarito";
 import "./style.css";
 import { BreakfastPocketBase } from "./pocketbase";
 

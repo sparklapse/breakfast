@@ -1,4 +1,4 @@
 import { basics } from "./basics";
-import type { Script } from "../types";
+import type { OverlayScript } from "@sparklapse/breakfast/scripts";
 
-export const DEFAULT_SCRIPTS: Script[] = [basics];
+export const DEFAULT_SCRIPTS: OverlayScript[] = [basics];

@@ -2,9 +2,9 @@ import Paragraph from "./Paragraph.svelte";
 import Image from "./Image.svelte";
 
 import type { ComponentType } from "svelte";
-import type { SourceDef } from "$lib/overlay/types";
+import type { SourceDefinition } from "@sparklapse/breakfast/scripts";
 
-export const BUILTIN_DEFINITIONS: SourceDef[] = [
+export const BUILTIN_DEFINITIONS: SourceDefinition[] = [
   {
     label: "Text",
     subLabel: "Builtin",

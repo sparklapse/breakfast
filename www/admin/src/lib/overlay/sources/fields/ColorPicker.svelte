@@ -5,6 +5,7 @@
   export let label: string = "Color field";
   export let value: string | undefined = undefined;
   export let onchange: ((color: Color) => void) | undefined = undefined;
+  $$restProps;
 
   let huesElement: HTMLDivElement;
   let svElement: HTMLDivElement;

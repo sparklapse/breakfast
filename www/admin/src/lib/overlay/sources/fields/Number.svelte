@@ -1,6 +1,6 @@
 <script lang="ts">
   export let label: string = "Number field";
-  export let value: number | undefined = undefined;
+  export let value: string | number | undefined = undefined;
   export let options: Partial<{ min: number; max: number; step: number }> | undefined = undefined;
   export let onchange: ((number: number) => void) | undefined = undefined;
 
@@ -21,7 +21,7 @@
     min={options?.min}
     max={options?.max}
     step={options?.step}
-    value={value}
+    value={typeof value === "string" ? parseFloat(value) : value}
     on:input={input}
   />
 </div>

@@ -9,7 +9,6 @@
   "bracketSameLine": false,
   "jsxSingleQuote": false,
   "singleAttributePerLine": false,
-  "htmlWhitespaceSensitivity": "ignore",
   "plugins": ["prettier-plugin-svelte", "prettier-plugin-tailwindcss"],
   "tailwindFunctions": ["cx", "clsx"],
   "overrides": [{ "files": "*.svelte", "options": { "parser": "svelte" } }]

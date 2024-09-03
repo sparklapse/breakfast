@@ -1,9 +1,9 @@
 <script lang="ts">
   import { useEditor } from "$lib/overlay/contexts";
-  import AssetPicker from "./Fields/AssetPicker.svelte";
-  import FieldRowGroup from "./Fields/FieldRowGroup.svelte";
-  import Select from "./Fields/Select.svelte";
-  import Text from "./Fields/Text.svelte";
+  import FieldRowGroup from "./helpers/FieldRowGroup.svelte";
+  import AssetPicker from "./fields/AssetPicker.svelte";
+  import Select from "./fields/Select.svelte";
+  import Text from "./fields/Text.svelte";
 
   const {
     sources: { updateSourceField },

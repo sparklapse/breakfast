@@ -1,5 +1,6 @@
 <script lang="ts">
   import { Select, Toolbar } from "bits-ui";
+  import { fly } from "svelte/transition";
 
   export let label: string = "Select field";
   export let value: string | undefined = undefined;
@@ -22,7 +23,7 @@
       <Select.Trigger class="w-full truncate rounded border border-slate-400 px-1 text-left">
         <Select.Value placeholder="Select an Option" />
       </Select.Trigger>
-      <Select.Content>
+      <Select.Content transition={fly} transitionConfig={{ y: -10, duration: 100 }}>
         <div
           class="rounded bg-white p-2 shadow"
           on:pointerdown={(ev) => {

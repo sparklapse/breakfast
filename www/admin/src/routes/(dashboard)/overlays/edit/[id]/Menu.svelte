@@ -62,11 +62,6 @@
     <h3 class="font-semibold">Scripts</h3>
     <p class="text-sm text-slate-400">(Components {$definitions.length})</p>
   </div>
-  <ul>
-    {#each $scripts as script}
-      <li title={script.id}>{script.label}</li>
-    {/each}
-  </ul>
   <button
     class="w-full rounded border border-slate-700 text-sm text-slate-700"
     on:click={() => {
@@ -79,4 +74,9 @@
   >
     Reinstall Basics
   </button>
+  <ul>
+    {#each $scripts as script}
+      <li title={script.id}>{script.label}</li>
+    {/each}
+  </ul>
 </div>

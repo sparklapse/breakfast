@@ -10,8 +10,8 @@
 
   export let label: string = "Asset field";
   export let value: string | undefined = undefined;
-  // export let options: Partial<{}> | undefined = undefined;
   export let onchange: ((asset: string) => void) | undefined = undefined;
+  $$restProps;
 
   let open = false;
   let search = "";
