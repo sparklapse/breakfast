@@ -9,10 +9,10 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
+	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase/tools/security"
 )
 
-var Subscriptions map[*Subscription]*Pool = make(map[*Subscription]*Pool)
 var Pools map[string]*Pool = make(map[string]*Pool)
 
 type PoolEventHookFunc func(message *EventSubMessage, subscription *Subscription)
@@ -22,13 +22,10 @@ var PoolEventHook PoolEventHookFunc
 type AccessTokenGetter func() (string, error)
 
 type Subscription struct {
-	Id             string
-	Type           string
-	Version        string
-	Condition      map[string]string
-	User           string
-	ClientId       string
-	GetAccessToken AccessTokenGetter
+	Id        string
+	Type      string
+	Version   string
+	Condition map[string]string
 }
 
 type PoolStatus int
@@ -185,10 +182,8 @@ func (pool *Pool) Connect(url string) error {
 				return // Reconnect success
 			case "revocation":
 				subscription_id := message.Payload["subscription"].(map[string]any)["id"].(string)
-				subscription := pool.Subscriptions[subscription_id]
 
 				delete(pool.Subscriptions, subscription_id)
-				delete(Subscriptions, subscription)
 			case "notification":
 				keepalive.Reset(keepalive_duration)
 				if PoolEventHook == nil {
@@ -240,16 +235,17 @@ func (pool *Pool) Connect(url string) error {
 }
 
 func (pool *Pool) request_subscription(
-	subscription_type string,
-	subscription_version string,
-	subscription_condition map[string]string,
-	client_id string,
-	access_token string,
+	subscriptionType string,
+	subscriptionVersion string,
+	subscriptionCondition map[string]string,
+	accessToken string,
 ) (*SubscriptionResponse, error) {
+	clientId := pb.Settings().TwitchAuth.ClientId
+
 	subscription_request := SubscriptionRequest{
-		Type:      subscription_type,
-		Version:   subscription_version,
-		Condition: subscription_condition,
+		Type:      subscriptionType,
+		Version:   subscriptionVersion,
+		Condition: subscriptionCondition,
 		Transport: WebsocketTransport(pool.SessionId),
 	}
 
@@ -264,8 +260,8 @@ func (pool *Pool) request_subscription(
 	}
 
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", "Bearer "+access_token)
-	req.Header.Set("Client-Id", client_id)
+	req.Header.Set("Authorization", "Bearer "+accessToken)
+	req.Header.Set("Client-Id", clientId)
 
 	var result SubscriptionResponse
 	{
@@ -295,23 +291,21 @@ func (pool *Pool) request_subscription(
 }
 
 func (pool *Pool) Subscribe(
-	subscription_type string,
-	subscription_version string,
-	subscription_condition map[string]string,
-	user_id string,
-	client_id string,
-	get_access_token AccessTokenGetter,
+	subscriptionType string,
+	subscriptionVersion string,
+	subscriptionCondition map[string]string,
+	authorizerId string,
 ) (*Subscription, error) {
 	if len(pool.Subscriptions) >= max_listeners_per_pool {
 		return nil, ErrEventPoolFull
 	}
 
-	access_token, err := get_access_token()
+	access_token, err := getAuthorizerToken(authorizerId)
 	if err != nil {
 		return nil, err
 	}
 
-	result, err := pool.request_subscription(subscription_type, subscription_version, subscription_condition, client_id, access_token)
+	result, err := pool.request_subscription(subscriptionType, subscriptionVersion, subscriptionCondition, access_token)
 	if err != nil {
 		return nil, err
 	}
@@ -321,17 +315,13 @@ func (pool *Pool) Subscribe(
 	}
 
 	subscription := Subscription{
-		Id:             result.Data[0].Id,
-		Type:           result.Data[0].Type,
-		Version:        result.Data[0].Version,
-		Condition:      result.Data[0].Condition,
-		User:           user_id,
-		ClientId:       client_id,
-		GetAccessToken: get_access_token,
+		Id:        result.Data[0].Id,
+		Type:      result.Data[0].Type,
+		Version:   result.Data[0].Version,
+		Condition: result.Data[0].Condition,
 	}
 
 	pool.Subscriptions[subscription.Id] = &subscription
-	Subscriptions[&subscription] = pool
 
 	return &subscription, nil
 }
@@ -342,19 +332,34 @@ func (pool *Pool) Resubscribe(id string) error {
 		return errors.New("pool resubscribed to subscription that doesn't exist")
 	}
 
-	access_token, err := subscription.GetAccessToken()
+	record, err := pb.Dao().FindFirstRecordByFilter("twitch_event_subscriptions", "eventSubId = {:id}", dbx.Params{"id": id})
+	if err != nil {
+		return err
+	}
+
+	access_token, err := getAuthorizerToken(record.GetString("authorizer"))
+	if err != nil {
+		return err
+	}
+
+	newSubscription, err := pool.request_subscription(
+		subscription.Type,
+		subscription.Version,
+		subscription.Condition,
+		access_token,
+	)
 	if err != nil {
 		return err
 	}
 
 	{
-		_, err := pool.request_subscription(
-			subscription.Type,
-			subscription.Version,
-			subscription.Condition,
-			subscription.ClientId,
-			access_token,
-		)
+		_, err := pb.Dao().DB().
+			Update(
+				"twitch_event_subscriptions",
+				dbx.Params{"eventSubId": newSubscription.Data[0].Id},
+				dbx.NewExp("id = {:id}", dbx.Params{"id": record.Id}),
+			).
+			Execute()
 		if err != nil {
 			return err
 		}
@@ -390,7 +395,7 @@ func NewPool() (*Pool, error) {
 }
 
 func FindOrCreateAvailablePool() (*Pool, error) {
-	var available_pool *Pool = nil
+	var available_pool *Pool
 	for _, pool := range Pools {
 		if pool.IsAvailable() {
 			available_pool = pool
@@ -399,6 +404,7 @@ func FindOrCreateAvailablePool() (*Pool, error) {
 	}
 
 	if available_pool == nil {
+		println("failed to find an existing pool, creating...")
 		new_pool, err := NewPool()
 		if err != nil {
 			return nil, err

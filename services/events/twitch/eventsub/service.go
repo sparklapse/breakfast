@@ -1,162 +1,113 @@
 package eventsub
 
 import (
-	"net/http"
+	"breakfast/services/events/twitch/eventsub/subscriptions"
 
-	"github.com/labstack/echo/v5"
 	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase"
-	"github.com/pocketbase/pocketbase/apis"
 	"github.com/pocketbase/pocketbase/core"
+	"github.com/pocketbase/pocketbase/models"
 )
 
-func RegisterService(app *pocketbase.PocketBase, eventHook func(message *EventSubMessage, subscription *Subscription)) {
-	// Create handler to send messages to realtime clients
+var pb *pocketbase.PocketBase
+
+func RegisterService(app *pocketbase.PocketBase) {
+	pb = app
+
+	RegisterAPIs(app)
+
+	// Get all subscriptions and subscribe
 	app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
-		SetPoolEventHook(eventHook)
-
-		return nil
-	})
-
-	// Get all twitch users and subscribe to their events
-	app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
-		var tokens []struct {
-			User        string `db:"user"`
-			AccessToken string `db:"accessToken"`
-			ProviderId  string `db:"providerId"`
+		var subscriptions []struct {
+			Id string `db:"id"`
 		}
-
-		err := app.Dao().DB().
-			NewQuery(`
-				SELECT tokens.user, tokens.accessToken, _externalAuths.providerId
-				FROM tokens
-				JOIN _externalAuths
-				ON tokens.identity = _externalAuths.id WHERE tokens.provider = 'twitch'
-			`).
-			All(&tokens)
+		err := app.Dao().RecordQuery("twitch_event_subscriptions").All(&subscriptions)
 		if err != nil {
 			return err
 		}
 
-		settings, err := app.Dao().FindSettings()
-		if err != nil {
-			return err
-		}
-
-		for _, token := range tokens {
-			if token.AccessToken == "" || token.ProviderId == "" {
-				app.Logger().Error(
-					"EVENTS Startup tried to start an event subscription with invalid token data",
-					"providerId", token.ProviderId,
-				)
-				continue
-			}
-
-			_, err := Subscribe(
-				token.User,
-				func() (string, error) {
-					var t struct {
-						AccessToken string `db:"accessToken"`
-					}
-					err := app.Dao().DB().
-						NewQuery("SELECT accessToken FROM tokens WHERE user = {:user}").
-						Bind(dbx.Params{"user": token.User}).
-						One(&t)
-					if err != nil {
-						return "", err
-					}
-					return t.AccessToken, nil
-				},
-				settings.TwitchAuth.ClientId,
-				CreateDefaultSubscriptions(token.ProviderId)...,
-			)
-
-			if err != nil {
-				app.Logger().Error(
-					"EVENTS Startup had problems when trying to create subscriptions for user",
-					"error", err.Error(),
-					"providerId", token.ProviderId,
-				)
-				continue
-			}
-		}
-
-		return nil
-	})
-
-	// Create subscriptions for a user that links an account
-	app.OnRecordAfterAuthWithOAuth2Request("users").Add(func(e *core.RecordAuthWithOAuth2Event) error {
-		settings, err := app.Dao().FindSettings()
-		if err != nil {
-			return err
-		}
-
-		switch e.ProviderName {
-		case "twitch":
+		for _, sub := range subscriptions {
+			id := sub.Id
 			go func() {
-				_, err := Subscribe(
-					e.Record.Id,
-					func() (string, error) {
-						var t struct {
-							AccessToken string `db:"accessToken"`
-						}
-						err := app.Dao().DB().
-							NewQuery("SELECT accessToken FROM tokens WHERE user = {:user}").
-							Bind(dbx.Params{"user": e.Record.Id}).
-							One(&t)
-						if err != nil {
-							return "", err
-						}
-						return t.AccessToken, nil
-					},
-					settings.TwitchAuth.ClientId,
-					CreateDefaultSubscriptions(e.OAuth2User.Id)...,
-				)
+				_, err := Subscribe(id)
 				if err != nil {
-					app.Logger().Error(
-						"EVENTS Failed to subscribe user",
-						"error", err.Error(),
-						"username", e.Record.Username(),
-					)
+					app.Dao().DB().
+						Delete(
+							"twitch_event_subscriptions",
+							dbx.NewExp("id = {:id}", dbx.Params{"id": id}),
+						).
+						Execute()
 				}
 			}()
+		}
 
+		return nil
+	})
+
+	// Create subscriptions in database for a user that links an account
+	app.OnRecordAfterAuthWithOAuth2Request("users").Add(func(e *core.RecordAuthWithOAuth2Event) error {
+		if e.ProviderName != "twitch" {
 			return nil
 		}
 
-		return nil
-	})
-
-	// Remove subscriptions for a user that unlinks an account
-	app.OnRecordBeforeUnlinkExternalAuthRequest("users").Add(func(e *core.RecordUnlinkExternalAuthEvent) error {
-		settings, err := app.Dao().FindSettings()
-		if err != nil {
-			return err
-		}
-
-		switch e.ExternalAuth.Provider {
-		case "twitch":
-			var token struct {
-				AccessToken string `db:"accessToken"`
-			}
-			{
-				err := app.Dao().DB().
-					NewQuery("SELECT accessToken FROM tokens WHERE user = {:user}").
-					Bind(dbx.Params{
-						"user": e.Record.Id,
-					}).
-					One(&token)
-				if err != nil {
-					return err
-				}
-			}
-
-			_, err := UnsubscribeUser(e.Record.Id, token.AccessToken, settings.TwitchAuth.ClientId)
+		for _, subscription := range subscriptions.CreateDefaultSubscriptions(e.OAuth2User.Id) {
+			collection, err := app.Dao().FindCollectionByNameOrId("twitch_event_subscriptions")
 			if err != nil {
 				return err
 			}
 
+			record := models.NewRecord(collection)
+			record.MarkAsNew()
+			record.RefreshId()
+			record.Set("config", subscription)
+			record.Set("authorizer", e.Record.Id)
+
+			{
+				err := app.Dao().Save(record)
+				if err != nil {
+					return err
+				}
+			}
+			{
+				_, err := Subscribe(record.Id)
+				if err != nil {
+					return err
+				}
+			}
+		}
+
+		return nil
+	})
+
+	// Remove subscriptions from database for a user that unlinks an account
+	app.OnRecordBeforeUnlinkExternalAuthRequest("users").Add(func(e *core.RecordUnlinkExternalAuthEvent) error {
+		if e.ExternalAuth.Provider != "twitch" {
 			return nil
+		}
+
+		records, err := app.Dao().FindRecordsByFilter(
+			"twitch_event_subscriptions",
+			"authorizer = {:userId}",
+			"-created",
+			-1,
+			0,
+			dbx.Params{"userId": e.Record.Id},
+		)
+		if err != nil {
+			return err
+		}
+
+		for _, record := range records {
+			{
+				err := Unsubscribe(record.Id)
+				if err != nil {
+					return err
+				}
+			}
+			err := app.Dao().DeleteRecord(record)
+			if err != nil {
+				return err
+			}
 		}
 
 		return nil
@@ -164,60 +115,19 @@ func RegisterService(app *pocketbase.PocketBase, eventHook func(message *EventSu
 
 	// Cleanup connections on termination
 	app.OnTerminate().Add(func(e *core.TerminateEvent) error {
+		_, err := app.Dao().DB().Update(
+			"twitch_event_subscriptions",
+			dbx.Params{"eventSubId": ""},
+			dbx.NewExp("true"),
+		).Execute()
+
+		if err != nil {
+			return err
+		}
+
 		for _, pool := range Pools {
 			pool.Close()
 		}
-
-		return nil
-	})
-
-	// Status APIs
-	app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
-		e.Router.GET("/api/breakfast/events/twitch/eventsub/pools", func(c echo.Context) error {
-			info := apis.RequestInfo(c)
-			user := info.AuthRecord
-
-			if user == nil {
-				return c.JSON(http.StatusUnauthorized, map[string]string{"message": "Unauthorized"})
-			}
-
-			if user.Collection().Id != "users" {
-				return c.JSON(http.StatusUnauthorized, map[string]string{"message": "Unauthorized"})
-			}
-
-			status := map[string]any{}
-			for key, pool := range Pools {
-				status[key] = map[string]any{
-					"status":        pool.Status.String(),
-					"subscriptions": len(pool.Subscriptions),
-				}
-			}
-
-			return c.JSON(http.StatusOK, status)
-		})
-
-		e.Router.GET("/api/breakfast/events/twitch/eventsub/subscriptions", func(c echo.Context) error {
-			info := apis.RequestInfo(c)
-			user := info.AuthRecord
-
-			if user == nil {
-				return c.JSON(http.StatusUnauthorized, map[string]string{"message": "Unauthorized"})
-			}
-
-			if user.Collection().Id != "users" {
-				return c.JSON(http.StatusUnauthorized, map[string]string{"message": "Unauthorized"})
-			}
-
-			subscriptions := []map[string]any{}
-			for s := range Subscriptions {
-				subscriptions = append(subscriptions, map[string]any{
-					"id":        s.Id,
-					"type":      s.Type,
-					"condition": s.Condition,
-				})
-			}
-			return c.JSON(http.StatusOK, map[string]any{"subscriptions": subscriptions})
-		})
 
 		return nil
 	})

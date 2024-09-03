@@ -44,7 +44,6 @@
       }}
       value={$selectedSource.style["text-align"]}
       onchange={(n) => {
-        console.log(n);
         updateSourceField($selectedSource.id, "style.text-align", n);
       }}
     />

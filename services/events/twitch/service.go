@@ -3,6 +3,7 @@ package twitch
 import (
 	"breakfast/services/events/listener"
 	"breakfast/services/events/twitch/eventsub"
+	"breakfast/services/events/twitch/eventsub/subscriptions"
 	"breakfast/services/events/types"
 	"breakfast/services/viewers"
 
@@ -10,15 +11,16 @@ import (
 )
 
 func RegisterService(app *pocketbase.PocketBase) {
-	eventsub.RegisterService(app, func(message *eventsub.EventSubMessage, subscription *eventsub.Subscription) {
+	eventsub.RegisterService(app)
+	eventsub.SetPoolEventHook(func(message *eventsub.EventSubMessage, subscription *eventsub.Subscription) {
 		var eventType string
 		var eventData any
 
 		initiatorId := ""
 
 		switch subscription.Type {
-		case eventsub.SubscriptionTypeStreamOnline:
-			data, err := eventsub.PayloadToStreamOnline(message.Payload)
+		case subscriptions.TypeStreamOnline:
+			data, err := subscriptions.ProcessStreamOnlinePayload(message.Payload)
 			if err != nil {
 				app.Logger().Error(
 					"EVENTS Failed to conform twitch stream online to type",
@@ -28,8 +30,8 @@ func RegisterService(app *pocketbase.PocketBase) {
 			}
 			eventType = types.EventTypeStreamOnline
 			eventData = data
-		case eventsub.SubscriptionTypeStreamOffline:
-			data, err := eventsub.PayloadToStreamOffline(message.Payload)
+		case subscriptions.TypeStreamOffline:
+			data, err := subscriptions.ProcessStreamOfflinePayload(message.Payload)
 			if err != nil {
 				app.Logger().Error(
 					"EVENTS Failed to conform twitch stream offline to type",
@@ -39,8 +41,8 @@ func RegisterService(app *pocketbase.PocketBase) {
 			}
 			eventType = types.EventTypeStreamOffline
 			eventData = data
-		case eventsub.SubscriptionTypeChannelChatMessage:
-			data, err := eventsub.PayloadToChatMessage(message.Payload)
+		case subscriptions.TypeChannelChatMessage:
+			data, err := subscriptions.ProcessChannelChatMessageEventPayload(message.Payload)
 			if err != nil {
 				app.Logger().Error(
 					"EVENTS Failed to conform twitch chat message to type",

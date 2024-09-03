@@ -40,7 +40,7 @@
 
 <div class="absolute inset-0 bg-slate-100">
   {#if mobileMenuOpen}
-    <div class="relative z-50 lg:hidden" role="dialog" aria-modal="true">
+    <div class="relative z-10 lg:hidden" role="dialog" aria-modal="true">
       <div
         class="fixed inset-0 bg-gray-900/80"
         aria-hidden="true"
@@ -122,7 +122,7 @@
 
   <!-- Desktop Sidebar -->
   <div
-    class="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-72 lg:flex-col"
+    class="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-72 lg:flex-col"
     transition:fly|global={{ x: -100, duration: 250 }}
   >
     <div class="flex grow flex-col gap-y-5 overflow-y-auto border-r border-gray-200 bg-white px-6">

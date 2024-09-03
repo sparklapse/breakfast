@@ -148,3 +148,50 @@ func GetTwitchUserById(id string) (*TwitchUser, error) {
 
 	return &user, nil
 }
+
+func GetTwitchUserByLogin(login string) (*TwitchUser, error) {
+	{
+		err := refreshToken()
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	url := "http://api.twitch.tv/helix/users?login=" + login
+	req, err := http.NewRequest("POST", url, strings.NewReader(""))
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("Authorization", "Bearer "+twitchAppToken)
+	req.Header.Set("Client-Id", twitchClient)
+
+	response, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer response.Body.Close()
+
+	if response.StatusCode != 200 {
+		return nil, errors.New("get user request returned error: " + response.Status)
+	}
+
+	body, err := io.ReadAll(response.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	var data struct {
+		Data []TwitchUser `json:"data"`
+	}
+	{
+		err := json.Unmarshal(body, &data)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	user := data.Data[0]
+
+	return &user, nil
+}

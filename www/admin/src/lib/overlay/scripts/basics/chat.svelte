@@ -16,7 +16,6 @@
   onMount(() => {
     const unlisten = window.breakfast.events.listen((ev) => {
       if (ev.type !== "chat-message") return;
-      console.log(ev);
 
       const { m } = messages;
       m.push(ev);

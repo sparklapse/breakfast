@@ -1,61 +1,24 @@
-package eventsub
+package subscriptions
 
 import (
 	"breakfast/services/events/types"
 	"errors"
 )
 
-func PayloadToStreamOnline(payload map[string]any) (*types.StreamOnline, error) {
-	broadcaster_user_id, valid := payload["broadcaster_user_id"].(string)
-	if !valid {
-		return nil, errors.New("broadcaster_user_id field was not of the correct type")
-	}
+const TypeChannelChatMessage = "channel.chat.message"
 
-	broadcaster_user_login, valid := payload["broadcaster_user_login"].(string)
-	if !valid {
-		return nil, errors.New("broadcaster_user_login field was not of the correct type")
-	}
-
-	broadcaster_user_name, valid := payload["broadcaster_user_name"].(string)
-	if !valid {
-		return nil, errors.New("broadcaster_user_name field was not of the correct type")
-	}
-
-	return &types.StreamOnline{
-		Channel: types.User{
-			Id:          broadcaster_user_id,
-			Username:    broadcaster_user_login,
-			DisplayName: broadcaster_user_name,
+func CreateChannelChatMessageSubscription(twitch_broadcaster_id string, twitch_user_id string) SubscriptionConfig {
+	return SubscriptionConfig{
+		Type:    TypeChannelChatMessage,
+		Version: "1",
+		Condition: map[string]string{
+			"broadcaster_user_id": twitch_broadcaster_id,
+			"user_id":             twitch_user_id,
 		},
-	}, nil
+	}
 }
 
-func PayloadToStreamOffline(payload map[string]any) (*types.StreamOffline, error) {
-	broadcaster_user_id, valid := payload["broadcaster_user_id"].(string)
-	if !valid {
-		return nil, errors.New("broadcaster_user_id field was not of the correct type")
-	}
-
-	broadcaster_user_login, valid := payload["broadcaster_user_login"].(string)
-	if !valid {
-		return nil, errors.New("broadcaster_user_login field was not of the correct type")
-	}
-
-	broadcaster_user_name, valid := payload["broadcaster_user_name"].(string)
-	if !valid {
-		return nil, errors.New("broadcaster_user_name field was not of the correct type")
-	}
-
-	return &types.StreamOffline{
-		Channel: types.User{
-			Id:          broadcaster_user_id,
-			Username:    broadcaster_user_login,
-			DisplayName: broadcaster_user_name,
-		},
-	}, nil
-}
-
-func PayloadToChatMessage(payload map[string]any) (*types.ChatMessage, error) {
+func ProcessChannelChatMessageEventPayload(payload map[string]any) (*types.ChatMessage, error) {
 	event, valid := payload["event"].(map[string]any)
 	if !valid {
 		return nil, errors.New("event field was not of the correct type")
