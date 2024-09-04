@@ -76,7 +76,10 @@
     const xDelta = createEnd[0] - createStart[0];
     const yDelta = createEnd[1] - createStart[1];
     const delta = Math.abs(Math.sqrt(xDelta * xDelta + yDelta * yDelta));
-    if (delta < 10) return;
+    if (delta < 10) {
+      createStart = [ev.clientX - 100, ev.clientY - 100];
+      createEnd = [ev.clientX + 100, ev.clientY + 100];
+    }
 
     showCreateMenu = true;
   };
