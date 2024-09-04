@@ -60,6 +60,16 @@ func RegisterService(app *pocketbase.PocketBase) {
 			}
 			eventType = types.EventTypeSubscription
 			eventData = data
+		case subscriptions.TypeChannelChatMessageDelete:
+			data, err := subscriptions.ProcessChannelChatMessageDeletePayload(message.Payload)
+			if err != nil {
+				app.Logger().Error(
+					"EVENTS Failed to conform twitch channel message delete to type",
+					"error", err.Error(),
+				)
+			}
+			eventType = types.EventTypeChatMessageDelete
+			eventData = data
 		default:
 			app.Logger().Error(
 				"EVENTS Twitch eventsub processed an event which isn't handled",
