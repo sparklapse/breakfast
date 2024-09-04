@@ -4,7 +4,12 @@
   import { EllipsisVertical } from "lucide-svelte";
   import { fly } from "svelte/transition";
   import { DropdownMenu } from "bits-ui";
-  import type { BreakfastEvent } from "@sparklapse/breakfast/overlay";
+  import type {
+    BreakfastEvent,
+    ChatMessageEvent,
+    SubscriptionEvent,
+  } from "@sparklapse/breakfast/overlay";
+  import clsx from "clsx";
 
   let options = {
     pauseOnEnter: true,
@@ -13,16 +18,26 @@
   let interactionPause = false;
   $: pause = (options.pauseOnEnter && enterPause) || interactionPause;
 
-  let events: { e: BreakfastEvent[] } = { e: [] };
+  let events: { e: (ChatMessageEvent | SubscriptionEvent)[] } = { e: [] };
   onMount(() => {
     const unlisten = $page.data.pb.realtime.subscribe(
       "@breakfast/events",
       (event: BreakfastEvent) => {
         if (pause) return;
 
-        const { e } = events;
-        e.push(event);
-        while (e.length > 50) e.shift();
+        let { e } = events;
+        if (event.type === "chat-message-delete") {
+          const idx = e.findIndex(
+            (ev) => ev.type == "chat-message" && ev.data.id === event.data.id,
+          );
+          e[idx] = {
+            ...e[idx],
+            deleted: true,
+          } as ChatMessageEvent;
+        } else {
+          e.push(event);
+          while (e.length > 50) e.shift();
+        }
         events = { e };
       },
     );
@@ -44,7 +59,12 @@
 >
   <ul class="absolute inset-x-0 bottom-2">
     {#each events.e as event}
-      <li class="flex items-center justify-between px-2 py-1.5 hover:bg-slate-50">
+      <li
+        class={clsx([
+          "flex items-center justify-between px-2 py-1.5 hover:bg-slate-50",
+          event.type === "chat-message" && event.deleted && "bg-red-100 opacity-90",
+        ])}
+      >
         <div>
           <p class="text-xs leading-none text-slate-400">
             {event.data.channel.displayName} - {event.platform}
@@ -72,7 +92,7 @@
           <DropdownMenu.Content class="flex flex-col rounded bg-white py-2 shadow" side="left">
             {#if event.data?.viewer?.id}
               <DropdownMenu.Item
-                href="/breakfast/community/viewer/{event.data.viewer.id}"
+                href="/breakfast/community/viewers/{event.data.viewer.id}"
                 class="px-2 hover:bg-slate-50">View Viewer</DropdownMenu.Item
               >
             {/if}
