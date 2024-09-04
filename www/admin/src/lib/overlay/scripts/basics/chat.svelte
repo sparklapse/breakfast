@@ -5,12 +5,19 @@
   }}
 />
 
+<script lang="ts" context="module">
+  const COMMON_BOTS = ["streamlabs", "streamelements", "nightbot", "wizebot", "moobot", "fossabot"];
+</script>
+
 <script lang="ts">
   import { onMount } from "svelte";
   import { fade, fly } from "svelte/transition";
   import type { ChatMessageEvent } from "@sparklapse/breakfast/overlay";
   import clsx from "clsx";
 
+  /// <reference types="@sparklapse/breakfast/overlay" />
+
+  export let overflow: "overflow" | "clip" = "overflow";
   export let removeTime: string = "3000";
 
   $$restProps;
@@ -32,6 +39,7 @@
         return;
       }
       if (ev.type !== "chat-message") return;
+      if (COMMON_BOTS.includes(ev.data.viewer.username)) return;
 
       const { m } = messages;
       m.push(ev);
@@ -52,18 +60,18 @@
   });
 </script>
 
-<reference types="@sparklapse/breakfast/overlay" />
-
-<div class="container">
-  {#each messages.m as msg (msg.data.id)}
-    <p
-      class={clsx([msg.deleted && "hidden"])}
-      in:fly={{ x: -40, duration: 100 }}
-      out:fade={{ duration: 2000 }}
-    >
-      <span style:color={msg.data.color}>{msg.data.viewer.displayName}</span>: {msg.data.text}
-    </p>
-  {/each}
+<div class="container" style:overflow={overflow === "overflow" ? "visible" : "clip"}>
+  <ul class="messages">
+    {#each messages.m as msg (msg.data.id)}
+      <p
+        class={clsx([msg.deleted && "hidden"])}
+        in:fly={{ x: -40, duration: 100 }}
+        out:fade={{ duration: 2000 }}
+      >
+        <span style:color={msg.data.color}>{msg.data.viewer.displayName}</span>: {msg.data.text}
+      </p>
+    {/each}
+  </ul>
 </div>
 
 <style>
@@ -80,7 +88,15 @@
   }
   .container {
     position: absolute;
+    inset: 0;
+  }
+  .messages {
+    position: absolute;
+    left: 0;
+    right: 0;
     bottom: 0;
     height: fit-content;
+    margin: 0;
+    padding: 0;
   }
 </style>

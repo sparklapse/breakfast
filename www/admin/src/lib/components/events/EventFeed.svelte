@@ -1,7 +1,7 @@
 <script lang="ts">
   import { page } from "$app/stores";
   import { onMount } from "svelte";
-  import { EllipsisVertical } from "lucide-svelte";
+  import { EllipsisVertical, Settings } from "lucide-svelte";
   import { fly } from "svelte/transition";
   import { DropdownMenu } from "bits-ui";
   import type {
@@ -62,7 +62,7 @@
       <li
         class={clsx([
           "flex items-center justify-between px-2 py-1.5 hover:bg-slate-50",
-          event.type === "chat-message" && event.deleted && "bg-red-100 opacity-90",
+          event.type === "chat-message" && event.deleted && "bg-red-50 opacity-90",
         ])}
       >
         <div>
@@ -90,13 +90,16 @@
             ><EllipsisVertical /></DropdownMenu.Trigger
           >
           <DropdownMenu.Content class="flex flex-col rounded bg-white py-2 shadow" side="left">
+            <DropdownMenu.Label class="px-2 text-xs text-slate-400">Actions</DropdownMenu.Label>
+            <DropdownMenu.Separator class="my-2 border-t border-slate-200" />
+            <DropdownMenu.Label class="px-2 text-xs text-slate-400">Event</DropdownMenu.Label>
             {#if event.data?.viewer?.id}
               <DropdownMenu.Item
                 href="/breakfast/community/viewers/{event.data.viewer.id}"
                 class="px-2 hover:bg-slate-50">View Viewer</DropdownMenu.Item
               >
             {/if}
-            <DropdownMenu.Item class="px-2 hover:bg-slate-50">Delete</DropdownMenu.Item>
+            <!-- <DropdownMenu.Item class="px-2 hover:bg-slate-50">Delete</DropdownMenu.Item> -->
           </DropdownMenu.Content>
         </DropdownMenu.Root>
       </li>
@@ -106,6 +109,10 @@
     class="absolute inset-x-0 top-0 flex h-6 items-center justify-between bg-slate-700 px-2 text-sm text-white"
   >
     <p>Event Feed</p>
+
+    <a href="/breakfast/events/settings" class="aspect-square">
+      <Settings size="1rem" />
+    </a>
   </div>
   {#if pause}
     <div

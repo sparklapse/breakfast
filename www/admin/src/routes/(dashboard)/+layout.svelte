@@ -2,7 +2,7 @@
   import clsx from "clsx";
   import type { ComponentType } from "svelte";
   import { fade, fly } from "svelte/transition";
-  import { Home, Layers, Image, SquareGanttChart, Menu, UsersRound } from "lucide-svelte";
+  import { Home, Layers, Image, SquareGanttChart, Menu, UsersRound, Joystick } from "lucide-svelte";
   import { page } from "$app/stores";
   import Obs from "$lib/components/icons/OBS.svelte";
 
@@ -19,16 +19,16 @@
       route: "/(dashboard)/community",
     },
     {
-      label: "Events",
-      icon: SquareGanttChart,
-      href: "/breakfast/events",
-      route: "/(dashboard)/events",
-    },
-    {
       label: "Overlays",
       icon: Layers,
       href: "/breakfast/overlays",
       route: "/(dashboard)/overlays",
+    },
+    {
+      label: "Controller",
+      icon: Joystick,
+      href: "/breakfast/controller",
+      route: "/(dashboard)/controller",
     },
     { label: "Assets", icon: Image, href: "/breakfast/assets", route: "/(dashboard)/assets" },
     { label: "OBS", icon: Obs, href: "/breakfast/obs", route: "/(dashboard)/obs" },

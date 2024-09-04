@@ -36,10 +36,34 @@ export type SourceDefinition = {
   fields: (SourceFieldDefinition | SourceFieldGroup)[];
 };
 
+export type ActionInputDefinition = {
+  [K in keyof Breakfast.Overlay["Fields"]]: {
+    id: string;
+    type: K;
+    options?: SvelteProps<Breakfast.Overlay["Fields"][K]>["options"];
+  };
+}[keyof Breakfast.Overlay["Fields"]];
+
+export type ActionDefinition = {
+  label: string;
+  subLabel: string;
+  emit: string;
+  inputs?: SourceFieldDefinition[];
+} & (
+  | {
+      type: "on-event";
+      filter?: string[];
+    }
+  | {
+      type: "trigger";
+    }
+);
+
 export type OverlayScript = {
   id: string;
   label: string;
   version: number;
   script: string;
   sources?: SourceDefinition[];
+  actions?: ActionDefinition[];
 };

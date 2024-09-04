@@ -16,7 +16,7 @@ type OverlayTemplateData struct {
 	Body  string
 }
 
-func registerTemplateAPIs(app *pocketbase.PocketBase) {
+func registerTemplateRoutes(app *pocketbase.PocketBase) {
 	app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
 		e.Router.GET("/overlays/template", func(c echo.Context) error {
 			return overlay.OverlayTemplate.Execute(c.Response().Writer, overlay.OverlayTemplateParams{

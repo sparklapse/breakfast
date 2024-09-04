@@ -5,5 +5,5 @@ import (
 )
 
 func RegisterService(app *pocketbase.PocketBase) {
-	registerTemplateAPIs(app)
+	registerTemplateRoutes(app)
 }
