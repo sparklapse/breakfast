@@ -14,8 +14,8 @@
 
   const twitchEventSubTypes = [
     {
-      label: "Chat Message",
-      value: "channel.chat.message",
+      label: "Chat",
+      value: "chat",
     },
   ];
 
