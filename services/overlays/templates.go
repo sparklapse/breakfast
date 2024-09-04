@@ -3,7 +3,6 @@ package overlays
 import (
 	"breakfast/www/overlay"
 	"encoding/json"
-	"strings"
 
 	"github.com/labstack/echo/v5"
 	"github.com/pocketbase/pocketbase"
@@ -21,10 +20,10 @@ func registerTemplateAPIs(app *pocketbase.PocketBase) {
 	app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
 		e.Router.GET("/overlays/template", func(c echo.Context) error {
 			return overlay.OverlayTemplate.Execute(c.Response().Writer, overlay.OverlayTemplateParams{
-				Title:  "template",
-				Styles: "",
-				Body:   "",
-				Logic:  "",
+				Title:   "template",
+				Styles:  "",
+				Body:    "",
+				Scripts: "",
 			})
 		})
 
@@ -42,40 +41,31 @@ func registerTemplateAPIs(app *pocketbase.PocketBase) {
 			label := overlayRecord.GetString("label")
 
 			styles := ""
-			logic := ""
+			scripts := ""
 			body := ""
 
-			var scripts []struct {
-				Filename string `json:"filename"`
-				Script   string `json:"script"`
+			var overlayScripts []struct {
+				Script string `json:"script"`
 			}
 
 			{
-				err := json.Unmarshal(overlayRecord.Get("scripts").(types.JsonRaw), &scripts)
+				err := json.Unmarshal(overlayRecord.Get("scripts").(types.JsonRaw), &overlayScripts)
 				if err != nil {
 					return c.JSON(500, map[string]string{"message": "Bad overlay"})
 				}
 			}
 
-			for _, script := range scripts {
-				if strings.HasSuffix(script.Filename, ".css") {
-					styles += "<style>" + script.Script + "</style>"
-					continue
-				}
-
-				if strings.HasSuffix(script.Filename, ".js") {
-					logic += "<script>" + script.Script + "</script>"
-					continue
-				}
+			for _, script := range overlayScripts {
+				scripts += "<script>" + script.Script + "</script>"
 			}
 
 			body += overlayRecord.GetString("sources")
 
 			return overlay.OverlayTemplate.Execute(c.Response().Writer, overlay.OverlayTemplateParams{
-				Title:  label,
-				Styles: styles,
-				Body:   body,
-				Logic:  logic,
+				Title:   label,
+				Styles:  styles,
+				Body:    body,
+				Scripts: scripts,
 			})
 		})
 

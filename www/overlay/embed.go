@@ -15,8 +15,8 @@ func init() {
 }
 
 type OverlayTemplateParams struct {
-	Title  string
-	Styles string
-	Body   string
-	Logic  string
+	Title   string
+	Styles  string
+	Body    string
+	Scripts string
 }
