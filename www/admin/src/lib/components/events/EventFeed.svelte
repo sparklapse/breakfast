@@ -46,14 +46,19 @@
     {#each events.e as event}
       <li class="flex items-center justify-between px-2 py-1.5 hover:bg-slate-50">
         <div>
-          <p class="text-xs leading-none text-slate-400">{event.data.channel.displayName}</p>
+          <p class="text-xs leading-none text-slate-400">
+            {event.data.channel.displayName} - {event.platform}
+          </p>
           {#if event.type === "chat-message"}
             <p class="leading-none">
-              <span style:color={event.data.color}>{event.data.chatter.displayName}</span>: {event
+              <span style:color={event.data.color}>{event.data.viewer.displayName}</span>: {event
                 .data.text}
             </p>
-          {:else}
-            <span>{event.type}</span>
+          {:else if event.type === "subscription"}
+            <p>
+              {event.data.viewer.displayName}
+              {event.data.gifted ? "was gifted a sub" : "has subscribed"}!
+            </p>
           {/if}
         </div>
         <DropdownMenu.Root
@@ -65,9 +70,9 @@
             ><EllipsisVertical /></DropdownMenu.Trigger
           >
           <DropdownMenu.Content class="flex flex-col rounded bg-white py-2 shadow" side="left">
-            {#if event.initiator}
+            {#if event.data?.viewer?.id}
               <DropdownMenu.Item
-                href="/breakfast/community/viewer/{event.initiator}"
+                href="/breakfast/community/viewer/{event.data.viewer.id}"
                 class="px-2 hover:bg-slate-50">View Viewer</DropdownMenu.Item
               >
             {/if}
