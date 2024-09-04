@@ -1,20 +1,28 @@
-export type User = {
+export type Channel = {
+  username: string;
+  displayName: string;
+};
+
+export type Viewer = {
   id: string;
   username: string;
   displayName: string;
 };
 
+export type Platforms = "twitch";
+
 export type ChatEvent = {
+  id: string | null;
   type: "chat-message";
-  initiator: string;
+  platform: Platforms;
   data: {
     // services/events/types/chat.go
     id: string;
-    channel: User;
-    chatter: User;
+    channel: Channel;
+    viewer: Viewer;
     reply: {
       repliedToMessageId: string;
-      repliedToChatter: User;
+      repliedToViewer: Viewer;
     } | null;
     text: string;
     color: string;
@@ -23,15 +31,21 @@ export type ChatEvent = {
       text: string;
     }[];
     features: string[];
-    platform: string;
   };
 };
 
-export type BreakfastEvent = ChatEvent & {
-  type: string;
-  initiator: string;
-  data: unknown;
+export type Subscription = {
+  type: "subscription";
+  platform: Platforms;
+  data: {
+    channel: Channel;
+    viewer: Viewer;
+    tier: string;
+    gifted: boolean;
+  };
 };
+
+export type BreakfastEvent = ChatEvent | Subscription;
 
 interface BreakfastGlobal {
   events: {
@@ -42,7 +56,7 @@ interface BreakfastGlobal {
      * @returns A function to unlisten the provided listener
      */
     listen: (
-      listener: (event: BreakfastEvent) => void | Promise<void>
+      listener: (event: BreakfastEvent) => void | Promise<void>,
     ) => Promise<() => Promise<void>>;
   };
 }
