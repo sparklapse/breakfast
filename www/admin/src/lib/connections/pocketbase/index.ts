@@ -224,6 +224,11 @@ export class BreakfastPocketBase extends PocketBase {
         }> => {
           return await this.send("/api/breakfast/events/twitch/eventsub/pools", {});
         },
+        resubscribeDefaults: async () => {
+          await this.send("/api/breakfast/events/twitch/eventsub/resubscribe-defaults", {
+            method: "POST",
+          });
+        },
         createSubscription: async (subscription: {
           type: string;
           data: { broadcasterLogin: string };
@@ -231,6 +236,11 @@ export class BreakfastPocketBase extends PocketBase {
           await this.send("/api/breakfast/events/twitch/eventsub/subscribe", {
             method: "POST",
             body: JSON.stringify(subscription),
+          });
+        },
+        deleteSubscription: async (id: string) => {
+          await this.send(`/api/breakfast/events/twitch/eventsub/unsubscribe/${id}`, {
+            method: "POST",
           });
         },
       },
@@ -248,7 +258,7 @@ export class BreakfastPocketBase extends PocketBase {
   constructor(f: typeof fetch, ...args: ConstructorParameters<typeof PocketBase>) {
     super(...args);
     this.beforeSend = (url, options) => {
-      options = { fetch, ...options };
+      options = { fetch: f, ...options };
       return { url, options };
     };
     this.authStore = new SvelteAuthStore();
