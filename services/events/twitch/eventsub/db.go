@@ -29,6 +29,12 @@ func CreateSubscription(authorizerId string, config subscriptions.SubscriptionCo
 	switch config.Type {
 	case subscriptions.TypeChannelSubscribe:
 		fallthrough
+	case subscriptions.TypeChannelChatMessageDelete:
+		fallthrough
+	case subscriptions.TypeStreamOnline:
+		fallthrough
+	case subscriptions.TypeStreamOffline:
+		fallthrough
 	case subscriptions.TypeChannelChatMessage:
 		existing, err := pb.Dao().FindFirstRecordByFilter(
 			"twitch_event_subscriptions",
@@ -39,8 +45,9 @@ func CreateSubscription(authorizerId string, config subscriptions.SubscriptionCo
 			},
 		)
 		if existing != nil {
-			return ErrSubscriptionExists
+			return nil
 		}
+
 		if err != nil && !errors.Is(err, sql.ErrNoRows) {
 			return err
 		}
@@ -81,29 +88,6 @@ func CreateDefaultSubscriptionsForUser(userId string) error {
 		if err != nil {
 			maybeErr = append(maybeErr, err)
 		}
-		// collection, err := pb.Dao().FindCollectionByNameOrId("twitch_event_subscriptions")
-		// if err != nil {
-		// 	return err
-		// }
-
-		// record := models.NewRecord(collection)
-		// record.MarkAsNew()
-		// record.RefreshId()
-		// record.Set("config", subscription)
-		// record.Set("authorizer", user.Id)
-
-		// {
-		// 	err := pb.Dao().Save(record)
-		// 	if err != nil {
-		// 		return err
-		// 	}
-		// }
-		// {
-		// 	_, err := Subscribe(record.Id)
-		// 	if err != nil {
-		// 		return err
-		// 	}
-		// }
 	}
 
 	if errors.Join(maybeErr...) != nil {
