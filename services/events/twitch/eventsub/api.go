@@ -100,6 +100,22 @@ func RegisterAPIs(app *pocketbase.PocketBase) {
 			}
 
 			switch request.Type {
+			case "chat":
+				errs := []error{}
+				{
+					config := subscriptions.CreateChannelChatMessageSubscription(id, authorizerTwitchRecord.ProviderId)
+					errs = append(errs, CreateSubscription(user.Id, config))
+				}
+
+				{
+					config := subscriptions.CreateChannelChatMessageDeleteSubscription(id, authorizerTwitchRecord.ProviderId)
+					errs = append(errs, CreateSubscription(user.Id, config))
+				}
+
+				err := errors.Join(errs...)
+				if err != nil {
+					return c.JSON(500, map[string]string{"message": "Failed to create subscriptions for chat", "error": err.Error()})
+				}
 			case subscriptions.TypeChannelChatMessage:
 				config := subscriptions.CreateChannelChatMessageSubscription(id, authorizerTwitchRecord.ProviderId)
 				err := CreateSubscription(user.Id, config)
@@ -110,7 +126,7 @@ func RegisterAPIs(app *pocketbase.PocketBase) {
 				return c.JSON(400, map[string]string{"message": "Cant make a subscription of that type"})
 			}
 
-			return nil
+			return c.JSON(200, map[string]string{"message": "OK"})
 		})
 
 		e.Router.POST("/api/breakfast/events/twitch/eventsub/unsubscribe/:id", func(c echo.Context) error {
