@@ -110,20 +110,6 @@ func init() {
 							"maxSize": 1_000_000_000, // 1GB
 						},
 					},
-					&schema.SchemaField{
-						Id:          "initiator",
-						Name:        "initiator",
-						Type:        schema.FieldTypeRelation,
-						Required:    false,
-						Presentable: false,
-						Options: types.JsonMap{
-							"collectionId":  "viewers",
-							"cascadeDelete": false,
-							"minSelect":     nil,
-							"maxSelect":     1,
-							"displayFields": nil,
-						},
-					},
 				),
 			}
 
