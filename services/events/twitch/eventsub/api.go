@@ -139,7 +139,6 @@ func RegisterAPIs(app *pocketbase.PocketBase) {
 			{
 				_, err := Subscribe(record.Id)
 				if err != nil {
-					app.Dao().DeleteRecord(record)
 					return c.JSON(500, map[string]string{"message": "Failed to create subscription", "error": err.Error()})
 				}
 			}

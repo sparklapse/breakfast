@@ -4,6 +4,7 @@ import (
 	"breakfast/services/events/twitch/eventsub/subscriptions"
 	"errors"
 	"net/http"
+	"strings"
 
 	"github.com/pocketbase/dbx"
 )
@@ -24,6 +25,14 @@ func getAuthorizerToken(userId string) (string, error) {
 	return query.AccessToken, nil
 }
 
+func setSubscriptionErrored(subscriptionId string, err string) {
+	pb.Dao().DB().Update(
+		"twitch_event_subscriptions",
+		dbx.Params{"eventSubId": "error: " + err},
+		dbx.NewExp("id = {:id}", dbx.Params{"id": subscriptionId}),
+	)
+}
+
 /*
 Subscribe a user to a subscription
 */
@@ -37,6 +46,7 @@ func Subscribe(
 
 	authorizerId := record.GetString("authorizer")
 	if authorizerId == "" {
+		setSubscriptionErrored(subscriptionId, "authorizer is nil")
 		return nil, errors.New("authorizer is nil")
 	}
 
@@ -44,12 +54,14 @@ func Subscribe(
 	{
 		err := record.UnmarshalJSONField("config", &config)
 		if err != nil {
+			setSubscriptionErrored(subscriptionId, err.Error())
 			return nil, err
 		}
 	}
 
 	pool, err := FindOrCreateAvailablePool()
 	if err != nil {
+		setSubscriptionErrored(subscriptionId, err.Error())
 		return nil, err
 	}
 
@@ -60,6 +72,7 @@ func Subscribe(
 		authorizerId,
 	)
 	if err != nil {
+		setSubscriptionErrored(subscriptionId, err.Error())
 		return nil, err
 	}
 
@@ -72,6 +85,7 @@ func Subscribe(
 			dbx.NewExp("id = {:id}", dbx.Params{"id": subscriptionId}),
 		).Execute()
 		if err != nil {
+			setSubscriptionErrored(subscriptionId, err.Error())
 			return nil, err
 		}
 	}
@@ -85,11 +99,12 @@ Unsubscribe a subscription by ID
 func Unsubscribe(subscriptionId string) error {
 	record, err := pb.Dao().FindRecordById("twitch_event_subscriptions", subscriptionId)
 	if err != nil {
+		setSubscriptionErrored(subscriptionId, err.Error())
 		return err
 	}
 
 	eventSubId := record.GetString("eventSubId")
-	if eventSubId == "" {
+	if eventSubId == "" || strings.HasPrefix(eventSubId, "error:") {
 		return errors.New("subscription is not subscribed")
 	}
 
