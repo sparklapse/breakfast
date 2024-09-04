@@ -33,6 +33,8 @@ func setSubscriptionErrored(subscriptionId string, err string) {
 	)
 }
 
+var ErrNotSubscribed = errors.New("not subscribed")
+
 /*
 Subscribe a user to a subscription
 */
@@ -48,6 +50,11 @@ func Subscribe(
 	if authorizerId == "" {
 		setSubscriptionErrored(subscriptionId, "authorizer is nil")
 		return nil, errors.New("authorizer is nil")
+	}
+
+	alreadySubscribed := record.GetString("eventSubId")
+	if alreadySubscribed != "" && !strings.HasPrefix(alreadySubscribed, "error:") {
+		Unsubscribe(subscriptionId)
 	}
 
 	var config subscriptions.SubscriptionConfig
@@ -105,7 +112,7 @@ func Unsubscribe(subscriptionId string) error {
 
 	eventSubId := record.GetString("eventSubId")
 	if eventSubId == "" || strings.HasPrefix(eventSubId, "error:") {
-		return errors.New("subscription is not subscribed")
+		return ErrNotSubscribed
 	}
 
 	accessToken, err := getAuthorizerToken(record.GetString("authorizer"))

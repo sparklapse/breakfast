@@ -1,12 +1,9 @@
 package eventsub
 
 import (
-	"breakfast/services/events/twitch/eventsub/subscriptions"
-
 	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase"
 	"github.com/pocketbase/pocketbase/core"
-	"github.com/pocketbase/pocketbase/models"
 )
 
 var pb *pocketbase.PocketBase
@@ -29,6 +26,10 @@ func RegisterService(app *pocketbase.PocketBase) {
 		for _, sub := range subscriptions {
 			_, err := Subscribe(sub.Id)
 			if err != nil {
+				app.Logger().Error(
+					"EVENTS Twitch event failed to subscribe on start up",
+					"error", err.Error(),
+				)
 				app.Dao().DB().
 					Delete(
 						"twitch_event_subscriptions",
@@ -47,31 +48,7 @@ func RegisterService(app *pocketbase.PocketBase) {
 			return nil
 		}
 
-		for _, subscription := range subscriptions.CreateDefaultSubscriptions(e.OAuth2User.Id) {
-			collection, err := app.Dao().FindCollectionByNameOrId("twitch_event_subscriptions")
-			if err != nil {
-				return err
-			}
-
-			record := models.NewRecord(collection)
-			record.MarkAsNew()
-			record.RefreshId()
-			record.Set("config", subscription)
-			record.Set("authorizer", e.Record.Id)
-
-			{
-				err := app.Dao().Save(record)
-				if err != nil {
-					return err
-				}
-			}
-			{
-				_, err := Subscribe(record.Id)
-				if err != nil {
-					return err
-				}
-			}
-		}
+		CreateDefaultSubscriptionsForUser(e.Record.Id)
 
 		return nil
 	})
