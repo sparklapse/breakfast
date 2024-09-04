@@ -20,7 +20,7 @@ func init() {
 				Type:       "auth",
 				System:     true,
 				ListRule:   types.Pointer("@request.auth.verified = true && @request.auth.collectionName = \"users\""),
-				ViewRule:   types.Pointer(""),
+				ViewRule:   types.Pointer("@request.auth.verified = true && @request.auth.collectionName = \"users\""),
 				CreateRule: types.Pointer("@request.auth.verified = true && @request.auth.collectionName = \"users\""),
 				UpdateRule: types.Pointer("@request.auth.verified = true && @request.auth.collectionName = \"users\""),
 				DeleteRule: types.Pointer("@request.auth.verified = true && @request.auth.collectionName = \"users\""),
