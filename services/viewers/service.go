@@ -15,6 +15,32 @@ func RegisterService(app *pocketbase.PocketBase) {
 	pb = app
 
 	app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
+		e.Router.GET("/api/breakfast/viewers/currencies", func(c echo.Context) error {
+			var query []struct {
+				Currency string
+			}
+
+			err := app.Dao().DB().
+				Select("json_each.key AS currency").
+				Distinct(true).
+				From("viewers, json_each(viewers.inventory, '$.currencies')").
+				All(&query)
+			if err != nil {
+				return c.JSON(500, map[string]string{"message": "Failed to query distinct currencies"})
+			}
+
+			currencies := []string{}
+			for _, row := range query {
+				if row.Currency == "" {
+					continue
+				}
+
+				currencies = append(currencies, row.Currency)
+			}
+
+			return c.JSON(200, map[string]any{"currencies": currencies})
+		})
+
 		e.Router.GET("/api/breakfast/viewers/count", func(c echo.Context) error {
 			response := map[string]int{}
 
