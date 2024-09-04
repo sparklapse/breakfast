@@ -44,7 +44,7 @@
 >
   <ul class="absolute inset-x-0 bottom-2">
     {#each events.e as event}
-      <li class="flex items-center justify-between px-2 py-1 hover:bg-slate-50">
+      <li class="flex items-center justify-between px-2 py-1.5 hover:bg-slate-50">
         <div>
           <p class="text-xs leading-none text-slate-400">{event.data.channel.displayName}</p>
           {#if event.type === "chat-message"}
