@@ -8,7 +8,6 @@
 
   import type { PageData } from "./$types";
   export let data: PageData;
-  const { user } = data;
   const obsConnected = data.obs.connectedStore;
 
   const tools: {
@@ -63,7 +62,7 @@
           {#await data.suspense.viewerCount}
             ...
           {:then count}
-            {count}
+            {count.total}
           {/await}
         </dd>
       </div>

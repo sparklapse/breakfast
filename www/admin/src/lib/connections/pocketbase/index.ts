@@ -246,9 +246,8 @@ export class BreakfastPocketBase extends PocketBase {
       },
     },
     viewers: {
-      count: async (): Promise<number> => {
-        const { count } = await this.send("/api/breakfast/viewers/count", {});
-        return count;
+      count: async (): Promise<{ total: number; new30: number }> => {
+        return await this.send("/api/breakfast/viewers/count", {});
       },
     },
   };

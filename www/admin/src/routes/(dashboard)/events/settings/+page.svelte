@@ -29,7 +29,6 @@
     const subscriptionType = form.get("type") as string | null;
     const broadcasterLogin = (form.get("broadcasterLogin") as string | null)?.toLowerCase();
 
-    console.log(subscriptionType, broadcasterLogin);
     if (!subscriptionType || !broadcasterLogin) {
       toast.error("Missing required fields");
       return;
@@ -225,7 +224,11 @@
           {#await data.pb.breakfast.events.twitch.listPools()}
             <span>Loading...</span>
           {:then pools}
-            {Object.keys(pools).length}
+            <ul>
+              {#each Object.entries(pools) as [id, pool]}
+                <li>{id} - {pool.status} ({pool.subscriptions})</li>
+              {/each}
+            </ul>
           {/await}
         </dd>
       </div>
