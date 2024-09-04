@@ -11,7 +11,7 @@ export type Viewer = {
 
 export type Platforms = "twitch";
 
-export type ChatEvent = {
+export type ChatMessageEvent = {
   id: string | null;
   type: "chat-message";
   platform: Platforms;
@@ -32,9 +32,19 @@ export type ChatEvent = {
     }[];
     features: string[];
   };
+  deleted?: true;
 };
 
-export type Subscription = {
+export type ChatMessageDeleteEvent = {
+  id: string | null;
+  type: "chat-message-delete";
+  platform: Platforms;
+  data: {
+    id: string;
+  };
+};
+
+export type SubscriptionEvent = {
   type: "subscription";
   platform: Platforms;
   data: {
@@ -45,7 +55,7 @@ export type Subscription = {
   };
 };
 
-export type BreakfastEvent = ChatEvent | Subscription;
+export type BreakfastEvent = ChatMessageEvent | ChatMessageDeleteEvent | SubscriptionEvent;
 
 interface BreakfastGlobal {
   events: {
