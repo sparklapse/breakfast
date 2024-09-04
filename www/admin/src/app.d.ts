@@ -1,3 +1,4 @@
+import type { BreakfastPocketBase } from "$lib/connections/pocketbase";
 import type { fields } from "$lib/overlay/sources/fields";
 
 // See https://kit.svelte.dev/docs/types#app
@@ -6,7 +7,9 @@ declare global {
   namespace App {
     // interface Error {}
     // interface Locals {}
-    // interface PageData {}
+    interface PageData {
+      pb: BreakfastPocketBase;
+    }
     // interface PageState {}
     // interface Platform {}
   }
