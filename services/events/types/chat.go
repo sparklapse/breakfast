@@ -7,19 +7,18 @@ type ChatMessageFragment struct {
 
 type ChatMessageReply struct {
 	RepliedToMessageId string `json:"repliedToMessageId"`
-	RepliedToChatter   User   `json:"repliedToChatter"`
+	RepliedToViewer    Viewer `json:"repliedToViewer"`
 }
 
 type ChatMessage struct {
 	Id        string                `json:"id"`
-	Channel   User                  `json:"channel"`
-	Chatter   User                  `json:"chatter"`
+	Channel   Channel               `json:"channel"`
+	Viewer    Viewer                `json:"viewer"`
 	Reply     *ChatMessageReply     `json:"reply"`
 	Text      string                `json:"text"`
 	Color     string                `json:"color"`
 	Fragments []ChatMessageFragment `json:"fragments"`
 	Features  []string              `json:"features"`
-	Platform  string                `json:"platform"`
 }
 
 type ChatMessageDelete struct {

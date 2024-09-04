@@ -11,6 +11,7 @@ import (
 	"github.com/pocketbase/pocketbase"
 	"github.com/pocketbase/pocketbase/core"
 	"github.com/pocketbase/pocketbase/models"
+	"github.com/pocketbase/pocketbase/tools/security"
 	"github.com/pocketbase/pocketbase/tools/subscriptions"
 )
 
@@ -53,8 +54,11 @@ func AddEventListener(id string, listener func(event *types.BreakfastEvent)) err
 }
 
 func EmitEvent(provider string, providerId string, event types.BreakfastEvent) {
+	eventId := security.RandomString(15)
+
 	// Save event to database (if configured to)
 	if slices.Contains(SavedEventTypes, event.Type) {
+		event.Id = &eventId
 		go func() {
 			{
 				exists, _ := pb.Dao().FindFirstRecordByFilter(
@@ -86,13 +90,11 @@ func EmitEvent(provider string, providerId string, event types.BreakfastEvent) {
 			}
 
 			record := models.NewRecord(collection)
+			record.SetId(eventId)
 			record.Set("provider", provider)
 			record.Set("providerId", providerId)
 			record.Set("type", event.Type)
 			record.Set("data", event.Data)
-			if event.Initiator != "" {
-				record.Set("initiator", event.Initiator)
-			}
 
 			{
 				err := pb.Dao().Save(record)

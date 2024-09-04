@@ -2,6 +2,7 @@ package subscriptions
 
 import (
 	"breakfast/services/events/types"
+	"breakfast/services/viewers"
 	"errors"
 )
 
@@ -35,10 +36,10 @@ func ProcessChannelChatMessageEventPayload(payload map[string]any) (*types.ChatM
 	if !valid {
 		return nil, errors.New("message_type was not of the correct type")
 	}
-	broadcaster_user_id, valid := event["broadcaster_user_id"].(string)
-	if !valid {
-		return nil, errors.New("broadcaster_user_id was not of the correct type")
-	}
+	// broadcaster_user_id, valid := event["broadcaster_user_id"].(string)
+	// if !valid {
+	// 	return nil, errors.New("broadcaster_user_id was not of the correct type")
+	// }
 	broadcaster_user_login, valid := event["broadcaster_user_login"].(string)
 	if !valid {
 		return nil, errors.New("broadcaster_user_login was not of the correct type")
@@ -120,15 +121,19 @@ func ProcessChannelChatMessageEventPayload(payload map[string]any) (*types.ChatM
 			return nil, errors.New("reply parent_user_name was not of the correct type")
 		}
 
+		viewer, _ := viewers.GetViewerIdByProviderId("twitch", replied_to_chatter_id)
+
 		reply = &types.ChatMessageReply{
 			RepliedToMessageId: replied_to_message_id,
-			RepliedToChatter: types.User{
-				Id:          replied_to_chatter_id,
+			RepliedToViewer: types.Viewer{
+				Id:          viewer,
 				Username:    replied_to_chatter_login,
 				DisplayName: replied_to_chatter_name,
 			},
 		}
 	}
+
+	viewer, _ := viewers.GetViewerIdByProviderId("twitch", chatter_user_id)
 
 	return &types.ChatMessage{
 		Id:        message_id,
@@ -136,17 +141,15 @@ func ProcessChannelChatMessageEventPayload(payload map[string]any) (*types.ChatM
 		Reply:     reply,
 		Fragments: chat_fragments,
 		Color:     color,
-		Channel: types.User{
-			Id:          broadcaster_user_id,
+		Channel: types.Channel{
 			Username:    broadcaster_user_login,
 			DisplayName: broadcaster_user_name,
 		},
-		Chatter: types.User{
-			Id:          chatter_user_id,
+		Viewer: types.Viewer{
+			Id:          viewer,
 			Username:    chatter_user_login,
 			DisplayName: chatter_user_name,
 		},
 		Features: features,
-		Platform: "twitch",
 	}, nil
 }

@@ -107,6 +107,24 @@ func RegisterAPIs(app *pocketbase.PocketBase) {
 
 				config := subscriptions.CreateChannelChatMessageSubscription(id, userTwitchRecord.ProviderId)
 				record.Set("config", config)
+			case subscriptions.TypeChannelSubscribe:
+				existing, err := app.Dao().FindFirstRecordByFilter(
+					"twitch_event_subscriptions",
+					"config.type = {:type} && config.conditions.broadcaster_user_id = {:broadcasterId}",
+					dbx.Params{
+						"type":          subscriptions.TypeChannelSubscribe,
+						"broadcasterId": id,
+					},
+				)
+				if existing != nil {
+					return c.JSON(409, map[string]string{"message": "A subscription for that already exists"})
+				}
+				if err != nil && !errors.Is(err, sql.ErrNoRows) {
+					return c.JSON(500, map[string]string{"message": "Failed to check for existing subscriptions", "error": err.Error()})
+				}
+
+				config := subscriptions.CreateChannelSubscribeSubscription(id)
+				record.Set("config", config)
 			default:
 				return c.JSON(400, map[string]string{"message": "Type is not yet supported"})
 			}

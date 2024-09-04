@@ -5,7 +5,6 @@ import (
 	"breakfast/services/events/twitch/eventsub"
 	"breakfast/services/events/twitch/eventsub/subscriptions"
 	"breakfast/services/events/types"
-	"breakfast/services/viewers"
 
 	"github.com/pocketbase/pocketbase"
 )
@@ -15,8 +14,6 @@ func RegisterService(app *pocketbase.PocketBase) {
 	eventsub.SetPoolEventHook(func(message *eventsub.EventSubMessage, subscription *eventsub.Subscription) {
 		var eventType string
 		var eventData any
-
-		initiatorId := ""
 
 		switch subscription.Type {
 		case subscriptions.TypeStreamOnline:
@@ -52,15 +49,17 @@ func RegisterService(app *pocketbase.PocketBase) {
 			}
 			eventType = types.EventTypeChatMessage
 			eventData = data
-			id, err := viewers.GetViewerIdByProviderId("twitch", data.Chatter.Id)
+		case subscriptions.TypeChannelSubscribe:
+			data, err := subscriptions.ProcessChannelSubscribePayload(message.Payload)
 			if err != nil {
 				app.Logger().Error(
-					"EVENTS Failed to get viewer id for twitch user",
+					"EVENTS Failed to conform twitch channel subscribe message to type",
 					"error", err.Error(),
 				)
-			} else {
-				initiatorId = id
+				return
 			}
+			eventType = types.EventTypeSubscription
+			eventData = data
 		default:
 			app.Logger().Error(
 				"EVENTS Twitch eventsub processed an event which isn't handled",
@@ -81,9 +80,10 @@ func RegisterService(app *pocketbase.PocketBase) {
 			"twitch-eventsub",
 			message.Metadata.MessageId,
 			types.BreakfastEvent{
-				Type:      eventType,
-				Initiator: initiatorId,
-				Data:      eventData,
+				Id:       nil,
+				Type:     eventType,
+				Platform: "twitch",
+				Data:     eventData,
 			},
 		)
 	})

@@ -144,6 +144,10 @@ func GetTwitchUserById(id string) (*TwitchUser, error) {
 		}
 	}
 
+	if len(data.Data) == 0 {
+		return nil, errors.New("user not found")
+	}
+
 	user := data.Data[0]
 
 	return &user, nil

@@ -18,10 +18,10 @@ func CreateStreamOfflineSubscription(twitch_broadcaster_id string) SubscriptionC
 }
 
 func ProcessStreamOfflinePayload(payload map[string]any) (*types.StreamOffline, error) {
-	broadcaster_user_id, valid := payload["broadcaster_user_id"].(string)
-	if !valid {
-		return nil, errors.New("broadcaster_user_id field was not of the correct type")
-	}
+	// broadcaster_user_id, valid := payload["broadcaster_user_id"].(string)
+	// if !valid {
+	// 	return nil, errors.New("broadcaster_user_id field was not of the correct type")
+	// }
 
 	broadcaster_user_login, valid := payload["broadcaster_user_login"].(string)
 	if !valid {
@@ -34,8 +34,7 @@ func ProcessStreamOfflinePayload(payload map[string]any) (*types.StreamOffline, 
 	}
 
 	return &types.StreamOffline{
-		Channel: types.User{
-			Id:          broadcaster_user_id,
+		Channel: types.Channel{
 			Username:    broadcaster_user_login,
 			DisplayName: broadcaster_user_name,
 		},

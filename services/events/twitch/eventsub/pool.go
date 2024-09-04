@@ -28,6 +28,44 @@ type Subscription struct {
 	Condition map[string]string
 }
 
+func SubscriptionFromPayload(payload map[string]any) (*Subscription, error) {
+	id, ok := payload["id"].(string)
+	if !ok {
+		return nil, errors.New("id field is not of the correct type")
+	}
+
+	subType, ok := payload["type"].(string)
+	if !ok {
+		return nil, errors.New("type field is not of the correct type")
+	}
+
+	version, ok := payload["version"].(string)
+	if !ok {
+		return nil, errors.New("version field is not of the correct type")
+	}
+
+	condition, ok := payload["condition"].(map[string]any)
+	if !ok {
+		return nil, errors.New("condition field is not of the correct type")
+	}
+
+	validCondition := map[string]string{}
+	for key, maybe := range condition {
+		value, ok := maybe.(string)
+		if !ok {
+			return nil, errors.New(key + " condition subfield is not of the correct type")
+		}
+		validCondition[key] = value
+	}
+
+	return &Subscription{
+		Id:        id,
+		Type:      subType,
+		Version:   version,
+		Condition: validCondition,
+	}, nil
+}
+
 type PoolStatus int
 
 const (
@@ -194,8 +232,31 @@ func (pool *Pool) Connect(url string) error {
 				subscription := pool.Subscriptions[subscription_id]
 
 				if subscription == nil {
-					println("got a message for an unknown subscription")
-					break
+					pb.Logger().Warn(
+						"EVENTS Got a message which we didn't subscribe to. Attempting to forward anyways...",
+						"subscription", subscription,
+					)
+
+					if unknownSub, ok := message.Payload["subscription"].(map[string]any); ok {
+						generatedSubscription, err := SubscriptionFromPayload(unknownSub)
+						if err != nil {
+							pb.Logger().Error(
+								"EVENTS Failed to parse unknown subscription into valid format",
+								"error", err.Error(),
+								"subscription", message.Payload["subscription"],
+							)
+							break
+						}
+
+						subscription = generatedSubscription
+					}
+
+					if subscription == nil {
+						pb.Logger().Error(
+							"EVENTS Failed to generate a valid subscription",
+						)
+						break
+					}
 				}
 
 				PoolEventHook(&message, subscription)
