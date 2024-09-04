@@ -1,6 +1,7 @@
 package types
 
 const EventTypeChatMessage = "chat-message"
+const EventTypeChatMessageDelete = "chat-message-delete"
 const EventTypePointsRedeem = "points-redeem"
 const EventTypeStreamOffline = "stream-offline"
 const EventTypeStreamOnline = "stream-online"
