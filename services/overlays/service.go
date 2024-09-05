@@ -6,4 +6,5 @@ import (
 
 func RegisterService(app *pocketbase.PocketBase) {
 	registerTemplateRoutes(app)
+	registerActionAPIs(app)
 }
