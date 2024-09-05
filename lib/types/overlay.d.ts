@@ -1,3 +1,5 @@
+import type { Action } from "./actions";
+
 export type Channel = {
   username: string;
   displayName: string;
@@ -9,7 +11,14 @@ export type Viewer = {
   displayName: string;
 };
 
-export type Platforms = "twitch";
+export type Platforms = "twitch" | "actions";
+
+export type ActionEvent = {
+  id: string | null;
+  type: "action";
+  platform: Platforms;
+  data: Action;
+};
 
 export type ChatMessageEvent = {
   id: string | null;
@@ -32,6 +41,9 @@ export type ChatMessageEvent = {
     }[];
     features: string[];
   };
+  /**
+   * This field is only used on the client side to flag a message deleted by a delete event
+   */
   deleted?: true;
 };
 
@@ -55,7 +67,11 @@ export type SubscriptionEvent = {
   };
 };
 
-export type BreakfastEvent = ChatMessageEvent | ChatMessageDeleteEvent | SubscriptionEvent;
+export type BreakfastEvent =
+  | ActionEvent
+  | ChatMessageEvent
+  | ChatMessageDeleteEvent
+  | SubscriptionEvent;
 
 interface BreakfastGlobal {
   events: {
