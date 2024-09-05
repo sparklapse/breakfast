@@ -12,7 +12,7 @@ export const basics: OverlayScript = {
       label: "Basic Chat",
       subLabel: "Basics",
       tag: "basic-chat",
-      fields: [
+      inputs: [
         {
           group: [
             {
@@ -58,7 +58,7 @@ export const basics: OverlayScript = {
       label: "Message Highlight",
       subLabel: "Basics",
       tag: "basic-message-highlight",
-      fields: [
+      inputs: [
         {
           group: [
             {

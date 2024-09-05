@@ -1,4 +1,4 @@
-import { writable, derived, get, type Readable } from "svelte/store";
+import { writable, derived, get } from "svelte/store";
 import { useViewport } from "./viewport";
 import { getContext, onMount, setContext } from "svelte";
 import {
@@ -12,13 +12,24 @@ import {
 } from "$lib/math";
 import { radToDeg } from "$lib/math/units";
 import { BUILTIN_DEFINITIONS } from "$lib/overlay/sources";
-import type { OverlayScript, SourceDefinition } from "@sparklapse/breakfast/scripts";
+import type {
+  OverlayScript,
+  SourceDefinition,
+  Target,
+  TargetRoots,
+} from "@sparklapse/breakfast/scripts";
 import type { Point, Transform } from "$lib/math";
 import type { Source } from "$lib/overlay/types";
+import type { SOURCE_INPUTS } from "$lib/overlay/sources/inputs";
+import { sourceId } from "../naming";
 
 const MANAGED_STYLES = ["top", "left", "width", "height", "transform"];
 
-export function createEditor(initial?: { label?: string; overlay?: string; scripts?: OverlayScript[] }) {
+export function createEditor(initial?: {
+  label?: string;
+  overlay?: string;
+  scripts?: OverlayScript[];
+}) {
   const viewport = useViewport(true);
 
   const label = writable(initial?.label ?? "");
@@ -67,21 +78,15 @@ export function createEditor(initial?: { label?: string; overlay?: string; scrip
       }
     } else {
       element.replaceChildren(
-        ...source.children.map((s) => (typeof s === "string" ? s : jtoxSource(s))),
+        ...source.children.map((s) =>
+          typeof s === "string" ? document.createTextNode(s) : jtoxSource(s),
+        ),
       );
     }
   };
   const jtoxSource = (source: Source): HTMLElement => {
     const element = document.createElement(source.tag);
     updateElementWithSource(element, source);
-
-    for (const child of source.children) {
-      if (typeof child === "string") {
-        element.append(document.createTextNode(child));
-        continue;
-      }
-      element.append(jtoxSource(child));
-    }
     return element;
   };
   const xtojSource = (source: HTMLElement): Source => {
@@ -152,6 +157,45 @@ export function createEditor(initial?: { label?: string; overlay?: string; scrip
   }
 
   // MARK: Source Manipulation
+  const createDefaultSource = (
+    tag: string,
+    transform: Transform = { x: 0, y: 0, width: 100, height: 100, rotation: 0 },
+  ): Source => {
+    const def = get(definitions).find((d) => d.tag === tag);
+    if (!def) throw new Error("Tag does not exist");
+
+    const source: Source = {
+      id: sourceId(),
+      tag,
+      transform,
+      children: [],
+      style: {},
+      props: {},
+    };
+
+    const applyDefaults = (inputs: SourceDefinition<typeof SOURCE_INPUTS>["inputs"]) => {
+      for (const input of inputs) {
+        if ("group" in input) {
+          applyDefaults(input.group);
+          continue;
+        }
+
+        if (!input.defaultValue) continue;
+
+        const [target, prop] = input.target.split(".") as [TargetRoots, string];
+        if (target === "children") source.children = [input.defaultValue];
+        else {
+          (source[target] as any)[prop] = input.format
+            ? input.format.replace("{}", input.defaultValue)
+            : input.defaultValue;
+        }
+      }
+    };
+    applyDefaults(def.inputs);
+
+    return source;
+  };
+
   const addSource = (source: Source) => {
     managedOverlay.update(({ fragment }) => {
       fragment.append(jtoxSource(source));
@@ -169,11 +213,11 @@ export function createEditor(initial?: { label?: string; overlay?: string; scrip
     });
   };
 
-  const getSourceField = (id: string, field: string): any => {
+  const getSourceTargetValue = (id: string, target: Target): any => {
     const source = get(managedOverlay).fragment.querySelector(`#${id}`) as HTMLElement | null;
     if (!source) throw new Error("Failed to get source by id");
 
-    const [root, ...selector] = field.split(".") as [keyof Source, ...string[]];
+    const [root, ...selector] = target.split(".") as [TargetRoots, ...string[]];
     switch (root) {
       case "id":
         return source.id;
@@ -190,23 +234,23 @@ export function createEditor(initial?: { label?: string; overlay?: string; scrip
           ),
         };
 
-        const field = selector.join(".");
-        if (Object.keys(field).includes(field)) return transform[field as keyof Transform];
+        const prop = selector.join(".");
+        if (Object.keys(prop).includes(prop)) return transform[prop as keyof Transform];
       case "props":
         return source.getAttribute(selector.join(".")) ?? undefined;
       case "style":
         return source.style.getPropertyValue(selector.join("."));
       case "children":
-        throw new Error("Not implemented");
+        return source.innerText;
     }
   };
 
-  const updateSourceField = (id: string, field: string, value: any) => {
+  const updateSourceTargetValue = (id: string, target: Target, value: any) => {
     managedOverlay.update(({ fragment }) => {
       const element = fragment.querySelector(`#${id}`) as HTMLElement;
       if (!element) return { fragment };
 
-      const [root, ...selector] = field.split(".") as [keyof Source, ...string[]];
+      const [root, ...selector] = target.split(".") as [keyof Source, ...string[]];
       switch (root) {
         case "id": {
           element.id = value;
@@ -261,7 +305,7 @@ export function createEditor(initial?: { label?: string; overlay?: string; scrip
         case "tag":
           throw new Error("Not allowed to change tag");
         default:
-          throw new Error("Updating non-existant field");
+          throw new Error("Invalid target to update");
       }
 
       return { fragment };
@@ -322,7 +366,7 @@ export function createEditor(initial?: { label?: string; overlay?: string; scrip
   });
   const scripts = derived(managedScripts, ({ scripts }) => scripts);
   const definitions = derived(managedScripts, ({ scripts }) => {
-    const defs: SourceDefinition[] = [...BUILTIN_DEFINITIONS];
+    const defs: SourceDefinition<typeof SOURCE_INPUTS>[] = [...BUILTIN_DEFINITIONS];
     for (const s of scripts) {
       if (!s.sources) continue;
       defs.push(...s.sources);
@@ -695,10 +739,11 @@ export function createEditor(initial?: { label?: string; overlay?: string; scrip
     },
     sources: {
       sources,
+      createDefaultSource,
       addSource,
-      getSourceField,
+      getSourceTargetValue,
       updateSource,
-      updateSourceField,
+      updateSourceTargetValue,
       moveSourceUp,
       moveSourceDown,
       moveSourceToTop,

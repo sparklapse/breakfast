@@ -1,5 +1,5 @@
 <script lang="ts">
-  export let label: string = "Number field";
+  export let label: string = "Number";
   export let value: string | number | undefined = undefined;
   export let options: Partial<{ min: number; max: number; step: number }> | undefined = undefined;
   export let onchange: ((number: number) => void) | undefined = undefined;

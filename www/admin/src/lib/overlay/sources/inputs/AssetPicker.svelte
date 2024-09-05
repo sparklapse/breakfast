@@ -8,7 +8,7 @@
 
   $: pb = $page.data.pb as BreakfastPocketBase;
 
-  export let label: string = "Asset field";
+  export let label: string = "Asset";
   export let value: string | undefined = undefined;
   export let onchange: ((asset: string) => void) | undefined = undefined;
   $$restProps;

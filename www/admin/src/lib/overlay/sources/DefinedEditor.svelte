@@ -1,39 +1,35 @@
 <script lang="ts">
-  import { useEditor } from "$lib/overlay/contexts";
-  import { fields } from "./fields";
   import Color from "color";
-  import FieldRowGroup from "./helpers/FieldRowGroup.svelte";
+  import { useEditor } from "$lib/overlay/contexts";
+  import InputGroupRow from "./helpers/InputGroupRow.svelte";
+  import { SOURCE_INPUTS } from "./inputs";
   import type { SourceDefinition } from "@sparklapse/breakfast/scripts";
 
-  export let definition: SourceDefinition;
-
-  if ("type" in definition.fields[0]) {
-    if (definition.fields[0].type == "number") {
-      definition.fields[0].options;
-    }
-  }
+  export let inputs: SourceDefinition<typeof SOURCE_INPUTS>["inputs"];
 
   const {
     selection: { selectedSource },
-    sources: { getSourceField, updateSourceField },
+    sources: { getSourceTargetValue, updateSourceTargetValue },
   } = useEditor();
 </script>
 
-{#each definition.fields as field}
-  {#if "group" in field}
-    <FieldRowGroup>
-      <svelte:self definition={{ ...definition, fields: field.group }} />
-    </FieldRowGroup>
+{#each inputs as input}
+  {#if "group" in input}
+    <InputGroupRow>
+      <svelte:self inputs={input.group} />
+    </InputGroupRow>
   {:else if $selectedSource}
     <svelte:component
-      this={fields[field.type]}
-      label={field.label}
-      options={field.options}
-      value={getSourceField($selectedSource.id, field.target)}
+      this={SOURCE_INPUTS[input.type]}
+      label={input.label}
+      options={input.options}
+      value={getSourceTargetValue($selectedSource.id, input.target)}
       onchange={(value) => {
         if (value instanceof Color) value = value.hex();
-        const formatted = field.format ? field.format.replace("{}", value.toString()) : value;
-        updateSourceField($selectedSource.id, field.target, formatted);
+        const formatted = input.format ? input.format.replace("{}", value.toString()) : value;
+        if (input.target === "children")
+          updateSourceTargetValue($selectedSource.id, input.target, [formatted]);
+        else updateSourceTargetValue($selectedSource.id, input.target, formatted);
       }}
     />
   {/if}

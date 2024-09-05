@@ -1,5 +1,5 @@
 <script lang="ts">
-  export let label: string = "Text field";
+  export let label: string = "Text";
   export let value: string | undefined = undefined;
   export let options: Partial<{ placeholder: string; multiline: boolean }> | undefined = undefined;
   export let onchange: ((text: string) => void) | undefined = undefined;

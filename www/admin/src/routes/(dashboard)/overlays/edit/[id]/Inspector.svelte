@@ -4,16 +4,15 @@
   import { fly } from "svelte/transition";
   import { ArrowDown, ArrowUp, Pin, PinOff } from "lucide-svelte";
   import { useEditor } from "$lib/overlay/contexts";
-  import { INSPECTORS } from "$lib/overlay/sources";
-  import FieldRowGroup from "$lib/overlay/sources/helpers/FieldRowGroup.svelte";
-  import Text from "$lib/overlay/sources/fields/Text.svelte";
-  import Number from "$lib/overlay/sources/fields/Number.svelte";
+  import InputGroupRow from "$lib/overlay/sources/helpers/InputGroupRow.svelte";
+  import Text from "$lib/overlay/sources/inputs/Text.svelte";
+  import Number from "$lib/overlay/sources/inputs/Number.svelte";
   import DefinedEditor from "$lib/overlay/sources/DefinedEditor.svelte";
 
   const {
     sources: {
       sources,
-      updateSourceField,
+      updateSourceTargetValue,
       moveSourceUp,
       moveSourceDown,
       moveSourceToTop,
@@ -45,7 +44,7 @@
 
 <div
   class={clsx([
-    "fixed right-4 top-4 h-full max-h-[24rem] w-full max-w-md overflow-y-auto rounded border border-slate-200 bg-white p-4 shadow transition-transform",
+    "fixed right-4 top-4 h-[24rem] w-full max-w-md overflow-y-auto rounded border border-slate-200 bg-white p-4 shadow transition-transform",
     !(showInspector || pinOpen) && "translate-x-[90%]",
   ])}
   on:pointerenter={() => {
@@ -156,63 +155,58 @@
     {#if !$selectedSource}
       <p class="text-center text-sm text-slate-700">{$selectedIds.length} Sources selected</p>
     {:else}
-      <FieldRowGroup>
+      <InputGroupRow>
         <Text
           label="Source Label"
           value={$selectedSource.props.label ?? ""}
           options={{ placeholder: "Unnamed source" }}
           onchange={(t) => {
-            updateSourceField($selectedSource.id, "props.label", t);
+            updateSourceTargetValue($selectedSource.id, "props.label", t);
           }}
         />
         <Number
           label="Rotation"
           value={$selectedSource.transform.rotation}
           onchange={(n) => {
-            updateSourceField($selectedSource.id, "transform.rotation", n);
+            updateSourceTargetValue($selectedSource.id, "transform.rotation", n);
           }}
         />
-      </FieldRowGroup>
-      <FieldRowGroup>
+      </InputGroupRow>
+      <InputGroupRow>
         <Number
           label="X"
           value={$selectedSource.transform.x}
           onchange={(n) => {
-            updateSourceField($selectedSource.id, "transform.x", n);
+            updateSourceTargetValue($selectedSource.id, "transform.x", n);
           }}
         />
         <Number
           label="Y"
           value={$selectedSource.transform.y}
           onchange={(n) => {
-            updateSourceField($selectedSource.id, "transform.y", n);
+            updateSourceTargetValue($selectedSource.id, "transform.y", n);
           }}
         />
         <Number
           label="Width"
           value={$selectedSource.transform.width}
           onchange={(n) => {
-            updateSourceField($selectedSource.id, "transform.width", n);
+            updateSourceTargetValue($selectedSource.id, "transform.width", n);
           }}
         />
         <Number
           label="Height"
           value={$selectedSource.transform.height}
           onchange={(n) => {
-            updateSourceField($selectedSource.id, "transform.height", n);
+            updateSourceTargetValue($selectedSource.id, "transform.height", n);
           }}
         />
-      </FieldRowGroup>
+      </InputGroupRow>
 
-      {@const builtinInspector = INSPECTORS[$selectedSource.tag]}
       {@const definition = $definitions.find((d) => d.tag === $selectedSource.tag)}
-      {#key editingSource}
-        {#if builtinInspector}
-          <svelte:component this={builtinInspector} />
-        {:else if definition}
-          <DefinedEditor {definition} />
-        {/if}
-      {/key}
+      {#if definition}
+        <DefinedEditor inputs={definition.inputs} />
+      {/if}
     {/if}
   {/if}
 </div>

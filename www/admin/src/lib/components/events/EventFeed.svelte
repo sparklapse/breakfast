@@ -1,15 +1,21 @@
 <script lang="ts">
-  import { page } from "$app/stores";
+  import clsx from "clsx";
   import { onMount } from "svelte";
-  import { EllipsisVertical, Settings } from "lucide-svelte";
   import { fly } from "svelte/transition";
   import { DropdownMenu } from "bits-ui";
+  import { EllipsisVertical, Settings } from "lucide-svelte";
+  import { page } from "$app/stores";
   import type {
     BreakfastEvent,
     ChatMessageEvent,
     SubscriptionEvent,
   } from "@sparklapse/breakfast/overlay";
-  import clsx from "clsx";
+  import type { ActionDefinition } from "@sparklapse/breakfast/scripts";
+  import toast from "svelte-french-toast";
+
+  export let actions: ActionDefinition[] = [];
+  export let hideSettings: boolean = false;
+  export let onPauseChange: ((paused: boolean) => void) | undefined = undefined;
 
   let options = {
     pauseOnEnter: true,
@@ -17,12 +23,14 @@
   let enterPause = false;
   let interactionPause = false;
   $: pause = (options.pauseOnEnter && enterPause) || interactionPause;
+  $: onPauseChange?.(pause);
 
   let events: { e: (ChatMessageEvent | SubscriptionEvent)[] } = { e: [] };
   onMount(() => {
     const unlisten = $page.data.pb.realtime.subscribe(
       "@breakfast/events",
       (event: BreakfastEvent) => {
+        if (event.type === "action") return;
         if (pause) return;
 
         let { e } = events;
@@ -82,6 +90,7 @@
           {/if}
         </div>
         <DropdownMenu.Root
+          closeFocus="body"
           onOpenChange={(open) => {
             interactionPause = open;
           }}
@@ -90,8 +99,34 @@
             ><EllipsisVertical /></DropdownMenu.Trigger
           >
           <DropdownMenu.Content class="flex flex-col rounded bg-white py-2 shadow" side="left">
-            <DropdownMenu.Label class="px-2 text-xs text-slate-400">Actions</DropdownMenu.Label>
-            <DropdownMenu.Separator class="my-2 border-t border-slate-200" />
+            {#if actions.length > 0}
+              <DropdownMenu.Label class="px-2 text-xs text-slate-400">Actions</DropdownMenu.Label>
+              {#each actions as action}
+                {#if action.type === "on-event" && (!action.filter?.length || action.filter?.includes(event.type))}
+                  <DropdownMenu.Item
+                    class="cursor-pointer px-2 hover:bg-slate-50"
+                    on:click={() => {
+                      toast.promise(
+                        $page.data.pb.breakfast.overlays.action({
+                          type: action.type,
+                          emit: action.emit,
+                          inputs: {},
+                          event,
+                        }),
+                        {
+                          loading: "Actioning...",
+                          success: "Actioned event!",
+                          error: (err) => `Failed to action event: ${err.message}`,
+                        },
+                      );
+                    }}
+                  >
+                    {action.label}
+                  </DropdownMenu.Item>
+                {/if}
+              {/each}
+              <DropdownMenu.Separator class="my-2 border-t border-slate-200" />
+            {/if}
             <DropdownMenu.Label class="px-2 text-xs text-slate-400">Event</DropdownMenu.Label>
             {#if event.data?.viewer?.id}
               <DropdownMenu.Item
@@ -110,9 +145,11 @@
   >
     <p>Event Feed</p>
 
-    <a href="/breakfast/events/settings" class="aspect-square">
-      <Settings size="1rem" />
-    </a>
+    {#if !hideSettings}
+      <a href="/breakfast/events/settings" class="aspect-square">
+        <Settings size="1rem" />
+      </a>
+    {/if}
   </div>
   {#if pause}
     <div

@@ -2,7 +2,7 @@
   import Color from "color";
   import { DropdownMenu } from "bits-ui";
 
-  export let label: string = "Color field";
+  export let label: string = "Color";
   export let value: string | undefined = undefined;
   export let onchange: ((color: Color) => void) | undefined = undefined;
   $$restProps;

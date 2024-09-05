@@ -2,7 +2,7 @@
   import { Select, Toolbar } from "bits-ui";
   import { fly } from "svelte/transition";
 
-  export let label: string = "Select field";
+  export let label: string = "Select";
   export let value: string | undefined = undefined;
   export let options: Partial<{ options: { label: string; value: string }[] }> | undefined =
     undefined;

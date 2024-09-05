@@ -6,11 +6,18 @@
   import { sourceId } from "$lib/overlay/naming";
   import type { Point } from "$lib/math";
   import type { Source } from "$lib/overlay/types";
+  import type {
+    SourceDefinition,
+    SourceInputDefinition,
+    TargetRoots,
+  } from "@sparklapse/breakfast/scripts";
+  import type { SOURCE_INPUTS } from "$lib/overlay/sources/inputs";
 
   const {
     utils: { screenToLocal },
   } = useViewport();
   const {
+    sources: { createDefaultSource },
     scripts: { definitions },
   } = useEditor();
 
@@ -84,7 +91,26 @@
     showCreateMenu = true;
   };
 
+  const applyDefaultsFromInputs = (
+    source: Source,
+    inputs: SourceDefinition<typeof SOURCE_INPUTS>["inputs"],
+  ) => {
+    for (const input of inputs) {
+      if ("group" in input) {
+        applyDefaultsFromInputs(source, input.group);
+        continue;
+      }
+      if (!input.defaultValue) continue;
+      const [root, prop] = input.target.split(".") as [TargetRoots, string];
+      if (root === "children") source["children"] = [input.defaultValue];
+      else (source[root] as any)[prop] = input.defaultValue;
+    }
+  };
+
   const create = (tag?: string) => {
+    if (!tag) tag = filteredSourceTypes[0].tag;
+    if (!tag) return;
+
     const viewportStart = screenToLocal([
       Math.min(createStart[0], createEnd[0]),
       Math.min(createStart[1], createEnd[1]),
@@ -95,14 +121,10 @@
     ]);
     const transform = transformFromPoints(viewportStart, viewportEnd, 0);
 
-    oncreate?.({
-      id: sourceId(),
-      tag: tag ?? filteredSourceTypes[0].tag,
-      transform,
-      props: {},
-      style: {},
-      children: [],
-    });
+    const source = createDefaultSource(tag, transform);
+    console.log(source);
+
+    oncreate?.(source);
     showCreateMenu = false;
   };
 

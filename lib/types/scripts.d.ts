@@ -1,54 +1,51 @@
 import type { ComponentType, SvelteComponent } from "svelte";
 
-declare global {
-  namespace Breakfast {
-    interface Overlay {
-      Fields: {
-        [key: string]: ComponentType<SvelteComponent<{ options?: Record<string, any> }, any, any>>;
-      };
-    }
-  }
-}
+type Inputs = {
+  [key: string]: ComponentType<SvelteComponent<{ options?: Record<string, any> }, any, any>>;
+};
 
 type SvelteProps<C extends ComponentType> = NonNullable<ConstructorParameters<C>["0"]["props"]>;
 
-export type TargetRoots = "id" | "style" | "transform" | "props";
+export type TargetRoots = "id" | "tag" | "style" | "transform" | "props" | "children";
+export type Target = `${TargetRoots}.${string}` | TargetRoots;
 
-export type SourceFieldDefinition = {
-  [K in keyof Breakfast.Overlay["Fields"]]: {
+export type SourceInputDefinition<I extends Inputs = Inputs> = {
+  [K in keyof I]: {
     type: K;
+    defaultValue?: string;
     label?: string;
-    options?: SvelteProps<Breakfast.Overlay["Fields"][K]>["options"];
-    target: `${TargetRoots}.${string}`;
+    options?: SvelteProps<I[K]>["options"];
+    target: Target;
     format?: string;
   };
-}[keyof Breakfast.Overlay["Fields"]];
+}[keyof I];
 
-export type SourceFieldGroup = {
+export type SourceInputGroup<I extends Inputs = Inputs> = {
   label?: string;
-  group: SourceFieldDefinition[];
+  group: SourceInputDefinition<I>[];
 };
 
-export type SourceDefinition = {
+export type SourceDefinition<I extends Inputs = Inputs> = {
   label: string;
   subLabel: string;
   tag: string;
-  fields: (SourceFieldDefinition | SourceFieldGroup)[];
+  inputs: (SourceInputDefinition<I> | SourceInputGroup<I>)[];
 };
 
-export type ActionInputDefinition = {
-  [K in keyof Breakfast.Overlay["Fields"]]: {
+export type ActionInputDefinition<I extends Inputs = Inputs> = {
+  [K in keyof I]: {
     id: string;
     type: K;
-    options?: SvelteProps<Breakfast.Overlay["Fields"][K]>["options"];
+    defaultValue?: string;
+    options?: SvelteProps<I[K]>["options"];
   };
-}[keyof Breakfast.Overlay["Fields"]];
+}[keyof I];
 
-export type ActionDefinition = {
+export type ActionDefinition<I extends Inputs = Inputs> = {
   label: string;
   subLabel: string;
   emit: string;
-  inputs?: SourceFieldDefinition[];
+  inputs?: SourceInputDefinition<I>[];
 } & (
   | {
       type: "on-event";
@@ -59,11 +56,11 @@ export type ActionDefinition = {
     }
 );
 
-export type OverlayScript = {
+export type OverlayScript<I extends Inputs = Inputs> = {
   id: string;
   label: string;
   version: number;
   script: string;
-  sources?: SourceDefinition[];
-  actions?: ActionDefinition[];
+  sources?: SourceDefinition<I>[];
+  actions?: ActionDefinition<I>[];
 };

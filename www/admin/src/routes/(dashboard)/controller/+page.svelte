@@ -4,9 +4,18 @@
   import { RotateCw } from "lucide-svelte";
 
   import type { PageData } from "./$types";
+  import type { ActionDefinition, OverlayScript } from "@sparklapse/breakfast/scripts";
   export let data: PageData;
 
+  let overlays: Awaited<typeof data.suspense.overlays> | undefined = undefined;
   let selectedOverlay = "";
+
+  $: data.suspense.overlays.then((o) => (overlays = o));
+  $: actions = overlays
+    ?.map(({ scripts }) => scripts)
+    .reduce((acc, cur) => [...acc, ...cur], [] as OverlayScript[])
+    .map((s) => s.actions ?? [])
+    .reduce((acc, cur) => [...acc, ...cur], [] as ActionDefinition[]);
 
   const fitFrame = (el: HTMLIFrameElement) => {
     const parent = el.parentElement;
@@ -31,9 +40,9 @@
 
 <div class="grid gap-2 lg:grid-cols-2 2xl:grid-cols-3">
   <div class="grid h-[32rem] grid-rows-[2rem,1fr] gap-2 overflow-hidden lg:col-span-2">
-    {#await data.suspense.overlays}
+    {#if !overlays}
       <div class="h-8 animate-pulse bg-slate-700" />
-    {:then overlays}
+    {:else}
       <div class="flex gap-2">
         <Select.Root
           items={overlays}
@@ -62,7 +71,7 @@
           }}><RotateCw /></button
         >
       </div>
-    {/await}
+    {/if}
     <div class="relative h-full w-full rounded-sm bg-black/25">
       <iframe
         class="pointer-events-none absolute left-0 top-0 h-[1080px] w-[1920px] origin-top-left"
@@ -78,6 +87,6 @@
     </div>
   </div>
   <div class="h-[32rem]">
-    <EventFeed />
+    <EventFeed {actions} />
   </div>
 </div>

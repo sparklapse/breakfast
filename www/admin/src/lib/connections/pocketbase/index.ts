@@ -9,6 +9,7 @@ import { customAlphabet } from "nanoid";
 import { TWITCH_AUTH_SCOPES } from "./auth";
 import { PUBLIC_FEATURE_PROXY_AUTH_REDIRECT } from "$env/static/public";
 import type { Readable } from "svelte/store";
+import type { Action } from "@sparklapse/breakfast/actions";
 
 export const streamKeyAlphabet = customAlphabet("abcdefghijklmnopqrstuvwxyz0123456789", 21);
 
@@ -194,6 +195,15 @@ export class BreakfastPocketBase extends PocketBase {
           clearTimeout(timeout);
           cleanup();
         },
+      },
+    },
+    overlays: {
+      action: async (action: Action) => {
+        await this.send("/api/breakfast/overlays/action", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(action),
+        });
       },
     },
     events: {

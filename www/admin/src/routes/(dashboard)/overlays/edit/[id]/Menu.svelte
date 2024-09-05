@@ -2,10 +2,12 @@
   import clsx from "clsx";
   import toast from "svelte-french-toast";
   import { fly } from "svelte/transition";
-  import { useEditor } from "$lib/overlay/contexts";
   import { goto } from "$app/navigation";
-  import Sync from "./Sync.svelte";
+  import { useEditor } from "$lib/overlay/contexts";
   import { DEFAULT_SCRIPTS } from "$lib/overlay/scripts";
+  import EventFeed from "$lib/components/events/EventFeed.svelte";
+  import Sync from "./Sync.svelte";
+  import type { ActionDefinition } from "@sparklapse/breakfast/scripts";
 
   export let save: () => Promise<void>;
   export let abortAS: (() => void) | undefined;
@@ -16,13 +18,21 @@
     scripts: { scripts, definitions, addScript, removeScript },
   } = useEditor();
 
+  $: actions = $scripts
+    .map((s) => s.actions ?? [])
+    .reduce((acc, cur) => [...acc, ...cur], [] as ActionDefinition[]);
+
+  let holdMenu = false;
   let showMenu = false;
+
+  $: if (!holdMenu && !showMenu) {
+  }
 </script>
 
 <div
   class={clsx([
     "fixed inset-y-4 left-4 w-full max-w-md overflow-y-auto rounded border border-slate-200 bg-white p-4 shadow transition-transform",
-    !showMenu && "-translate-x-[90%]",
+    !showMenu && !holdMenu && "-translate-x-[90%]",
   ])}
   on:pointerenter={() => {
     showMenu = true;
@@ -56,8 +66,12 @@
     </button>
   </div>
   <hr class="my-2" />
+
+  <!-- OBS Sync -->
   <h3 class="font-semibold">OBS Sync</h3>
   <Sync {abortAS} {save} />
+
+  <!-- Scripts Management -->
   <div class="mt-6 flex items-center gap-2">
     <h3 class="font-semibold">Scripts</h3>
     <p class="text-sm text-slate-400">(Components {$definitions.length})</p>
@@ -79,4 +93,16 @@
       <li title={script.id}>{script.label}</li>
     {/each}
   </ul>
+
+  <!-- Event feed -->
+  <h3 class="mt-6 font-semibold">Actions</h3>
+  <div class="h-[24rem]">
+    <EventFeed
+      {actions}
+      onPauseChange={(paused) => {
+        holdMenu = paused;
+      }}
+      hideSettings
+    />
+  </div>
 </div>
