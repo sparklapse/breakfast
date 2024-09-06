@@ -153,7 +153,7 @@
   </div>
   {#if pause}
     <div
-      class="absolute left-1/2 top-8 -translate-x-1/2 rounded bg-slate-700 p-2 text-white shadow"
+      class="absolute left-1/2 top-8 -translate-x-1/2 whitespace-nowrap rounded bg-slate-700 p-2 text-sm text-white shadow"
       transition:fly={{ y: -10, duration: 100 }}
     >
       <p class="text-center">Feed is paused during interaction</p>
