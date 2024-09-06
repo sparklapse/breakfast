@@ -122,7 +122,6 @@
     const transform = transformFromPoints(viewportStart, viewportEnd, 0);
 
     const source = createDefaultSource(tag, transform);
-    console.log(source);
 
     oncreate?.(source);
     showCreateMenu = false;
