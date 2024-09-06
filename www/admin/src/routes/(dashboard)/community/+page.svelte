@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { ArrowUp, UsersRound } from "lucide-svelte";
+  import { ArrowUp, BadgeCent, UsersRound } from "lucide-svelte";
   import { onMount } from "svelte";
 
   import type { PageData } from "./$types";
@@ -53,10 +53,35 @@
           <a
             href="/breakfast/community/viewers"
             class="font-medium text-slate-600 hover:text-slate-500"
-            >View all<span class="sr-only"> Total Subscribers stats</span></a
           >
+            View all<span class="sr-only"> viewers</span>
+          </a>
         </div>
       </div>
+    </dd>
+  </div>
+  <div class="relative overflow-hidden rounded-lg bg-white px-4 pb-12 pt-5 shadow sm:px-6 sm:pt-6">
+    <dt>
+      <div class="absolute rounded-md bg-slate-500 p-3">
+        <BadgeCent class="size-6 text-white" />
+      </div>
+      <p class="ml-16 truncate text-sm font-medium text-gray-500">Active Currencies</p>
+    </dt>
+    <dd class="ml-16 flex items-baseline pb-6 sm:pb-7">
+      {#await data.suspense.activeCurrencies}
+        <p>Loading...</p>
+      {:then { currencies }}
+        <ul class="text-sm">
+          {#each currencies.slice(0, 5) as cur}
+            <li>{cur}</li>
+          {:else}
+            <li>No active currencies circulating...</li>
+          {/each}
+          {#if currencies.length > 5}
+            <li>and {currencies.length - 5} more...</li>
+          {/if}
+        </ul>
+      {/await}
     </dd>
   </div>
 </dl>
