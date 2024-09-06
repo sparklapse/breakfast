@@ -1,8 +1,9 @@
+import type { SOURCE_INPUTS } from "$lib/overlay/sources/inputs";
 import chat from "./chat.svelte?wcs";
 import highlight from "./highlight.svelte?wcs";
 import type { OverlayScript } from "@sparklapse/breakfast/scripts";
 
-export const basics: OverlayScript = {
+export const basics: OverlayScript<typeof SOURCE_INPUTS> = {
   id: "basic-chat",
   label: "Basic Chat",
   version: 0,
@@ -62,9 +63,40 @@ export const basics: OverlayScript = {
         {
           group: [
             {
+              type: "select",
+              label: "X",
+              target: "props.x",
+              defaultValue: "left",
+              options: {
+                options: [
+                  { label: "Left", value: "left" },
+                  { label: "Center", value: "center" },
+                  { label: "Right", value: "right" },
+                ],
+              },
+            },
+            {
+              type: "select",
+              label: "Y",
+              target: "props.y",
+              defaultValue: "top",
+              options: {
+                options: [
+                  { label: "Top", value: "top" },
+                  { label: "Center", value: "center" },
+                  { label: "Bottom", value: "bottom" },
+                ],
+              },
+            },
+          ],
+        },
+        {
+          group: [
+            {
               type: "number",
               label: "Size",
               target: "style.font-size",
+              defaultValue: "64",
               format: "{}px",
             },
             {

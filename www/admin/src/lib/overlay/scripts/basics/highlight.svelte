@@ -10,12 +10,13 @@
 </script>
 
 <script lang="ts">
-  import type { ChatMessageEvent } from "@sparklapse/breakfast/overlay";
-
   import { onMount } from "svelte";
   import { fly } from "svelte/transition";
+  import type { ChatMessageEvent } from "@sparklapse/breakfast/overlay";
 
-  /// <reference types="@sparklapse/breakfast/overlay" />
+  export let x: "left" | "center" | "right" = "left";
+  export let y: "top" | "center" | "bottom" = "top";
+  $$restProps;
 
   let message: ChatMessageEvent | undefined = undefined;
 
@@ -40,9 +41,19 @@
 </script>
 
 {#key message}
-  <div class="container" transition:fly={{ x: -100, duration: 100 }}>
+  <div
+    class="container"
+    style:transform="translateX({x === "center" ? "-50%" : "0"}) translateY({y === "center"
+      ? "-50%"
+      : "0"})"
+    style:top={y === "top" ? 0 : y === "center" ? "50%" : undefined}
+    style:left={x === "left" ? 0 : x === "center" ? "50%" : undefined}
+    style:bottom={y === "bottom" ? 0 : undefined}
+    style:right={x === "right" ? 0 : undefined}
+    transition:fly={{ x: -100, duration: 100 }}
+  >
     {#if message}
-      <p class="w-fit">
+      <p>
         <span style:color={message.data.color}>{message.data.viewer.displayName}</span>: {message
           .data.text}
       </p>
@@ -53,14 +64,17 @@
 <style>
   .container {
     position: absolute;
-    inset: 0;
   }
 
   p {
     color: white;
     margin: 0;
     padding: 0 1rem;
+    width: fit-content;
     border-radius: 0.375rem;
     background-color: #2a2a2a;
+    box-shadow:
+      0 10px 15px -3px rgb(0 0 0 / 0.1),
+      0 4px 6px -4px rgb(0 0 0 / 0.1);
   }
 </style>
