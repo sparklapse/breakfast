@@ -6,6 +6,7 @@
   import { useEditor } from "$lib/overlay/contexts";
   import { DEFAULT_SCRIPTS } from "$lib/overlay/scripts";
   import EventFeed from "$lib/components/events/EventFeed.svelte";
+  import Action from "$lib/components/events/Action.svelte";
   import Sync from "./Sync.svelte";
   import type { ActionDefinition } from "@sparklapse/breakfast/scripts";
 
@@ -71,6 +72,20 @@
   <h3 class="font-semibold">OBS Sync</h3>
   <Sync {abortAS} {save} />
 
+  <!-- Actions controls -->
+  <h3 class="mt-4 font-semibold">Actions</h3>
+  <Action {actions} />
+  <div class="my-4" role="separator" />
+  <div class="h-[24rem]">
+    <EventFeed
+      {actions}
+      onPauseChange={(paused) => {
+        holdMenu = paused;
+      }}
+      hideSettings
+    />
+  </div>
+
   <!-- Scripts Management -->
   <div class="mt-6 flex items-center gap-2">
     <h3 class="font-semibold">Scripts</h3>
@@ -90,19 +105,9 @@
   </button>
   <ul>
     {#each $scripts as script}
-      <li title={script.id}>{script.label}</li>
+      <li title={script.id}>
+        {script.label} <span class="text-sm text-slate-400">(v{script.version})</span>
+      </li>
     {/each}
   </ul>
-
-  <!-- Event feed -->
-  <h3 class="mt-6 font-semibold">Actions</h3>
-  <div class="h-[24rem]">
-    <EventFeed
-      {actions}
-      onPauseChange={(paused) => {
-        holdMenu = paused;
-      }}
-      hideSettings
-    />
-  </div>
 </div>

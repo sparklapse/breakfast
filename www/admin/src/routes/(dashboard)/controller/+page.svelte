@@ -1,7 +1,8 @@
 <script lang="ts">
-  import EventFeed from "$lib/components/events/EventFeed.svelte";
   import { Select } from "bits-ui";
   import { RotateCw } from "lucide-svelte";
+  import Action from "$lib/components/events/Action.svelte";
+  import EventFeed from "$lib/components/events/EventFeed.svelte";
 
   import type { PageData } from "./$types";
   import type { ActionDefinition, OverlayScript } from "@sparklapse/breakfast/scripts";
@@ -79,10 +80,10 @@
         src={selectedOverlay ? `/overlays/render/${selectedOverlay}` : "about:blank"}
         use:fitFrame
       ></iframe>
-      <div class="absolute inset-0 opacity-20 transition-opacity hover:opacity-100">
-        <button class="absolute bottom-2 right-2 rounded bg-slate-700 px-2 py-1 text-white shadow"
-          >Actions</button
-        >
+      <div class="absolute inset-0 opacity-20 transition-opacity hover:opacity-95">
+        <div class="absolute bottom-2 right-2 w-full max-w-md">
+          <Action {actions} />
+        </div>
       </div>
     </div>
   </div>
