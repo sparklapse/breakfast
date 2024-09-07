@@ -21,12 +21,10 @@ func init() {
 				System:     true,
 				ListRule:   types.Pointer("@request.auth.verified = true && @request.auth.collectionName = \"users\""),
 				ViewRule:   types.Pointer("@request.auth.verified = true && @request.auth.collectionName = \"users\""),
-				CreateRule: types.Pointer("@request.auth.verified = true && @request.auth.collectionName = \"users\""),
-				UpdateRule: types.Pointer("@request.auth.verified = true && @request.auth.collectionName = \"users\""),
+				CreateRule: nil,
+				UpdateRule: nil,
 				DeleteRule: types.Pointer("@request.auth.verified = true && @request.auth.collectionName = \"users\""),
-				Indexes: types.JsonArray[string]{
-					"CREATE INDEX viewers_provider_providerId_idx ON viewers (provider, providerId)",
-				},
+				Indexes:    types.JsonArray[string]{},
 				Options: types.JsonMap{
 					"allowEmailAuth":     false,
 					"allowOAuth2Auth":    true,
