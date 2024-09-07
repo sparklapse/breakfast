@@ -256,6 +256,26 @@ export class BreakfastPocketBase extends PocketBase {
       },
     },
     viewers: {
+      list: async (
+        page: number = 1,
+        perPage: number = 20,
+        search: string = "",
+      ): Promise<
+        {
+          id: string;
+          displayName: string;
+          providers: string;
+          providerIds: string;
+        }[]
+      > => {
+        return await this.send("/api/breakfast/viewers/list", {
+          query: {
+            page,
+            perPage,
+            ...(search === "" ? {} : { search }),
+          },
+        });
+      },
       count: async (): Promise<{ total: number; new30: number }> => {
         return await this.send("/api/breakfast/viewers/count", {});
       },
