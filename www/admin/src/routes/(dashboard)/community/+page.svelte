@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { ArrowUp, BadgeCent, UsersRound } from "lucide-svelte";
+  import { ArrowUp, BadgeCent, Gift, SquarePlus, UsersRound } from "lucide-svelte";
   import { onMount } from "svelte";
 
   import type { PageData } from "./$types";
@@ -24,6 +24,7 @@
 </script>
 
 <dl class="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+  <!-- Viewers -->
   <div class="relative overflow-hidden rounded-lg bg-white px-4 pb-12 pt-5 shadow sm:px-6 sm:pt-6">
     <dt>
       <div class="absolute rounded-md bg-slate-500 p-3">
@@ -55,6 +56,43 @@
             class="font-medium text-slate-600 hover:text-slate-500"
           >
             View all<span class="sr-only"> viewers</span>
+          </a>
+        </div>
+      </div>
+    </dd>
+  </div>
+
+  <!-- Items -->
+  <div class="relative overflow-hidden rounded-lg bg-white px-4 pb-12 pt-5 shadow sm:px-6 sm:pt-6">
+    <dt>
+      <div class="absolute rounded-md bg-slate-500 p-3">
+        <Gift class="size-6 text-white" />
+      </div>
+      <p class="ml-16 truncate text-sm font-medium text-gray-500">Items</p>
+    </dt>
+    <dd class="ml-16 flex items-baseline pb-6 sm:pb-7">
+      <p class="text-2xl font-semibold text-gray-900">
+        {#await data.suspense.totalItems}
+          ...
+        {:then items}
+          {items}
+        {/await}
+      </p>
+      <div class="absolute inset-x-0 bottom-0 bg-gray-50 px-4 py-4 sm:px-6">
+        <div class="flex justify-between text-sm">
+          <a
+            href="/breakfast/community/items"
+            class="font-medium text-slate-600 hover:text-slate-500"
+          >
+            View all<span class="sr-only"> items</span>
+          </a>
+
+          <a
+            href="/breakfast/community/items/new"
+            class="flex items-center gap-1 font-medium text-slate-600 hover:text-slate-500"
+          >
+            New<span class="sr-only"> item</span>
+            <SquarePlus size="1rem" />
           </a>
         </div>
       </div>
