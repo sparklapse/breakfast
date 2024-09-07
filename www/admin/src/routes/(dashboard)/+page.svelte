@@ -1,10 +1,9 @@
 <script lang="ts">
   import toast from "svelte-french-toast";
   import type { ComponentType } from "svelte";
-  import { Layers3, RotateCw, Settings, Unplug, UsersRound } from "lucide-svelte";
+  import { Layers3, Settings, Unplug, UsersRound } from "lucide-svelte";
   import Stats from "$lib/components/obs/Stats.svelte";
   import Obs from "$lib/components/icons/OBS.svelte";
-  import { invalidate } from "$app/navigation";
 
   import type { PageData } from "./$types";
   export let data: PageData;
@@ -55,6 +54,16 @@
             ...
           {:then count}
             {count.total}
+          {/await}
+        </dd>
+      </div>
+      <div class="flex justify-between gap-x-4 py-3">
+        <dt class="text-gray-500">Items</dt>
+        <dd class="text-gray-700">
+          {#await data.suspense.totalItems}
+            ...
+          {:then count}
+            {count}
           {/await}
         </dd>
       </div>
