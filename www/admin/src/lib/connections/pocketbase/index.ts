@@ -4,6 +4,7 @@ import PocketBase, {
   getTokenPayload,
   isTokenExpired,
   RealtimeService,
+  type SendOptions,
 } from "pocketbase";
 import { customAlphabet } from "nanoid";
 import { TWITCH_AUTH_SCOPES } from "./auth";
@@ -260,6 +261,7 @@ export class BreakfastPocketBase extends PocketBase {
         page: number = 1,
         perPage: number = 20,
         search: string = "",
+        options?: SendOptions,
       ): Promise<
         {
           id: string;
@@ -269,18 +271,20 @@ export class BreakfastPocketBase extends PocketBase {
         }[]
       > => {
         return await this.send("/api/breakfast/viewers/list", {
+          ...options,
           query: {
+            ...options?.query,
             page,
             perPage,
             ...(search === "" ? {} : { search }),
           },
         });
       },
-      count: async (): Promise<{ total: number; new30: number }> => {
-        return await this.send("/api/breakfast/viewers/count", {});
+      count: async (options?: SendOptions): Promise<{ total: number; new30: number }> => {
+        return await this.send("/api/breakfast/viewers/count", options ?? {});
       },
-      activeCurrencies: async (): Promise<{ currencies: string[] }> => {
-        return await this.send("/api/breakfast/viewers/currencies", {});
+      activeCurrencies: async (options?: SendOptions): Promise<{ currencies: string[] }> => {
+        return await this.send("/api/breakfast/viewers/currencies", options ?? {});
       },
     },
   };
