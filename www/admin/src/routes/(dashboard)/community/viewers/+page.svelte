@@ -93,7 +93,7 @@
     {#each Array(20) as _, idx}
       <li
         class="relative flex animate-pulse justify-between gap-x-6 bg-gray-200 px-2 py-5 text-transparent"
-        style:animation-delay="{idx*200}ms"
+        style:animation-delay="{idx * 200}ms"
       >
         <div class="flex min-w-0 gap-x-4">
           <div class="size-12 flex-none rounded-full bg-gray-400" />
@@ -121,8 +121,8 @@
       <li class="relative flex justify-between gap-x-6 px-2 py-5">
         <a href="/breakfast/community/viewers/{viewer.id}" class="flex min-w-0 gap-x-4">
           <img
-            class="size-12 flex-none rounded-full bg-gray-50"
-            src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
+            class="size-12 flex-none rounded-full bg-gray-50 brightness-150 contrast-75 saturate-[25%]"
+            src="/breakfast/profile.jpg"
             alt=""
           />
           <div class="min-w-0 flex-auto">
