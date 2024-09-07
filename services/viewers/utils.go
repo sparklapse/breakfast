@@ -33,11 +33,8 @@ func CreateViewerByProviderId(provider string, id string) (string, error) {
 		viewer.RefreshTokenKey()
 		viewer.SetUsername(security.RandomStringWithAlphabet(21, "abcdefghijklmnopqrstuvwxyz"))
 		viewer.SetVerified(true)
-		viewer.Set("inventory", map[string]any{
-			"currencies": map[string]int{
-				"dots": 5,
-			},
-			"items": []map[string]any{},
+		viewer.Set("wallet", map[string]int{
+			"dots": 5,
 		})
 		viewerId = viewer.Id
 

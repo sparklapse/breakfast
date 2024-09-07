@@ -19,7 +19,7 @@ func registerStatAPIs(app *pocketbase.PocketBase) {
 			err := app.Dao().DB().
 				Select("json_each.key AS currency").
 				Distinct(true).
-				From("viewers, json_each(viewers.inventory, '$.currencies')").
+				From("viewers, json_each(viewers.wallet, '$')").
 				All(&query)
 			if err != nil {
 				return c.JSON(500, map[string]string{"message": "Failed to query distinct currencies"})

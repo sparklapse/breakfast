@@ -50,13 +50,13 @@ func init() {
 						},
 					},
 					&schema.SchemaField{
-						Id:          "inventory",
-						Name:        "inventory",
+						Id:          "wallet",
+						Name:        "wallet",
 						Type:        schema.FieldTypeJson,
 						Required:    false,
 						Presentable: false,
 						Options: types.JsonMap{
-							"maxSize": 1_000_000_000, // 1GB
+							"maxSize": 1_000_000, // 1MB
 						},
 					},
 				),
