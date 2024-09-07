@@ -26,11 +26,13 @@ func CreateViewerByProviderId(provider string, id string) (string, error) {
 		if err != nil {
 			return err
 		}
+
 		viewer := models.NewRecord(collection)
 		viewer.MarkAsNew()
 		viewer.RefreshId()
 		viewer.RefreshTokenKey()
 		viewer.SetUsername(security.RandomStringWithAlphabet(21, "abcdefghijklmnopqrstuvwxyz"))
+		viewer.SetVerified(true)
 		viewer.Set("inventory", map[string]any{
 			"currencies": map[string]int{
 				"dots": 5,

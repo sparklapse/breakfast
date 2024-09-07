@@ -35,7 +35,7 @@ func init() {
 					"manageRule":         "@request.auth.verified = true && @request.auth.collectionName = \"users\"",
 					"minPasswordLength":  8,
 					"onlyEmailDomains":   nil,
-					"onlyVerified":       false,
+					"onlyVerified":       true,
 					"requireEmail":       false,
 				},
 				Schema: schema.NewSchema(
