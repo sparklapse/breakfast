@@ -13,6 +13,9 @@
     ".": {
       "import": "./index.js"
     },
+    "./db": {
+      "types": "./types/db.d.ts"
+    },
     "./actions": {
       "types": "./types/actions.d.ts"
     },
