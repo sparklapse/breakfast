@@ -57,8 +57,8 @@
   on:drop={(ev) => {
     ev.preventDefault();
     if (ev.dataTransfer?.files) {
+      uploadFiles(ev.dataTransfer.files);
     }
-    console.log(ev);
   }}
   on:click={() => fileInput.click()}
 >
@@ -88,7 +88,7 @@
           src={data.pb.files.getUrl(asset, asset.asset, { thumb: "100x100" })}
           alt={asset.label}
         />
-        <div class="flex items-center justify-between overflow-hidden w-full">
+        <div class="flex w-full items-center justify-between overflow-hidden">
           {#if rename === asset.id}
             <input
               class="text-sm leading-6 text-gray-900"
@@ -115,7 +115,7 @@
               use:focus
             />
           {:else}
-            <p class="text-sm leading-6 truncate text-gray-900">{asset.label}</p>
+            <p class="truncate text-sm leading-6 text-gray-900">{asset.label}</p>
           {/if}
           <DropdownMenu.Root>
             <DropdownMenu.Trigger class="-m-2.5 block p-2.5 text-gray-500 hover:text-gray-900">
