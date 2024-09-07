@@ -181,7 +181,7 @@
       type="button"
       class="-m-2.5 p-2.5 text-gray-700 lg:hidden"
       on:click={() => {
-        mobileMenuOpen = true;
+        mobileMenuOpen = !mobileMenuOpen;
       }}
     >
       <span class="sr-only">Open sidebar</span>
