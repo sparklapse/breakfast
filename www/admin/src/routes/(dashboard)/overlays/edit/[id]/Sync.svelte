@@ -134,7 +134,7 @@
               <Select.Value placeholder="Select a scene" />
             </Select.Trigger>
             <Select.Content
-              class="mt-1 rounded bg-white p-2 shadow"
+              class="z-10 mt-1 rounded bg-white p-2 shadow-lg"
               transition={fly}
               transitionConfig={{ y: -10, duration: 100 }}
             >
