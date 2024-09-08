@@ -22,6 +22,7 @@ func init() {
 func CreateViewerByProviderId(provider string, id string) (*Viewer, error) {
 	viewer := Viewer{}
 
+	// Create user and external auth records
 	err := pb.Dao().RunInTransaction(func(txDao *daos.Dao) error {
 		collection, err := txDao.FindCollectionByNameOrId("viewers")
 		if err != nil {
@@ -84,6 +85,32 @@ func CreateViewerByProviderId(provider string, id string) (*Viewer, error) {
 
 	if err != nil {
 		return nil, err
+	}
+
+	// Give user default profile base item
+	if defaultProfileBaseItemId != "" {
+		go func() {
+			_, err := pb.Dao().DB().
+				Insert(
+					"viewer_items",
+					dbx.Params{
+						"id":      security.RandomString(15),
+						"owner":   viewer.Id,
+						"item":    defaultProfileBaseItemId,
+						"meta":    nil,
+						"created": time.Now(),
+						"updated": time.Now(),
+					},
+				).
+				Execute()
+
+			if err != nil {
+				pb.Logger().Error(
+					"ITEMS Failed to give user default profile base item",
+					"error", err.Error(),
+				)
+			}
+		}()
 	}
 
 	return &viewer, nil

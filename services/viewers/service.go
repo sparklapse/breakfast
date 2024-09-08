@@ -11,4 +11,6 @@ func RegisterService(app *pocketbase.PocketBase) {
 
 	registerManageAPIs(app)
 	registerStatAPIs(app)
+	registerItemsService(app)
+	registerProfileAPIs(app)
 }

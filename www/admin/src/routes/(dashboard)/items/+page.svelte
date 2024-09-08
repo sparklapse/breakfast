@@ -86,10 +86,7 @@
     {:then items}
       {#each items as item}
         <li>
-          <a
-            href="/breakfast/items/{item.id}"
-            class="col-span-1 flex h-14 rounded-md shadow-sm"
-          >
+          <a href="/breakfast/items/{item.id}" class="col-span-1 flex h-14 rounded-md shadow-sm">
             {#if typeof item.image === "string" && item.image !== ""}
               {@const url = data.pb.getFileUrl(item, item.image, { thumb: "256x256f" })}
               <img
@@ -116,6 +113,8 @@
             </div>
           </a>
         </li>
+      {:else}
+        <li>No items created yet!</li>
       {/each}
     {/await}
   </ul>

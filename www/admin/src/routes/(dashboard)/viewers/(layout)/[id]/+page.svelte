@@ -5,6 +5,7 @@
   import { EllipsisVertical } from "lucide-svelte";
 
   import type { PageData } from "./$types";
+  import { goto } from "$app/navigation";
   export let data: PageData;
 
   const providersArr = data.viewer.providers!.split(",");
@@ -23,6 +24,26 @@
 
 <div class="flex items-start justify-between">
   <div class="flex gap-2">
+    <div>
+      {#await data.suspense.profileItems}
+        <img
+          class="size-24 flex-none animate-pulse rounded-full bg-gray-50 shadow-lg brightness-150 contrast-75 saturate-[25%]"
+          src="/breakfast/profile.jpg"
+          alt=""
+        />
+      {:then items}
+        <div class="relative size-24 flex-none overflow-hidden rounded-full bg-gray-50 shadow-lg">
+          <img
+            class="absolute inset-0"
+            src={items.base !== "" ? items.base + "?thumb=512x512f" : "/breakfast/profile.jpg"}
+            alt=""
+          />
+          {#each items.accessories as item}
+            <img class="absolute inset-0" src="{item}?thumb=512x512f" alt="" />
+          {/each}
+        </div>
+      {/await}
+    </div>
     <div>
       {#if renaming}
         <input
@@ -69,6 +90,8 @@
           renaming = true;
         }}>Rename</DropdownMenu.Item
       >
+      <DropdownMenu.Separator class="my-2 border-t border-slate-200" />
+      <DropdownMenu.Label class="px-2 text-xs text-slate-400">Danger Zone</DropdownMenu.Label>
       {#if verified}
         <DropdownMenu.Item
           class="cursor-pointer px-2 text-red-900 hover:bg-slate-50"
@@ -104,6 +127,22 @@
           }}>Enable Account</DropdownMenu.Item
         >
       {/if}
+      <DropdownMenu.Item
+        class="cursor-pointer px-2 text-red-900 hover:bg-slate-50"
+        on:click={() => {
+          toast.promise(
+            data.pb
+              .collection("viewers")
+              .delete(data.viewer.id)
+              .then(() => goto("/breakfast/viewers")),
+            {
+              loading: "Deleting account...",
+              success: "Account deleted!",
+              error: (err) => `Failed to delete account: ${err.message}`,
+            },
+          );
+        }}>Delete Account</DropdownMenu.Item
+      >
     </DropdownMenu.Content>
   </DropdownMenu.Root>
 </div>

@@ -17,7 +17,12 @@ export const load: PageLoad = async ({ parent, params }) => {
   viewer.providers = providers;
   viewer.providerIds = providerIds;
 
+  const profileItems = data.pb.breakfast.viewers.getProfileItems(params.id);
+
   return {
     viewer,
+    suspense: {
+      profileItems,
+    },
   };
 };

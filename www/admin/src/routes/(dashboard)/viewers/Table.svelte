@@ -118,13 +118,29 @@
     {/each}
   {:then viewers}
     {#each viewers as viewer (viewer.id)}
+      {@const profileItems = data.pb.breakfast.viewers
+        .getProfileItems(viewer.id)
+        .catch(() => ({ base: "", accessories: [] }))}
       <li class="relative flex justify-between gap-x-6 px-2 py-5">
         <a href="/breakfast/viewers/{viewer.id}" class="flex min-w-0 gap-x-4">
-          <img
-            class="size-12 flex-none rounded-full bg-gray-50 brightness-150 contrast-75 saturate-[25%]"
-            src="/breakfast/profile.jpg"
-            alt=""
-          />
+          {#await profileItems}
+            <img
+              class="size-12 flex-none animate-pulse rounded-full bg-gray-50 brightness-150 contrast-75 saturate-[25%]"
+              src="/breakfast/profile.jpg"
+              alt=""
+            />
+          {:then items}
+            <div class="relative size-12 flex-none overflow-hidden rounded-full bg-gray-50">
+              <img
+                class="absolute inset-0"
+                src={items.base !== "" ? items.base + "?thumb=256x256f" : "/breakfast/profile.jpg"}
+                alt=""
+              />
+              {#each items.accessories as item}
+                <img class="absolute inset-0" src="{item}?thumb=256x256f" alt="" />
+              {/each}
+            </div>
+          {/await}
           <div class="min-w-0 flex-auto">
             <p class="text-sm font-semibold leading-6 text-gray-900">
               <span class="absolute inset-x-0 -top-px bottom-0"></span>

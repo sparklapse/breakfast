@@ -42,7 +42,7 @@ func init() {
 						Name:        "displayName",
 						Type:        schema.FieldTypeText,
 						Required:    false,
-						Presentable: false,
+						Presentable: true,
 						Options: types.JsonMap{
 							"min":     nil,
 							"max":     nil,

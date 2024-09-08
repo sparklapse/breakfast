@@ -54,6 +54,8 @@
 
   let imageFile: FileList | undefined;
   let imagePreview = "";
+  let itemType: string = "COLLECTABLE";
+  let makeProfileBaseDefault = false;
   let currency = "";
   let shopPurchasable = false;
   let shopPrices: { [key: string]: number } = {};
@@ -89,6 +91,9 @@
       return toast.error("You must specify the item visibility");
     }
     const image = imageFile?.length === 1 ? imageFile[0] : null;
+    if ((itemType === "PROFILE_BASE" || itemType === "PROFILE_ACCESSORY") && image === null) {
+      return toast.error("Profile items must have an image");
+    }
 
     const item: Item = {
       type: itemType,
@@ -98,7 +103,7 @@
       image,
       shopPurchasable,
       shopInfo: {
-        prices: shopPrices,
+        prices: Object.keys(shopPrices).length === 0 ? "free" : shopPrices,
       },
       meta: {
         color,
@@ -109,7 +114,11 @@
     toast.promise(
       data.pb
         .collection("items")
-        .create(item)
+        .create(item, {
+          query: {
+            makeProfileBaseDefault: makeProfileBaseDefault ? true : undefined,
+          },
+        })
         .then((data) => goto(`/breakfast/items/${data.id}`)),
       {
         loading: "Creating item...",
@@ -245,7 +254,13 @@
         <div class="sm:col-span-3">
           <label for="type" class="block text-sm font-medium leading-6 text-gray-900">Type</label>
           <div class="mt-2">
-            <Select.Root items={ITEM_TYPES}>
+            <Select.Root
+              items={ITEM_TYPES}
+              onSelectedChange={(selected) => {
+                if (!selected) return;
+                itemType = selected?.value;
+              }}
+            >
               <Select.Input id="type" name="type" class="hidden" required />
               <Select.Trigger
                 class="block w-full rounded-md border-0 bg-white px-2 py-1.5 text-left text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-slate-600 sm:text-sm sm:leading-6"
@@ -305,6 +320,42 @@
         </div>
       </div>
     </div>
+
+    {#if itemType === "PROFILE_BASE"}
+      <div
+        class="grid grid-cols-1 gap-x-8 gap-y-10 border-b border-gray-900/10 pb-12 md:grid-cols-3"
+        transition:slide={{ axis: "y" }}
+      >
+        <div>
+          <h2 class="text-base font-semibold leading-7 text-gray-900">Profile Options</h2>
+          <p class="mt-1 text-sm leading-6 text-gray-600">
+            Give your viewers their own way to express themselves.
+          </p>
+        </div>
+
+        <div class="max-w-2xl space-y-10 md:col-span-2">
+          <div class="sm:col-span-3">
+            <label for="shopPurchasable" class="block text-sm font-medium leading-6 text-gray-900"
+              >Make Default</label
+            >
+            <p class="text-sm text-slate-400">
+              This will give all new viewers this item by default. This will replace the current
+              default.
+            </p>
+            <div class="mt-2.5">
+              <Switch.Root
+                class="relative w-14 rounded-full bg-slate-400 transition-colors data-[state=checked]:bg-green-600"
+                bind:checked={makeProfileBaseDefault}
+              >
+                <Switch.Thumb
+                  class="m-0.5 flex size-7 rounded-full bg-white shadow-sm transition-transform data-[state=checked]:translate-x-6"
+                />
+              </Switch.Root>
+            </div>
+          </div>
+        </div>
+      </div>
+    {/if}
 
     {#if shopPurchasable}
       <div
@@ -421,7 +472,7 @@
   <div class="mt-6 flex items-center justify-end gap-x-6">
     <button
       type="submit"
-      class="rounded-md bg-slate-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-slate-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-600"
+      class="rounded-md bg-slate-700 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-slate-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-600"
       >Create</button
     >
   </div>
