@@ -7,6 +7,12 @@ export type Channel = {
 
 export type Viewer = {
   id: string;
+  displayName: string;
+  currencies: Record<string, number>;
+};
+
+export type Chatter = {
+  viewer: Viewer;
   username: string;
   displayName: string;
 };
@@ -28,10 +34,10 @@ export type ChatMessageEvent = {
     // services/events/types/chat.go
     id: string;
     channel: Channel;
-    viewer: Viewer;
+    chatter: Chatter;
     reply: {
       repliedToMessageId: string;
-      repliedToViewer: Viewer;
+      repliedToChatter: Chatter;
     } | null;
     text: string;
     color: string;
@@ -61,7 +67,7 @@ export type SubscriptionEvent = {
   platform: Platforms;
   data: {
     channel: Channel;
-    viewer: Viewer;
+    chatter: Chatter;
     tier: string;
     gifted: boolean;
   };

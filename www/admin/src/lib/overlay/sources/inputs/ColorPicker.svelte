@@ -1,10 +1,14 @@
 <script lang="ts">
+  import clsx from "clsx";
   import Color from "color";
   import { DropdownMenu } from "bits-ui";
 
   export let label: string = "Color";
   export let value: string | undefined = undefined;
   export let onchange: ((color: Color) => void) | undefined = undefined;
+  let classes: string = "";
+  export { classes as class };
+
   $$restProps;
 
   let huesElement: HTMLDivElement;
@@ -64,9 +68,14 @@
 />
 
 <div class="w-full">
-  <p>{label}</p>
+  {#if label !== ""}
+    <p>{label}</p>
+  {/if}
   <DropdownMenu.Root portal="body" bind:open>
-    <DropdownMenu.Trigger class="w-full rounded px-2" style="background-color: {hex};">
+    <DropdownMenu.Trigger
+      class={clsx(["w-full rounded border border-gray-300 px-2", classes])}
+      style="background-color: {hex};"
+    >
       <span style:color={hex} style:filter="invert(1) saturate(0)">{hex}</span>
     </DropdownMenu.Trigger>
     <DropdownMenu.Content>

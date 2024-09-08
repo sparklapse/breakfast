@@ -121,19 +121,19 @@ func ProcessChannelChatMessageEventPayload(payload map[string]any) (*types.ChatM
 			return nil, errors.New("reply parent_user_name was not of the correct type")
 		}
 
-		viewer, _ := viewers.GetViewerIdByProviderId("twitch", replied_to_chatter_id)
+		viewer, _ := viewers.GetViewerByProviderId("twitch", replied_to_chatter_id)
 
 		reply = &types.ChatMessageReply{
 			RepliedToMessageId: replied_to_message_id,
-			RepliedToViewer: types.Viewer{
-				Id:          viewer,
+			RepliedToChatter: types.Chatter{
+				Viewer:      viewer,
 				Username:    replied_to_chatter_login,
 				DisplayName: replied_to_chatter_name,
 			},
 		}
 	}
 
-	viewer, _ := viewers.GetViewerIdByProviderId("twitch", chatter_user_id)
+	viewer, _ := viewers.GetViewerByProviderId("twitch", chatter_user_id)
 
 	return &types.ChatMessage{
 		Id:        message_id,
@@ -145,8 +145,8 @@ func ProcessChannelChatMessageEventPayload(payload map[string]any) (*types.ChatM
 			Username:    broadcaster_user_login,
 			DisplayName: broadcaster_user_name,
 		},
-		Viewer: types.Viewer{
-			Id:          viewer,
+		Chatter: types.Chatter{
+			Viewer:      viewer,
 			Username:    chatter_user_login,
 			DisplayName: chatter_user_name,
 		},

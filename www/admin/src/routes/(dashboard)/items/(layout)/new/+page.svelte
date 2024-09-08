@@ -41,13 +41,15 @@
 
 <script lang="ts">
   import toast from "svelte-french-toast";
+  import Color from "color";
   import { slide } from "svelte/transition";
   import { Combobox, Select, Switch } from "bits-ui";
   import { Image, Trash2 } from "lucide-svelte";
+  import { goto } from "$app/navigation";
+  import ColorPicker from "$lib/overlay/sources/inputs/ColorPicker.svelte";
   import type { Item, ItemType, Visibility } from "@sparklapse/breakfast/db";
 
   import type { PageData } from "./$types";
-  import { goto } from "$app/navigation";
   export let data: PageData;
 
   let imageFile: FileList | undefined;
@@ -55,6 +57,7 @@
   let currency = "";
   let shopPurchasable = false;
   let shopPrices: { [key: string]: number } = {};
+  let color: string = Color.hsl({ h: Math.floor(Math.random() * 360), s: 80, l: 85 }).hex();
 
   const updatePreview = () => {
     if (!imageFile) return;
@@ -73,17 +76,17 @@
     const formData = new FormData(ev.currentTarget);
 
     const itemType = formData.get("type") as ItemType | null;
-    if (!itemType || (itemType as string) === "") {
-      return toast.error("Missing field type");
+    if (!itemType || (itemType as string) === "" || (itemType as string) === "undefined") {
+      return toast.error("You must specify the item type");
     }
     const label = formData.get("label") as string | null;
-    if (!label || label === "") {
-      return toast.error("Missing field label");
+    if (!label || label === "" || label === "undefined") {
+      return toast.error("You must specify the item label");
     }
     const description = formData.get("description") as string | null;
     const visibility = formData.get("visibility") as Visibility | null;
-    if (!visibility || (visibility as string) === "") {
-      return toast.error("Missing field visibility");
+    if (!visibility || (visibility as string) === "" || (visibility as string) === "undefined") {
+      return toast.error("You must specify the item visibility");
     }
     const image = imageFile?.length === 1 ? imageFile[0] : null;
 
@@ -97,7 +100,9 @@
       shopInfo: {
         prices: shopPrices,
       },
-      meta: {},
+      meta: {
+        color,
+      },
       visibility,
     };
 
@@ -105,7 +110,7 @@
       data.pb
         .collection("items")
         .create(item)
-        .then((data) => goto(`/breakfast/community/items/${data.id}`)),
+        .then((data) => goto(`/breakfast/items/${data.id}`)),
       {
         loading: "Creating item...",
         success: "Created item!",
@@ -124,7 +129,7 @@
       </div>
 
       <div class="grid max-w-2xl grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6 md:col-span-2">
-        <div class="sm:col-span-4">
+        <div class="sm:col-span-2">
           <label for="label" class="block text-sm font-medium leading-6 text-gray-900">Label</label>
           <div class="mt-2">
             <input
@@ -134,6 +139,13 @@
               class="block w-full rounded-md border-0 px-2 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-slate-600 sm:text-sm sm:leading-6"
               required
             />
+          </div>
+        </div>
+
+        <div class="sm:col-span-2">
+          <label for="label" class="block text-sm font-medium leading-6 text-gray-900">Color</label>
+          <div class="mt-2 flex gap-2">
+            <ColorPicker class="h-9 shadow-sm" label="" value={color} />
           </div>
         </div>
 
@@ -233,8 +245,8 @@
         <div class="sm:col-span-3">
           <label for="type" class="block text-sm font-medium leading-6 text-gray-900">Type</label>
           <div class="mt-2">
-            <Select.Root items={ITEM_TYPES} required>
-              <Select.Input id="type" name="type" class="hidden" />
+            <Select.Root items={ITEM_TYPES}>
+              <Select.Input id="type" name="type" class="hidden" required />
               <Select.Trigger
                 class="block w-full rounded-md border-0 bg-white px-2 py-1.5 text-left text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-slate-600 sm:text-sm sm:leading-6"
               >
@@ -273,13 +285,8 @@
             >Visiblity</label
           >
           <div class="mt-2">
-            <Select.Root
-              name="visibility "
-              items={ITEM_VISIBILITY}
-              selected={ITEM_VISIBILITY[0]}
-              required
-            >
-              <Select.Input id="visibility" name="visibility" class="hidden" />
+            <Select.Root name="visibility " items={ITEM_VISIBILITY} selected={ITEM_VISIBILITY[0]}>
+              <Select.Input id="visibility" name="visibility" class="hidden" required />
               <Select.Trigger
                 class="block w-full rounded-md border-0 bg-white px-2 py-1.5 text-left text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-slate-600 sm:text-sm sm:leading-6"
               >

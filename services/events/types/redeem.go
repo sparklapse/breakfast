@@ -10,7 +10,7 @@ type RedeemItem struct {
 type Redeem struct {
 	Id      string     `json:"id"`
 	Channel Channel    `json:"channel"`
-	Viewer  Viewer     `json:"viewer"`
+	Chatter Chatter    `json:"chatter"`
 	Item    RedeemItem `json:"item"`
 	Input   string     `json:"input"`
 	// unfulfilled, fulfilled, or cancelled

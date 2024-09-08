@@ -62,6 +62,10 @@
               <Select.Item class="px-2 hover:bg-slate-50" value={overlay.value}
                 >{overlay.label}</Select.Item
               >
+            {:else}
+              <p class="text-sm text-slate-400 px-2">
+                No overlays! Go make one then come back here...
+              </p>
             {/each}
           </Select.Content>
         </Select.Root>

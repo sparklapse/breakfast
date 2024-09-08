@@ -19,24 +19,28 @@ func init() {
 	idCache = cache.New(24*time.Hour, 48*time.Hour)
 }
 
-func CreateViewerByProviderId(provider string, id string) (string, error) {
-	viewerId := ""
+func CreateViewerByProviderId(provider string, id string) (*Viewer, error) {
+	viewer := Viewer{}
+
 	err := pb.Dao().RunInTransaction(func(txDao *daos.Dao) error {
 		collection, err := txDao.FindCollectionByNameOrId("viewers")
 		if err != nil {
 			return err
 		}
 
-		viewer := models.NewRecord(collection)
-		viewer.MarkAsNew()
-		viewer.RefreshId()
-		viewer.RefreshTokenKey()
-		viewer.SetUsername(security.RandomStringWithAlphabet(21, "abcdefghijklmnopqrstuvwxyz"))
-		viewer.SetVerified(true)
-		viewer.Set("wallet", map[string]int{
+		viewerRecord := models.NewRecord(collection)
+		viewerRecord.MarkAsNew()
+		viewerRecord.RefreshId()
+		viewerRecord.RefreshTokenKey()
+		viewerRecord.SetUsername(security.RandomStringWithAlphabet(21, "abcdefghijklmnopqrstuvwxyz"))
+		viewerRecord.SetVerified(true)
+		currencies := map[string]int{
 			"dots": 5,
-		})
-		viewerId = viewer.Id
+		}
+		viewerRecord.Set("wallet", currencies)
+
+		viewer.Id = viewerRecord.Id
+		viewer.Currencies = currencies
 
 		switch provider {
 		case "twitch":
@@ -44,13 +48,14 @@ func CreateViewerByProviderId(provider string, id string) (string, error) {
 			if err != nil {
 				return err
 			}
-			viewer.Set("displayName", user.DisplayName)
+			viewerRecord.Set("displayName", user.DisplayName)
+			viewer.DisplayName = user.DisplayName
 		default:
 			pb.Logger().Warn("VIEWERS A viewer was created with an unknown provider")
 		}
 
 		{
-			err := txDao.SaveRecord(viewer)
+			err := txDao.SaveRecord(viewerRecord)
 			if err != nil {
 				return err
 			}
@@ -60,7 +65,7 @@ func CreateViewerByProviderId(provider string, id string) (string, error) {
 			Provider:     provider,
 			ProviderId:   id,
 			CollectionId: "viewers",
-			RecordId:     viewer.Id,
+			RecordId:     viewerRecord.Id,
 		}
 		external.MarkAsNew()
 		external.RefreshId()
@@ -78,16 +83,16 @@ func CreateViewerByProviderId(provider string, id string) (string, error) {
 	})
 
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	return viewerId, nil
+	return &viewer, nil
 }
 
-func GetViewerIdByProviderId(provider string, providerId string) (string, error) {
+func GetViewerByProviderId(provider string, providerId string) (*Viewer, error) {
 	stored, cached := idCache.Get(provider + "-" + providerId)
 	if cached {
-		if id, ok := stored.(string); ok {
+		if id, ok := stored.(*Viewer); ok {
 			return id, nil
 		}
 	}
@@ -102,31 +107,49 @@ func GetViewerIdByProviderId(provider string, providerId string) (string, error)
 		),
 	)
 	if errors.Is(err, sql.ErrNoRows) {
-		id, err := CreateViewerByProviderId(provider, providerId)
+		viewer, err := CreateViewerByProviderId(provider, providerId)
 		if err != nil {
-			return "", err
+			return nil, err
 		}
 
-		idCache.SetDefault(provider+"-"+providerId, id)
-		return id, nil
+		idCache.SetDefault(provider+"-"+providerId, viewer)
+		return viewer, nil
 	} else if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	viewer, err := pb.Dao().FindRecordById("viewers", external.RecordId)
+	viewerRecord, err := pb.Dao().FindRecordById("viewers", external.RecordId)
 	if errors.Is(err, sql.ErrNoRows) {
 		pb.Dao().DeleteExternalAuth(external)
 		id, err := CreateViewerByProviderId(provider, providerId)
 		if err != nil {
-			return "", err
+			return nil, err
 		}
 
 		idCache.SetDefault(provider+"-"+providerId, id)
 		return id, nil
 	} else if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	idCache.SetDefault(provider+"-"+providerId, viewer.Id)
-	return viewer.Id, nil
+	var currencies map[string]int
+	{
+		err := viewerRecord.UnmarshalJSONField("wallet", &currencies)
+		if err != nil {
+			pb.Logger().Error(
+				"VIEWERS Failed to get currencies from record",
+				"type", err.Error(),
+			)
+			currencies = map[string]int{}
+		}
+	}
+
+	viewer := &Viewer{
+		Id:          viewerRecord.Id,
+		DisplayName: viewerRecord.GetString("displayName"),
+		Currencies:  currencies,
+	}
+
+	idCache.SetDefault(provider+"-"+providerId, viewerRecord.Id)
+	return viewer, nil
 }

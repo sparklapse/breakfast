@@ -1,5 +1,12 @@
 export type Visibility = "PUBLIC" | "UNLISTED" | "PRIVATE";
 
+export type Viewer = {
+  displayName: string;
+  providers?: string;
+  providerIds?: string;
+  wallet: Record<string, number> | null;
+};
+
 export type ItemType =
   | "BADGE"
   | "COLLECTABLE"

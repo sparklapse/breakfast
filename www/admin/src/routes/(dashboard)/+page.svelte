@@ -38,13 +38,6 @@
         class="h-12 w-12 flex-none rounded-lg bg-white object-cover p-2 text-slate-600 ring-1 ring-gray-900/10"
       />
       <div class="text-sm font-medium leading-6 text-gray-900">Community</div>
-      <a
-        href="/breakfast/community"
-        class="-m-2.5 ml-auto block p-2.5 text-gray-400 hover:text-gray-500"
-      >
-        <span class="sr-only">Open community dashboard</span>
-        <Settings />
-      </a>
     </div>
     <dl class="-my-3 divide-y divide-gray-100 px-6 py-4 text-sm leading-6">
       <div class="flex justify-between gap-x-4 py-3">

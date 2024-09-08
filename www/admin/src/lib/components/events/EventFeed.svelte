@@ -3,7 +3,7 @@
   import { onMount } from "svelte";
   import { fly } from "svelte/transition";
   import { DropdownMenu } from "bits-ui";
-  import { EllipsisVertical, Settings } from "lucide-svelte";
+  import { EllipsisVertical } from "lucide-svelte";
   import { page } from "$app/stores";
   import type {
     BreakfastEvent,
@@ -14,7 +14,6 @@
   import toast from "svelte-french-toast";
 
   export let actions: ActionDefinition[] = [];
-  export let hideSettings: boolean = false;
   export let onPauseChange: ((paused: boolean) => void) | undefined = undefined;
 
   let options = {
@@ -79,12 +78,12 @@
           </p>
           {#if event.type === "chat-message"}
             <p class="leading-none">
-              <span style:color={event.data.color}>{event.data.viewer.displayName}</span>: {event
+              <span style:color={event.data.color}>{event.data.chatter.viewer.displayName}</span>: {event
                 .data.text}
             </p>
           {:else if event.type === "subscription"}
             <p>
-              {event.data.viewer.displayName}
+              {event.data.chatter.viewer.displayName}
               {event.data.gifted ? "was gifted a sub" : "has subscribed"}!
             </p>
           {/if}
@@ -128,9 +127,9 @@
               <DropdownMenu.Separator class="my-2 border-t border-slate-200" />
             {/if}
             <DropdownMenu.Label class="px-2 text-xs text-slate-400">Event</DropdownMenu.Label>
-            {#if event.data?.viewer?.id}
+            {#if event.data?.chatter?.viewer?.id}
               <DropdownMenu.Item
-                href="/breakfast/community/viewers/{event.data.viewer.id}"
+                href="/breakfast/viewers/{event.data.chatter.viewer.id}"
                 class="px-2 hover:bg-slate-50">View Viewer</DropdownMenu.Item
               >
             {/if}
@@ -144,12 +143,6 @@
     class="absolute inset-x-0 top-0 flex h-6 items-center justify-between bg-slate-700 px-2 text-sm text-white"
   >
     <p>Event Feed</p>
-
-    {#if !hideSettings}
-      <a href="/breakfast/events/settings" class="aspect-square">
-        <Settings size="1rem" />
-      </a>
-    {/if}
   </div>
   {#if pause}
     <div

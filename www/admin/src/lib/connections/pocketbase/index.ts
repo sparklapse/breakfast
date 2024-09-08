@@ -270,7 +270,7 @@ export class BreakfastPocketBase extends PocketBase {
           providerIds: string;
         }[]
       > => {
-        return await this.send("/api/breakfast/viewers/list", {
+        return await this.send("/api/breakfast/viewers", {
           ...options,
           query: {
             ...options?.query,
@@ -279,6 +279,17 @@ export class BreakfastPocketBase extends PocketBase {
             ...(search === "" ? {} : { search }),
           },
         });
+      },
+      getById: async (
+        id: string,
+        options?: SendOptions,
+      ): Promise<{
+        id: string;
+        displayName: string;
+        providers: string;
+        providerIds: string;
+      }> => {
+        return await this.send(`/api/breakfast/viewers/${id}`, options ?? {});
       },
       count: async (options?: SendOptions): Promise<{ total: number; new30: number }> => {
         return await this.send("/api/breakfast/viewers/count", options ?? {});

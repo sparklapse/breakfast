@@ -1,6 +1,8 @@
 package viewers
 
 import (
+	"database/sql"
+	"errors"
 	"net/http"
 	"strconv"
 
@@ -13,7 +15,7 @@ import (
 
 func registerManageAPIs(app *pocketbase.PocketBase) {
 	app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
-		e.Router.GET("/api/breakfast/viewers/list", func(c echo.Context) error {
+		e.Router.GET("/api/breakfast/viewers", func(c echo.Context) error {
 			// Validate user is authenticated
 			info := apis.RequestInfo(c)
 			user := info.AuthRecord
@@ -82,6 +84,55 @@ func registerManageAPIs(app *pocketbase.PocketBase) {
 
 				if err != nil {
 					return c.JSON(500, map[string]string{"message": "Failed to query viewers", "error": err.Error()})
+				}
+			}
+
+			return c.JSON(200, query)
+		})
+
+		e.Router.GET("/api/breakfast/viewers/:id", func(c echo.Context) error {
+			// Validate user is authenticated
+			info := apis.RequestInfo(c)
+			user := info.AuthRecord
+
+			if user == nil {
+				return c.JSON(http.StatusUnauthorized, map[string]string{"message": "Unauthorized"})
+			}
+
+			if user.Collection().Id != "users" {
+				return c.JSON(http.StatusUnauthorized, map[string]string{"message": "Unauthorized"})
+			}
+
+			var query struct {
+				Id          string `db:"id" json:"id"`
+				DisplayName string `db:"displayName" json:"displayName"`
+				Providers   string `db:"providers" json:"providers"`
+				ProviderIds string `db:"providerIds" json:"providerIds"`
+			}
+
+			{
+				err := app.Dao().DB().
+					Select(
+						"v.id",
+						"v.displayName",
+						"group_concat(e.provider) as providers",
+						"group_concat(e.providerId) as providerIds",
+					).
+					From("viewers as v").
+					Join(
+						"INNER JOIN",
+						"_externalAuths as e",
+						dbx.NewExp("e.collectionId = 'viewers' AND e.recordId = v.id"),
+					).
+					GroupBy("v.id").
+					OrderBy("v.created DESC").
+					Where(dbx.NewExp("")).
+					One(&query)
+				if errors.Is(err, sql.ErrNoRows) {
+					return c.JSON(404, map[string]string{"message": "Viewer not found"})
+				}
+				if err != nil {
+					return c.JSON(500, map[string]string{"message": "Failed to get viewer", "error": err.Error()})
 				}
 			}
 

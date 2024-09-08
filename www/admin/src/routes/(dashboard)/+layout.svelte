@@ -1,10 +1,19 @@
 <script lang="ts">
   import clsx from "clsx";
-  import type { ComponentType } from "svelte";
   import { fade, fly } from "svelte/transition";
-  import { Home, Layers, Image, SquareGanttChart, Menu, UsersRound, Joystick } from "lucide-svelte";
+  import {
+    Gift,
+    Home,
+    Layers,
+    Image,
+    SquareGanttChart,
+    Menu,
+    UsersRound,
+    Joystick,
+  } from "lucide-svelte";
   import { page } from "$app/stores";
   import Obs from "$lib/components/icons/OBS.svelte";
+  import type { ComponentType } from "svelte";
 
   import type { LayoutData } from "./$types";
   export let data: LayoutData;
@@ -13,10 +22,22 @@
   const navItems: { label: string; icon: ComponentType; href: string; route?: string }[] = [
     { label: "Dashboard", icon: Home, href: "/breakfast", route: "/(dashboard)" },
     {
-      label: "Community",
+      label: "Viewers",
       icon: UsersRound,
-      href: "/breakfast/community",
-      route: "/(dashboard)/community",
+      href: "/breakfast/viewers",
+      route: "/(dashboard)/viewers",
+    },
+    {
+      label: "Items",
+      icon: Gift,
+      href: "/breakfast/items",
+      route: "/(dashboard)/items",
+    },
+    {
+      label: "Events",
+      icon: SquareGanttChart,
+      href: "/breakfast/events",
+      route: "/(dashboard)/events",
     },
     {
       label: "Overlays",
@@ -197,11 +218,9 @@
   </div>
 
   <main
-    class="relative h-[calc(100%-4rem)] overflow-y-auto px-4 py-10 sm:px-6 lg:ml-72 lg:h-full lg:px-8"
+    class="relative isolate h-[calc(100%-4rem)] overflow-y-auto px-4 py-10 sm:px-6 lg:ml-72 lg:h-full lg:px-8"
     transition:fade|global={{ duration: 100 }}
   >
-    <!-- <div class="px-4 sm:px-6 lg:px-8"> -->
     <slot />
-    <!-- </div> -->
   </main>
 </div>

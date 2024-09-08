@@ -20,6 +20,7 @@ export const basics: OverlayScript<typeof SOURCE_INPUTS> = {
               type: "number",
               label: "Size",
               target: "style.font-size",
+              defaultValue: "42",
               format: "{}px",
             },
             {
@@ -48,10 +49,27 @@ export const basics: OverlayScript<typeof SOURCE_INPUTS> = {
           ],
         },
         {
-          type: "number",
-          label: "Display Time",
-          target: "props.removeTime",
-          options: { min: 0 },
+          group: [
+            {
+              type: "number",
+              label: "Display Time",
+              target: "props.removeTime",
+              defaultValue: "5000",
+              options: { min: 0 },
+            },
+            {
+              type: "select",
+              label: "Names Source",
+              target: "props.names",
+              defaultValue: "provider",
+              options: {
+                options: [
+                  { label: "Provider Names", value: "provider" },
+                  { label: "Custom Names", value: "custom" },
+                ],
+              },
+            },
+          ],
         },
       ],
     },

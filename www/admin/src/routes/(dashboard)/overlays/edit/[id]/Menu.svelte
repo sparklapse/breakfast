@@ -82,7 +82,6 @@
       onPauseChange={(paused) => {
         holdMenu = paused;
       }}
-      hideSettings
     />
   </div>
 

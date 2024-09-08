@@ -6,14 +6,14 @@ type ChatMessageFragment struct {
 }
 
 type ChatMessageReply struct {
-	RepliedToMessageId string `json:"repliedToMessageId"`
-	RepliedToViewer    Viewer `json:"repliedToViewer"`
+	RepliedToMessageId string  `json:"repliedToMessageId"`
+	RepliedToChatter   Chatter `json:"repliedToChatter"`
 }
 
 type ChatMessage struct {
 	Id        string                `json:"id"`
 	Channel   Channel               `json:"channel"`
-	Viewer    Viewer                `json:"viewer"`
+	Chatter   Chatter               `json:"chatter"`
 	Reply     *ChatMessageReply     `json:"reply"`
 	Text      string                `json:"text"`
 	Color     string                `json:"color"`

@@ -12,6 +12,9 @@ export default defineConfig({
       "/overlays": {
         target: "http://localhost:8090",
       },
+      "/redirect": {
+        target: "http://localhost:8090",
+      },
       "/api": {
         target: "http://localhost:8090",
       },

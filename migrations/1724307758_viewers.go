@@ -21,8 +21,8 @@ func init() {
 				System:     true,
 				ListRule:   types.Pointer("@request.auth.verified = true && @request.auth.collectionName = \"users\""),
 				ViewRule:   types.Pointer("@request.auth.verified = true && @request.auth.collectionName = \"users\""),
-				CreateRule: nil,
-				UpdateRule: nil,
+				CreateRule: types.Pointer("@request.auth.verified = true && @request.auth.collectionName = \"users\""),
+				UpdateRule: types.Pointer("@request.auth.verified = true && @request.auth.collectionName = \"users\""),
 				DeleteRule: types.Pointer("@request.auth.verified = true && @request.auth.collectionName = \"users\""),
 				Indexes:    types.JsonArray[string]{},
 				Options: types.JsonMap{

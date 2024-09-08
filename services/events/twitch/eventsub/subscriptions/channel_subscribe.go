@@ -59,15 +59,15 @@ func ProcessChannelSubscribePayload(payload map[string]any) (*types.Subscription
 		return nil, errors.New("is_gift field was not of the correct type")
 	}
 
-	viewer, _ := viewers.GetViewerIdByProviderId("twitch", user_id)
+	viewer, _ := viewers.GetViewerByProviderId("twitch", user_id)
 
 	return &types.Subscription{
 		Channel: types.Channel{
 			Username:    broadcaster_user_login,
 			DisplayName: broadcaster_user_name,
 		},
-		Viewer: types.Viewer{
-			Id:          viewer,
+		Chatter: types.Chatter{
+			Viewer:      viewer,
 			Username:    user_login,
 			DisplayName: user_name,
 		},

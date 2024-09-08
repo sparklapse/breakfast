@@ -54,7 +54,7 @@
   >
     {#if message}
       <p>
-        <span style:color={message.data.color}>{message.data.viewer.displayName}</span>: {message
+        <span style:color={message.data.color}>{message.data.chatter.displayName}</span>: {message
           .data.text}
       </p>
     {/if}

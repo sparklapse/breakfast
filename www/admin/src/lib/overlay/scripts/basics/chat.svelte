@@ -19,6 +19,7 @@
 
   export let overflow: "overflow" | "clip" = "overflow";
   export let removeTime: string = "3000";
+  export let names: "provider" | "custom" | (string & {}) = "provider";
 
   $$restProps;
 
@@ -39,7 +40,7 @@
         return;
       }
       if (ev.type !== "chat-message") return;
-      if (COMMON_BOTS.includes(ev.data.viewer.username)) return;
+      if (COMMON_BOTS.includes(ev.data.chatter.username)) return;
 
       const { m } = messages;
       m.push(ev);
@@ -58,6 +59,9 @@
       unlisten.then((u) => u());
     };
   });
+
+  const getName = (ev: ChatMessageEvent) =>
+    names === "custom" ? ev.data.chatter.viewer.displayName : ev.data.chatter.displayName;
 </script>
 
 <div class="container" style:overflow={overflow === "overflow" ? "visible" : "clip"}>
@@ -68,7 +72,7 @@
         in:fly={{ x: -40, duration: 100 }}
         out:fade={{ duration: 2000 }}
       >
-        <span style:color={msg.data.color}>{msg.data.viewer.displayName}</span>: {msg.data.text}
+        <span style:color={msg.data.color}>{getName(msg)}</span>: {msg.data.text}
       </p>
     {/each}
   </ul>

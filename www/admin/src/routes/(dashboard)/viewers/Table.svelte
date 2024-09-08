@@ -90,7 +90,7 @@
 <hr class="mt-4 border-gray-200" />
 <ul role="list" class="divide-y divide-gray-200">
   {#await search === "" ? viewersRequest : searchResults}
-    {#each Array(20) as _, idx}
+    {#each Array(10) as _, idx}
       <li
         class="relative flex animate-pulse justify-between gap-x-6 bg-gray-200 px-2 py-5 text-transparent"
         style:animation-delay="{idx * 200}ms"
@@ -119,7 +119,7 @@
   {:then viewers}
     {#each viewers as viewer (viewer.id)}
       <li class="relative flex justify-between gap-x-6 px-2 py-5">
-        <a href="/breakfast/community/viewers/{viewer.id}" class="flex min-w-0 gap-x-4">
+        <a href="/breakfast/viewers/{viewer.id}" class="flex min-w-0 gap-x-4">
           <img
             class="size-12 flex-none rounded-full bg-gray-50 brightness-150 contrast-75 saturate-[25%]"
             src="/breakfast/profile.jpg"

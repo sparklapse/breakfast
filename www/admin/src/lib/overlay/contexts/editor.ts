@@ -361,7 +361,7 @@ export function createEditor(initial?: {
   };
 
   // MARK: Scripts
-  const managedScripts = writable<{ scripts: OverlayScript[] }>({
+  const managedScripts = writable<{ scripts: OverlayScript<typeof SOURCE_INPUTS>[] }>({
     scripts: [...(initial?.scripts ?? [])],
   });
   const scripts = derived(managedScripts, ({ scripts }) => scripts);
@@ -374,7 +374,7 @@ export function createEditor(initial?: {
     return defs;
   });
 
-  const addScript = (script: OverlayScript) => {
+  const addScript = (script: OverlayScript<typeof SOURCE_INPUTS>) => {
     if (get(scripts).find((s) => s.id === script.id)) throw new Error("Script already exists");
 
     managedScripts.update(({ scripts }) => {
