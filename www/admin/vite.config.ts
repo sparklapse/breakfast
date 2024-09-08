@@ -3,7 +3,7 @@ import { defineConfig } from "vitest/config";
 import swc from "rollup-plugin-svelte-wc";
 
 export default defineConfig({
-  plugins: [swc(), sveltekit()],
+  plugins: [swc(), sveltekit() as any],
   test: {
     include: ["src/**/*.{test,spec}.{js,ts}"],
   },
