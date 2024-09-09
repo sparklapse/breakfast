@@ -15,15 +15,14 @@
   import type { ChatMessageEvent } from "@sparklapse/breakfast/overlay";
   import clsx from "clsx";
 
-  /// <reference types="@sparklapse/breakfast/overlay" />
-
   export let overflow: "overflow" | "clip" = "overflow";
-  export let removeTime: string = "3000";
+  export let removeTime: string = "0";
   export let names: "provider" | "custom" | (string & {}) = "provider";
-
   $$restProps;
 
   let messages: { m: ChatMessageEvent[] } = { m: [] };
+
+  $: parsedRemoveTime = parseInt(removeTime);
 
   onMount(() => {
     const unlisten = window.breakfast.events.listen((ev) => {
@@ -45,14 +44,14 @@
       const { m } = messages;
       m.push(ev);
       messages = { m };
-      setTimeout(
-        () => {
+      if (Number.isNaN(parsedRemoveTime) || parsedRemoveTime > 0) {
+        setTimeout(() => {
           const { m } = messages;
-          m.shift();
+          const idx = m.findIndex((msg) => msg.data.id === ev.data.id);
+          if (idx >= 0) m.splice(idx, 1);
           messages = { m };
-        },
-        parseInt(removeTime) || 3000,
-      );
+        }, parsedRemoveTime || 3000);
+      }
     });
 
     return () => {
@@ -62,6 +61,31 @@
 
   const getName = (ev: ChatMessageEvent) =>
     names === "custom" ? ev.data.chatter.viewer.displayName : ev.data.chatter.displayName;
+
+  /**
+   * Remove when out of frame
+   */
+  const removeWhenOOF = (el: HTMLElement, options: { messageId: string }) => {
+    const observer = new IntersectionObserver((entries) => {
+      for (const entry of entries) {
+        if (entry.intersectionRatio < 0.1) {
+          const { m } = messages;
+          const idx = m.findIndex((msg) => msg.data.id === options.messageId);
+          if (idx >= 0) m.splice(idx, 1);
+          messages = { m };
+          console.log("Removing message");
+        }
+      }
+    });
+
+    observer.observe(el);
+
+    return {
+      destroy: () => {
+        observer.disconnect();
+      },
+    };
+  };
 </script>
 
 <div class="container" style:overflow={overflow === "overflow" ? "visible" : "clip"}>
@@ -71,6 +95,7 @@
         class={clsx([msg.deleted && "hidden"])}
         in:fly={{ x: -40, duration: 100 }}
         out:fade={{ duration: 2000 }}
+        use:removeWhenOOF={{ messageId: msg.data.id }}
       >
         <span style:color={msg.data.color}>{getName(msg)}</span>: {msg.data.text}
       </p>
@@ -93,6 +118,9 @@
   .container {
     position: absolute;
     inset: 0;
+  }
+  .hidden {
+    display: none;
   }
   .messages {
     position: absolute;

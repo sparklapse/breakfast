@@ -55,8 +55,8 @@ export const basics: OverlayScript<typeof SOURCE_INPUTS> = {
               type: "number",
               label: "Display Time",
               target: "props.removeTime",
-              defaultValue: "5000",
-              options: { min: 0 },
+              defaultValue: "0",
+              options: { min: -1 },
             },
             {
               type: "select",
