@@ -95,4 +95,28 @@ export const BUILTIN_DEFINITIONS: SourceDefinition<typeof SOURCE_INPUTS>[] = [
       },
     ],
   },
+  {
+    label: "Rectangle",
+    subLabel: "Builtin",
+    tag: "div",
+    inputs: [
+      {
+        group: [
+          {
+            type: "color",
+            label: "Color",
+            target: "style.background-color",
+            defaultValue: "#ffaabb",
+          },
+          {
+            type: "number",
+            label: "Opacity",
+            target: "style.opacity",
+            defaultValue: "1",
+            options: { min: 0, step: 0.01, max: 1 },
+          },
+        ],
+      },
+    ],
+  },
 ];

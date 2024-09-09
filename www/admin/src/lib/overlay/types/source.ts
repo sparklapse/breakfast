@@ -9,8 +9,8 @@ const baseSourceType = z.object({
   style: z.record(z.string()),
 });
 
-const sourceType: z.ZodType<Source> = baseSourceType.extend({
-  children: z.lazy(() => sourceType.array()),
+export const sourceType: z.ZodType<Source> = baseSourceType.extend({
+  children: z.lazy(() => sourceType.or(z.string()).array()),
 });
 
 export type Source = z.infer<typeof baseSourceType> & {

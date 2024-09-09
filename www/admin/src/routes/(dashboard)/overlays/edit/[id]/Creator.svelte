@@ -3,14 +3,9 @@
   import { scale } from "svelte/transition";
   import { useEditor, useViewport } from "$lib/overlay/contexts";
   import { avgPoints, transformFromPoints } from "$lib/math";
-  import { sourceId } from "$lib/overlay/naming";
   import type { Point } from "$lib/math";
   import type { Source } from "$lib/overlay/types";
-  import type {
-    SourceDefinition,
-    SourceInputDefinition,
-    TargetRoots,
-  } from "@sparklapse/breakfast/scripts";
+  import type { SourceDefinition, TargetRoots } from "@sparklapse/breakfast/scripts";
   import type { SOURCE_INPUTS } from "$lib/overlay/sources/inputs";
 
   const {
@@ -22,6 +17,7 @@
   } = useEditor();
 
   export let canCreate = true;
+  export let oncreate: ((source: Source) => any) | undefined = undefined;
 
   let isCreating = false;
   let createStart: Point = [0, 0];
@@ -46,8 +42,6 @@
     isCreating = false;
     showCreateMenu = false;
   }
-
-  export let oncreate: ((source: Source) => any) | undefined = undefined;
 
   const onpointerdown = (
     ev: PointerEvent & {

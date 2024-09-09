@@ -1,13 +1,14 @@
-import type { SOURCE_INPUTS } from "$lib/overlay/sources/inputs";
 import chat from "./chat.svelte?wcs";
 import highlight from "./highlight.svelte?wcs";
+
 import type { OverlayScript } from "@sparklapse/breakfast/scripts";
+import type { SOURCE_INPUTS } from "$lib/overlay/sources/inputs";
 
 export const basics: OverlayScript<typeof SOURCE_INPUTS> = {
-  id: "basic-chat",
-  label: "Basic Chat",
+  id: "basics",
+  label: "Basics",
   version: 0,
-  script: `${chat}\n${highlight}`,
+  script: [chat, highlight].join("\n"),
   sources: [
     {
       label: "Basic Chat",

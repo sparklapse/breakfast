@@ -1,7 +1,9 @@
 <script lang="ts">
   import clsx from "clsx";
+  import toast from "svelte-french-toast";
   import { Hand, Maximize, MousePointer2, PlusSquare } from "lucide-svelte";
   import { createViewport, createEditor } from "$lib/overlay/contexts";
+  import { sourceType } from "$lib/overlay/types";
   import { page } from "$app/stores";
   import Viewport, { DEFAULT_GRID, DEFAULT_VIEW } from "./Viewport.svelte";
   import Menu from "./Menu.svelte";
@@ -11,6 +13,7 @@
   import Inspector from "./Inspector.svelte";
 
   import type { PageData } from "./$types";
+  import { sourceId } from "$lib/overlay/naming";
   export let data: PageData;
   const { user } = data;
 
@@ -23,7 +26,16 @@
     overlay,
     scripts: { scripts },
     sources: { sources, addSource, removeSource, moveSourceUp, moveSourceDown },
-    selection: { action, selectedIds, singleSelect, addSelect, selectAll, areaSelect, deselect },
+    selection: {
+      action,
+      selectedIds,
+      selectedSources,
+      singleSelect,
+      addSelect,
+      selectAll,
+      areaSelect,
+      deselect,
+    },
   } = createEditor({
     label: data.overlay.label,
     scripts: data.overlay.scripts,
@@ -86,48 +98,109 @@
   }
 </script>
 
+<!-- Keyboard shortcuts -->
 <svelte:window
   on:keydown={(ev) => {
     if (ev.target instanceof HTMLInputElement || ev.target instanceof HTMLTextAreaElement) return;
 
-    if (ev.key === "1") baseTool = "select";
-    if (ev.key === "2") baseTool = "pan";
-    if (ev.key === "3") baseTool = "create";
-    if (ev.key === "a" && ev.ctrlKey) {
-      ev.preventDefault();
-      selectAll();
+    switch (ev.key) {
+      case "1":
+        baseTool = "select";
+        break;
+      case "2":
+        baseTool = "pan";
+        break;
+      case "3":
+        baseTool = "create";
+        break;
+      case "a":
+        if (ev.ctrlKey) {
+          ev.preventDefault();
+          selectAll();
+        }
+        break;
+      case "c":
+        if (ev.ctrlKey) {
+          if ($selectedIds.length === 0) return;
+          ev.preventDefault();
+          const type = "text/plain";
+          const blob = new Blob([JSON.stringify($selectedSources)], { type });
+
+          toast.promise(navigator.clipboard.write([new ClipboardItem({ [type]: blob })]), {
+            loading: "Copying to clipboard...",
+            success: "Copied to clipboard!",
+            error: (err) => `Failed to copy to clipboard: ${err.message}`,
+          });
+        }
+        break;
+      case "v":
+        if (ev.ctrlKey) {
+          ev.preventDefault();
+          navigator.clipboard
+            .readText()
+            .then((t) => JSON.parse(t))
+            .then((d) => {
+              const parsed = sourceType.array().safeParse(d);
+              if (parsed.success === true) return parsed.data;
+              throw new Error("You aren't pasting sources we can process");
+            })
+            .then((sources) => {
+              deselect();
+              for (const source of sources) {
+                source.id = sourceId();
+                addSource(source);
+                addSelect(source.id);
+              }
+              toast.success("Pasted sources!");
+            })
+            .catch((err) => {
+              toast.error(`Failed to paste sources: ${err.message}`);
+            });
+        }
+        break;
+      case "[":
+        if (ev.ctrlKey) {
+          if ($selectedIds.length === 0) return;
+
+          for (const source of $sources.filter((s) => $selectedIds.includes(s.id))) {
+            moveSourceDown(source.id);
+          }
+        }
+        break;
+      case "]":
+        if (ev.ctrlKey) {
+          if ($selectedIds.length === 0) return;
+
+          for (const source of $sources.filter((s) => $selectedIds.includes(s.id)).reverse()) {
+            moveSourceUp(source.id);
+          }
+        }
+        break;
+      case "Backspace":
+      case "Delete":
+        if ($selectedIds.length === 0) return;
+
+        for (const id of $selectedIds) {
+          removeSource(id);
+        }
+        break;
+      case "Shift":
+        isShifting = true;
+        break;
+      case " ":
+        isSpacing = true;
+        break;
     }
-
-    if (ev.key === "Backspace" || ev.key === "Delete") {
-      if ($selectedIds.length === 0) return;
-
-      for (const id of $selectedIds) {
-        removeSource(id);
-      }
-    }
-
-    if (ev.ctrlKey && ev.key === "[") {
-      if ($selectedIds.length === 0) return;
-
-      for (const source of $sources.filter((s) => $selectedIds.includes(s.id))) {
-        moveSourceDown(source.id);
-      }
-    }
-
-    if (ev.ctrlKey && ev.key === "]") {
-      if ($selectedIds.length === 0) return;
-
-      for (const source of $sources.filter((s) => $selectedIds.includes(s.id)).reverse()) {
-        moveSourceUp(source.id);
-      }
-    }
-
-    if (ev.key === "Shift") isShifting = true;
-    if (ev.key === " ") isSpacing = true;
   }}
   on:keyup={(ev) => {
-    if (ev.key === "Shift") isShifting = false;
-    if (ev.key === " ") isSpacing = false;
+    switch (ev.key) {
+      case "Shift":
+        isShifting = false;
+        break;
+      case " ":
+        isSpacing = false;
+        break;
+    }
   }}
 />
 
