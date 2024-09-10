@@ -31,6 +31,12 @@ export const load: LayoutLoad = async ({ route, fetch }) => {
   };
   obsEC();
 
+  try {
+    pb.collection("users").authRefresh();
+  } catch {
+    pb.authStore.clear();
+  }
+
   if (!pb.authStore.isAuthenticated()) {
     const isSetup = await pb.breakfast.setup.isSetup();
     if (!isSetup && route.id !== "/setup") redirect(302, "/breakfast/setup");
