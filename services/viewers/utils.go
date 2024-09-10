@@ -8,15 +8,17 @@ import (
 
 	"github.com/patrickmn/go-cache"
 	"github.com/pocketbase/dbx"
+	"github.com/pocketbase/pocketbase"
+	"github.com/pocketbase/pocketbase/core"
 	"github.com/pocketbase/pocketbase/daos"
 	"github.com/pocketbase/pocketbase/models"
 	"github.com/pocketbase/pocketbase/tools/security"
 )
 
-var idCache *cache.Cache
+var viewerCache *cache.Cache
 
 func init() {
-	idCache = cache.New(24*time.Hour, 48*time.Hour)
+	viewerCache = cache.New(24*time.Hour, 48*time.Hour)
 }
 
 func CreateViewerByProviderId(provider string, id string) (*Viewer, error) {
@@ -117,10 +119,10 @@ func CreateViewerByProviderId(provider string, id string) (*Viewer, error) {
 }
 
 func GetViewerByProviderId(provider string, providerId string) (*Viewer, error) {
-	stored, cached := idCache.Get(provider + "-" + providerId)
+	stored, cached := viewerCache.Get(provider + "-" + providerId)
 	if cached {
-		if id, ok := stored.(*Viewer); ok {
-			return id, nil
+		if viewer, ok := stored.(*Viewer); ok {
+			return viewer, nil
 		}
 	}
 
@@ -139,7 +141,7 @@ func GetViewerByProviderId(provider string, providerId string) (*Viewer, error) 
 			return nil, err
 		}
 
-		idCache.SetDefault(provider+"-"+providerId, viewer)
+		viewerCache.SetDefault(provider+"-"+providerId, viewer)
 		return viewer, nil
 	} else if err != nil {
 		return nil, err
@@ -153,7 +155,7 @@ func GetViewerByProviderId(provider string, providerId string) (*Viewer, error) 
 			return nil, err
 		}
 
-		idCache.SetDefault(provider+"-"+providerId, id)
+		viewerCache.SetDefault(provider+"-"+providerId, id)
 		return id, nil
 	} else if err != nil {
 		return nil, err
@@ -177,6 +179,16 @@ func GetViewerByProviderId(provider string, providerId string) (*Viewer, error) 
 		Wallet:      wallet,
 	}
 
-	idCache.SetDefault(provider+"-"+providerId, viewerRecord.Id)
+	viewerCache.SetDefault(provider+"-"+providerId, viewerRecord.Id)
 	return viewer, nil
+}
+
+func registerCacheInvalidation(app *pocketbase.PocketBase) {
+	app.OnRecordBeforeDeleteRequest("viewers").Add(func(e *core.RecordDeleteEvent) error {
+		if _, exists := viewerCache.Get(e.Record.Id); exists {
+			viewerCache.Delete(e.Record.Id)
+		}
+
+		return nil
+	})
 }
