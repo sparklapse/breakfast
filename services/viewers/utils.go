@@ -15,6 +15,13 @@ import (
 	"github.com/pocketbase/pocketbase/tools/security"
 )
 
+/*
+Viewer Cache
+
+Keys Stored:
+
+- <provider>-<providerId>
+*/
 var viewerCache *cache.Cache
 
 func init() {
@@ -185,8 +192,23 @@ func GetViewerByProviderId(provider string, providerId string) (*Viewer, error) 
 
 func registerCacheInvalidation(app *pocketbase.PocketBase) {
 	app.OnRecordBeforeDeleteRequest("viewers").Add(func(e *core.RecordDeleteEvent) error {
-		if _, exists := viewerCache.Get(e.Record.Id); exists {
-			viewerCache.Delete(e.Record.Id)
+		externals, err := app.Dao().FindAllExternalAuthsByRecord(e.Record)
+		if err != nil {
+			return err
+		}
+
+		for _, ext := range externals {
+			key := ext.Provider + "-" + ext.ProviderId
+
+			_, exists := viewerCache.Get(key)
+			if exists {
+				app.Logger().Debug(
+					"VIEWERS Removing cache for viewer",
+					"viewer", e.Record.Id,
+					"key", key,
+				)
+				viewerCache.Delete(key)
+			}
 		}
 
 		return nil
