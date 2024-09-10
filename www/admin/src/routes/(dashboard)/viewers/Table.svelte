@@ -1,11 +1,22 @@
 <script lang="ts" context="module">
   const PER_PAGE = 20;
+
+  const PLATFORMS: { label: string; value: string }[] = [
+    {
+      label: "Twitch",
+      value: "twitch",
+    },
+  ];
 </script>
 
 <script lang="ts">
+  import toast from "svelte-french-toast";
+  import { fade, fly } from "svelte/transition";
+  import { Dialog, Select } from "bits-ui";
   import { ChevronRight, LoaderCircle, Search } from "lucide-svelte";
 
   import type { PageData } from "./$types";
+  import { goto } from "$app/navigation";
   export let data: PageData;
 
   let search = "";
@@ -35,6 +46,9 @@
       isLoading = false;
     }, 100);
   });
+
+  let addViewerPlatform: string = "";
+  let addViewerUsername: string = "";
 
   const loader = (el: HTMLElement) => {
     const loadNextPage = async () => {
@@ -75,48 +89,106 @@
   };
 </script>
 
-<div
-  class="flex items-center gap-2 rounded bg-white px-2 py-1 outline-slate-700 focus-within:outline"
->
-  <Search class="text-slate-700" />
-  <input
-    class="w-full rounded bg-transparent text-lg outline-none"
-    type="text"
-    placeholder="Search for a viewer"
-    bind:value={search}
-  />
+<div class="flex items-center justify-between gap-2 text-lg">
+  <div
+    class="flex w-full items-center gap-2 rounded bg-white px-2 py-1 outline-slate-700 focus-within:outline"
+  >
+    <Search class="text-slate-700" />
+    <input
+      class="w-full rounded bg-transparent outline-none"
+      type="text"
+      placeholder="Search for a viewer"
+      bind:value={search}
+    />
+  </div>
+
+  <div class="flex flex-shrink-0 justify-between gap-1">
+    <button
+      class="rounded bg-slate-700 px-2 text-white shadow"
+      on:click={() => {
+        wontLoad = false;
+        isLoading = true;
+        viewersRequest = data.pb.breakfast.viewers.list(1, PER_PAGE).finally(() => {
+          setTimeout(() => {
+            isLoading = false;
+          }, 100);
+        });
+      }}>Refresh</button
+    >
+    <Dialog.Root>
+      <Dialog.Trigger class="rounded bg-slate-700 px-2 text-white shadow">Add</Dialog.Trigger>
+      <Dialog.Portal>
+        <Dialog.Overlay asChild let:builder>
+          <div
+            class="fixed inset-0 backdrop-blur-sm"
+            use:builder.action
+            {...builder}
+            transition:fade={{ duration: 100 }}
+          />
+        </Dialog.Overlay>
+        <Dialog.Content
+          class="fixed left-1/2 top-1/2 max-h-48 w-full max-w-md -translate-x-1/2 -translate-y-1/2 rounded-lg bg-white p-4 shadow"
+          transition={fly}
+          transitionConfig={{ y: 10, duration: 100 }}
+        >
+          <form
+            on:submit={(ev) => {
+              ev.preventDefault();
+
+              if (addViewerPlatform == "") return toast.error("Select a platform first");
+              if (addViewerUsername == "" || addViewerUsername.includes(" "))
+                return toast.error("Enter a valid username");
+
+              toast.promise(
+                data.pb.breakfast.viewers
+                  .getByProviderUsername(addViewerPlatform, addViewerUsername)
+                  .then((v) => goto(`/breakfast/viewers/${v.id}`)),
+                {
+                  loading: "Adding viewer...",
+                  success: "Viewer added!",
+                  error: (err) => `Failed to add viewer: ${err.message}`,
+                },
+              );
+            }}
+          >
+            <Select.Root
+              items={PLATFORMS}
+              onSelectedChange={(selected) => {
+                if (!selected) return;
+                addViewerPlatform = selected.value;
+              }}
+            >
+              <Select.Trigger
+                class="mt-1 w-full truncate rounded border border-slate-400 bg-white px-2 text-left"
+              >
+                <Select.Value placeholder="Select a platform" />
+              </Select.Trigger>
+              <Select.Content class="rounded bg-white py-1 shadow-lg">
+                {#each PLATFORMS as platform}
+                  <Select.Item class="px-2 hover:bg-slate-50" value={platform.value}
+                    >{platform.label}</Select.Item
+                  >
+                {/each}
+              </Select.Content>
+            </Select.Root>
+            <input
+              class="mt-1 w-full truncate rounded border border-slate-400 bg-white px-2 text-left"
+              type="text"
+              placeholder="Enter a username"
+              bind:value={addViewerUsername}
+            />
+            <button class="float-right mt-2 rounded bg-slate-700 px-2 text-white">Add Viewer</button
+            >
+          </form>
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog.Root>
+  </div>
 </div>
 
 <hr class="mt-4 border-gray-200" />
 <ul role="list" class="divide-y divide-gray-200">
-  {#await search === "" ? viewersRequest : searchResults}
-    {#each Array(10) as _, idx}
-      <li
-        class="relative flex animate-pulse justify-between gap-x-6 bg-gray-200 px-2 py-5 text-transparent"
-        style:animation-delay="{idx * 200}ms"
-      >
-        <div class="flex min-w-0 gap-x-4">
-          <div class="size-12 flex-none rounded-full bg-gray-400" />
-          <div class="min-w-0 flex-auto">
-            <p class="text-sm font-semibold leading-6">
-              <span class="absolute inset-x-0 -top-px bottom-0"></span>
-              Loading
-            </p>
-            <p class="mt-1 flex text-xs leading-5">Loading</p>
-          </div>
-        </div>
-        <!-- <div class="flex shrink-0 items-center gap-x-4">
-        <div class="hidden sm:flex sm:flex-col sm:items-end">
-            <p class="text-sm leading-6 text-gray-900">Co-Founder / CEO</p>
-            <p class="mt-1 text-xs leading-5 text-gray-500">
-              Last seen <time datetime="2023-01-23T13:23Z">3h ago</time>
-            </p>
-          </div>
-        <ChevronRight class="size-5 flex-none text-gray-400" />
-      </div> -->
-      </li>
-    {/each}
-  {:then viewers}
+  {#await search === "" ? viewersRequest : searchResults then viewers}
     {#each viewers as viewer (viewer.id)}
       {@const profileItems = data.pb.breakfast.viewers
         .getProfileItems(viewer.id)
@@ -157,12 +229,6 @@
           </div>
         </a>
         <div class="flex shrink-0 items-center gap-x-4">
-          <!-- <div class="hidden sm:flex sm:flex-col sm:items-end">
-            <p class="text-sm leading-6 text-gray-900">Co-Founder / CEO</p>
-            <p class="mt-1 text-xs leading-5 text-gray-500">
-              Last seen <time datetime="2023-01-23T13:23Z">3h ago</time>
-            </p>
-          </div> -->
           <ChevronRight class="size-5 flex-none text-gray-400" />
         </div>
       </li>

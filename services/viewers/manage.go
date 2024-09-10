@@ -1,6 +1,7 @@
 package viewers
 
 import (
+	bapis "breakfast/services/apis"
 	"database/sql"
 	"errors"
 	"net/http"
@@ -15,6 +16,47 @@ import (
 
 func registerManageAPIs(app *pocketbase.PocketBase) {
 	app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
+		e.Router.GET("/api/breakfast/viewers/by-provider/:provider/:username", func(c echo.Context) error {
+			// Validate user is authenticated
+			info := apis.RequestInfo(c)
+			user := info.AuthRecord
+
+			if user == nil {
+				return c.JSON(http.StatusUnauthorized, map[string]string{"message": "Unauthorized"})
+			}
+
+			if user.Collection().Id != "users" {
+				return c.JSON(http.StatusUnauthorized, map[string]string{"message": "Unauthorized"})
+			}
+
+			provider := c.PathParam("provider")
+			username := c.PathParam("username")
+
+			providerId := ""
+			switch provider {
+			case "twitch":
+				user, err := bapis.GetTwitchUserByLogin(username)
+				if err != nil {
+					app.Logger().Error(
+						"VIEWERS Failed to get viewer by twitch username",
+						"error", err.Error(),
+					)
+					return c.JSON(400, map[string]string{"message": "Failed to find twitch user"})
+				}
+
+				providerId = user.Id
+			default:
+				return c.JSON(400, map[string]string{"message": "Provider is not supported"})
+			}
+
+			viewer, err := GetViewerByProviderId(provider, providerId)
+			if err != nil {
+				return c.JSON(400, map[string]string{"message": "Failed to get viewer", "error": err.Error()})
+			}
+
+			return c.JSON(200, viewer)
+		})
+
 		e.Router.GET("/api/breakfast/viewers", func(c echo.Context) error {
 			// Validate user is authenticated
 			info := apis.RequestInfo(c)

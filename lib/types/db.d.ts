@@ -1,10 +1,11 @@
 export type Visibility = "PUBLIC" | "UNLISTED" | "PRIVATE";
 
 export type Viewer = {
+  id: string;
   displayName: string;
+  wallet: Record<string, number> | null;
   providers?: string;
   providerIds?: string;
-  wallet: Record<string, number> | null;
 };
 
 export type ItemType =

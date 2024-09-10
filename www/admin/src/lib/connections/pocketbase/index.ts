@@ -11,6 +11,7 @@ import { TWITCH_AUTH_SCOPES } from "./auth";
 import { PUBLIC_FEATURE_PROXY_AUTH_REDIRECT } from "$env/static/public";
 import type { Readable } from "svelte/store";
 import type { Action } from "@sparklapse/breakfast/actions";
+import type { Viewer } from "@sparklapse/breakfast/db";
 
 export const streamKeyAlphabet = customAlphabet("abcdefghijklmnopqrstuvwxyz0123456789", 21);
 
@@ -280,16 +281,18 @@ export class BreakfastPocketBase extends PocketBase {
           },
         });
       },
-      getById: async (
-        id: string,
-        options?: SendOptions,
-      ): Promise<{
-        id: string;
-        displayName: string;
-        providers: string;
-        providerIds: string;
-      }> => {
+      getById: async (id: string, options?: SendOptions): Promise<Viewer> => {
         return await this.send(`/api/breakfast/viewers/${id}`, options ?? {});
+      },
+      getByProviderUsername: async (
+        provider: string,
+        username: string,
+        options?: SendOptions,
+      ): Promise<Viewer> => {
+        return await this.send(
+          `/api/breakfast/viewers/by-provider/${provider}/${username}`,
+          options ?? {},
+        );
       },
       count: async (options?: SendOptions): Promise<{ total: number; new30: number }> => {
         return await this.send("/api/breakfast/viewers/count", options ?? {});

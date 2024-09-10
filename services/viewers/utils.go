@@ -35,13 +35,13 @@ func CreateViewerByProviderId(provider string, id string) (*Viewer, error) {
 		viewerRecord.RefreshTokenKey()
 		viewerRecord.SetUsername(security.RandomStringWithAlphabet(21, "abcdefghijklmnopqrstuvwxyz"))
 		viewerRecord.SetVerified(true)
-		currencies := map[string]int{
+		wallet := map[string]int{
 			"dots": 5,
 		}
-		viewerRecord.Set("wallet", currencies)
+		viewerRecord.Set("wallet", wallet)
 
 		viewer.Id = viewerRecord.Id
-		viewer.Currencies = currencies
+		viewer.Wallet = wallet
 
 		switch provider {
 		case "twitch":
@@ -159,22 +159,22 @@ func GetViewerByProviderId(provider string, providerId string) (*Viewer, error) 
 		return nil, err
 	}
 
-	var currencies map[string]int
+	var wallet map[string]int
 	{
-		err := viewerRecord.UnmarshalJSONField("wallet", &currencies)
+		err := viewerRecord.UnmarshalJSONField("wallet", &wallet)
 		if err != nil {
 			pb.Logger().Error(
 				"VIEWERS Failed to get currencies from record",
 				"type", err.Error(),
 			)
-			currencies = map[string]int{}
+			wallet = map[string]int{}
 		}
 	}
 
 	viewer := &Viewer{
 		Id:          viewerRecord.Id,
 		DisplayName: viewerRecord.GetString("displayName"),
-		Currencies:  currencies,
+		Wallet:      wallet,
 	}
 
 	idCache.SetDefault(provider+"-"+providerId, viewerRecord.Id)

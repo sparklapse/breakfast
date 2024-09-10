@@ -8,7 +8,7 @@ export type Channel = {
 export type Viewer = {
   id: string;
   displayName: string;
-  currencies: Record<string, number>;
+  wallet: Record<string, number>;
 };
 
 export type Chatter = {
