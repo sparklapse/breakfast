@@ -14,7 +14,6 @@ var twitchClient string
 var twitchSecret string
 
 var twitchAppToken string
-var twitchAppTokenType string
 var twitchAppTokenExpires time.Time
 
 func init() {
@@ -40,7 +39,7 @@ func getTwitchSettings() error {
 
 func refreshToken() error {
 	// Token is still valid
-	if time.Now().Before(twitchAppTokenExpires) {
+	if time.Now().Add(30 * time.Second).Before(twitchAppTokenExpires) {
 		return nil
 	}
 
@@ -51,23 +50,32 @@ func refreshToken() error {
 		}
 	}
 
+	_, err := GetTwitchAppToken(twitchClient, twitchSecret)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func GetTwitchAppToken(clientId string, clientSecret string) (string, error) {
 	response, err := http.PostForm(
-		"https://id.twitch.tv/oauth2/token?client_id="+twitchClient+"&client_secret="+twitchSecret+"&grant_type=client_credentials",
+		"https://id.twitch.tv/oauth2/token?client_id="+clientId+"&client_secret="+clientSecret+"&grant_type=client_credentials",
 		url.Values{},
 	)
 
 	if err != nil {
-		return err
+		return "", err
 	}
 	defer response.Body.Close()
 
 	if response.StatusCode != 200 {
-		return errors.New("app token request returned error: " + response.Status)
+		return "", errors.New("app token request returned error: " + response.Status)
 	}
 
 	body, err := io.ReadAll(response.Body)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	var token struct {
@@ -78,15 +86,14 @@ func refreshToken() error {
 	{
 		err := json.Unmarshal(body, &token)
 		if err != nil {
-			return err
+			return "", err
 		}
 	}
 
 	twitchAppToken = token.AccessToken
-	twitchAppTokenType = token.TokenType
 	twitchAppTokenExpires = time.Now().Add(time.Duration(token.ExpiresIn-300) * time.Second)
 
-	return nil
+	return token.AccessToken, nil
 }
 
 type TwitchUser struct {

@@ -9,7 +9,6 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
-	"os"
 	"strings"
 	"time"
 
@@ -33,19 +32,14 @@ type UserRequest struct {
 	Data map[string]string `json:"data"`
 }
 
-var sharedSecret string = ""
-
-func init() {
-	secret, success := os.LookupEnv("BREAKFAST_REMOTE_SECRET")
-	if !success || secret == "" {
-		return
-	}
-
-	sharedSecret = secret
+type User struct {
+	Id           string `db:"id"`
+	Username     string `db:"username"`
+	PasswordHash string `db:"passwordHash"`
 }
 
 func generateHmac(message []byte) string {
-	h := hmac.New(sha256.New, []byte(sharedSecret))
+	h := hmac.New(sha256.New, []byte(config.Remote.Secret))
 	h.Write(message)
 	hash := h.Sum(nil)
 	return hex.EncodeToString(hash)
@@ -109,7 +103,7 @@ func verifyToken(token string) error {
 
 func registerRemote(app *pocketbase.PocketBase) {
 	app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
-		if sharedSecret == "" {
+		if config.Remote.Secret == "" {
 			return nil
 		}
 

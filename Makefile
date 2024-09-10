@@ -1,7 +1,11 @@
 install:
-	cd www; bun install
+	bun install
+	go get
 
-dev:
+overlays: install
+	cd www/overlay; bun run build
+
+dev: overlays
 	go run main.go serve
 
 reset:

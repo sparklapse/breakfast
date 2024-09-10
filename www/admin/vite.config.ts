@@ -9,6 +9,9 @@ export default defineConfig({
   },
   server: {
     proxy: {
+      "/_": {
+        target: "http://localhost:8090",
+      },
       "/overlays": {
         target: "http://localhost:8090",
       },
