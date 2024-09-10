@@ -7,7 +7,6 @@
 </script>
 
 <div class="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-  <!-- Viewers -->
   <div
     class="relative h-fit overflow-hidden rounded-lg bg-white px-4 pb-12 pt-5 shadow sm:px-6 sm:pt-6"
   >
@@ -25,10 +24,19 @@
           {count}
         {/await}
       </p>
+      <div class="absolute inset-x-0 bottom-0 bg-gray-50 px-4 py-4 sm:px-6">
+        <div class="flex justify-between text-sm">
+          <!-- Left hand link will be view all to see saved events -->
+          <div />
+          <a
+            href="/breakfast/events/settings"
+            class="font-medium text-slate-600 hover:text-slate-500">Settings</a
+          >
+        </div>
+      </div>
     </dd>
   </div>
-  <div />
-  <div class="h-[24rem]">
+  <div class="col-span-2 h-[24rem]">
     <EventFeed />
   </div>
 </div>
