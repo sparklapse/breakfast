@@ -5,10 +5,13 @@ install:
 overlays: install
 	cd www/overlay; bun run build
 
-dev: overlays
+dev:
 	go run main.go serve
 
-reset:
+reset-nm:
+	rm -rf node_modules
+
+reset-db:
 	rm -rf pb_data
 
 build:
