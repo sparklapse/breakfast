@@ -3,6 +3,7 @@ package viewers
 import (
 	"breakfast/services/apis"
 	"database/sql"
+	"encoding/json"
 	"errors"
 	"time"
 
@@ -15,17 +16,56 @@ import (
 	"github.com/pocketbase/pocketbase/tools/security"
 )
 
-/*
-Viewer Cache
-
-Keys Stored:
-
-- <provider>-<providerId>
-*/
-var viewerCache *cache.Cache
+var providerToViewerIdCache *cache.Cache
 
 func init() {
-	viewerCache = cache.New(24*time.Hour, 48*time.Hour)
+	providerToViewerIdCache = cache.New(4*time.Hour, 6*time.Hour)
+}
+
+func GetViewerById(id string) (*Viewer, error) {
+	var query map[string]any
+	{
+		err := pb.Dao().DB().
+			Select("id", "displayName", "wallet").
+			From("viewers").
+			Where(dbx.NewExp(
+				"id = {:id}",
+				dbx.Params{"id": id},
+			)).
+			One(&query)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	id, ok := query["id"].(string)
+	if !ok {
+		return nil, errors.New("id was invalid")
+	}
+
+	displayName, ok := query["displayName"].(string)
+	if !ok {
+		return nil, errors.New("displayName was invalid")
+	}
+
+	walletRaw, ok := query["wallet"].([]byte)
+	if !ok {
+		return nil, errors.New("wallet was invalid")
+	}
+
+	var wallet map[string]int
+	{
+		err := json.Unmarshal(walletRaw, &wallet)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return &Viewer{
+		Id:          id,
+		DisplayName: displayName,
+		Wallet:      wallet,
+	}, nil
 }
 
 func CreateViewerByProviderId(provider string, id string) (*Viewer, error) {
@@ -126,9 +166,13 @@ func CreateViewerByProviderId(provider string, id string) (*Viewer, error) {
 }
 
 func GetViewerByProviderId(provider string, providerId string) (*Viewer, error) {
-	stored, cached := viewerCache.Get(provider + "-" + providerId)
+	stored, cached := providerToViewerIdCache.Get(provider + "-" + providerId)
 	if cached {
-		if viewer, ok := stored.(*Viewer); ok {
+		if id, ok := stored.(string); ok {
+			viewer, err := GetViewerById(id)
+			if err != nil {
+				return nil, err
+			}
 			return viewer, nil
 		}
 	}
@@ -148,7 +192,7 @@ func GetViewerByProviderId(provider string, providerId string) (*Viewer, error) 
 			return nil, err
 		}
 
-		viewerCache.SetDefault(provider+"-"+providerId, viewer)
+		providerToViewerIdCache.SetDefault(provider+"-"+providerId, viewer)
 		return viewer, nil
 	} else if err != nil {
 		return nil, err
@@ -157,13 +201,13 @@ func GetViewerByProviderId(provider string, providerId string) (*Viewer, error) 
 	viewerRecord, err := pb.Dao().FindRecordById("viewers", external.RecordId)
 	if errors.Is(err, sql.ErrNoRows) {
 		pb.Dao().DeleteExternalAuth(external)
-		id, err := CreateViewerByProviderId(provider, providerId)
+		viewer, err := CreateViewerByProviderId(provider, providerId)
 		if err != nil {
 			return nil, err
 		}
 
-		viewerCache.SetDefault(provider+"-"+providerId, id)
-		return id, nil
+		providerToViewerIdCache.SetDefault(provider+"-"+providerId, viewer.Id)
+		return viewer, nil
 	} else if err != nil {
 		return nil, err
 	}
@@ -186,7 +230,7 @@ func GetViewerByProviderId(provider string, providerId string) (*Viewer, error) 
 		Wallet:      wallet,
 	}
 
-	viewerCache.SetDefault(provider+"-"+providerId, viewerRecord.Id)
+	providerToViewerIdCache.SetDefault(provider+"-"+providerId, viewerRecord.Id)
 	return viewer, nil
 }
 
@@ -200,14 +244,14 @@ func registerCacheInvalidation(app *pocketbase.PocketBase) {
 		for _, ext := range externals {
 			key := ext.Provider + "-" + ext.ProviderId
 
-			_, exists := viewerCache.Get(key)
+			_, exists := providerToViewerIdCache.Get(key)
 			if exists {
 				app.Logger().Debug(
 					"VIEWERS Removing cache for viewer",
 					"viewer", e.Record.Id,
 					"key", key,
 				)
-				viewerCache.Delete(key)
+				providerToViewerIdCache.Delete(key)
 			}
 		}
 
