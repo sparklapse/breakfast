@@ -1,4 +1,53 @@
-package eventsub
+package connection
+
+import "errors"
+
+type EventHook func(message *EventSubMessage, subscription *Subscription)
+
+type Subscription struct {
+	Id        string
+	Type      string
+	Version   string
+	Condition map[string]string
+}
+
+func SubscriptionFromPayload(payload map[string]any) (*Subscription, error) {
+	id, ok := payload["id"].(string)
+	if !ok {
+		return nil, errors.New("id field is not of the correct type")
+	}
+
+	subType, ok := payload["type"].(string)
+	if !ok {
+		return nil, errors.New("type field is not of the correct type")
+	}
+
+	version, ok := payload["version"].(string)
+	if !ok {
+		return nil, errors.New("version field is not of the correct type")
+	}
+
+	condition, ok := payload["condition"].(map[string]any)
+	if !ok {
+		return nil, errors.New("condition field is not of the correct type")
+	}
+
+	validCondition := map[string]string{}
+	for key, maybe := range condition {
+		value, ok := maybe.(string)
+		if !ok {
+			return nil, errors.New(key + " condition subfield is not of the correct type")
+		}
+		validCondition[key] = value
+	}
+
+	return &Subscription{
+		Id:        id,
+		Type:      subType,
+		Version:   version,
+		Condition: validCondition,
+	}, nil
+}
 
 type Transport struct {
 	Method    string `json:"method"`

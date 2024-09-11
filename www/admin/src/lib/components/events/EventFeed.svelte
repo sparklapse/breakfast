@@ -78,8 +78,9 @@
           </p>
           {#if event.type === "chat-message"}
             <p class="leading-none">
-              <span style:color={event.data.color}>{event.data.chatter.viewer.displayName}</span>: {event
-                .data.text}
+              <span style:color={event.data.color}
+                >{event.data.chatter.viewer?.displayName || event.data.chatter.displayName}</span
+              >: {event.data.text}
             </p>
           {:else if event.type === "subscription"}
             <p>

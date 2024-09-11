@@ -9,11 +9,6 @@
       value: "COLLECTABLE",
     },
     {
-      label: "Consumable",
-      value: "CONSUMABLE",
-      disabled: true,
-    },
-    {
       label: "Profile Base",
       value: "PROFILE_BASE",
     },

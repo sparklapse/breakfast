@@ -114,7 +114,7 @@ func registerManageAPIs(app *pocketbase.PocketBase) {
 						dbx.NewExp("e.collectionId = 'viewers' AND e.recordId = v.id"),
 					).
 					GroupBy("v.id").
-					OrderBy("v.created DESC").
+					OrderBy("v.created ASC").
 					Limit(int64(perPage)).Offset(int64(perPage) * int64(page-1))
 
 				var err error

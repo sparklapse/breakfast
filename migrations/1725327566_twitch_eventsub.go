@@ -25,23 +25,10 @@ func init() {
 				UpdateRule: nil,
 				DeleteRule: nil,
 				Indexes: types.JsonArray[string]{
-					"CREATE INDEX twitch_event_subscriptions_eventSubId_idx ON twitch_event_subscriptions (eventSubId)",
 					"CREATE INDEX twitch_event_subscriptions_authorizer_idx ON twitch_event_subscriptions (authorizer)",
 				},
 				Options: types.JsonMap{},
 				Schema: schema.NewSchema(
-					&schema.SchemaField{
-						Id:          "eventSubId",
-						Name:        "eventSubId",
-						Type:        schema.FieldTypeText,
-						Required:    false,
-						Presentable: false,
-						Options: types.JsonMap{
-							"min":     nil,
-							"max":     nil,
-							"pattern": "",
-						},
-					},
 					&schema.SchemaField{
 						Id:          "authorizer",
 						Name:        "authorizer",

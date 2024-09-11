@@ -38,7 +38,6 @@ func init() {
 							"values": types.JsonArray[string]{
 								"BADGE",
 								"COLLECTABLE",
-								"CONSUMABLE",
 								"PROFILE_BASE",
 								"PROFILE_ACCESSORY",
 							},

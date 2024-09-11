@@ -1,6 +1,7 @@
 package main
 
 import (
+	ba "breakfast/app"
 	_ "breakfast/migrations"
 	"breakfast/services/account"
 	"breakfast/services/apis"
@@ -26,6 +27,9 @@ func main() {
 	migratecmd.Register(app, app.RootCmd, migratecmd.Config{
 		Dir: "migrations",
 	})
+
+	// Setup App Global
+	ba.RegisterApp(app)
 
 	// Setup Services
 	saas.RegisterService(app)

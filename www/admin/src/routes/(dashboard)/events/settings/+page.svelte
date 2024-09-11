@@ -218,20 +218,6 @@
           </dd>
         </div>
       </div>
-      <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
-        <dt class="text-sm leading-6 text-gray-900">Pools</dt>
-        <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
-          {#await data.pb.breakfast.events.twitch.listPools()}
-            <span>Loading...</span>
-          {:then pools}
-            <ul>
-              {#each Object.entries(pools) as [id, pool]}
-                <li>{id} - {pool.status} ({pool.subscriptions})</li>
-              {/each}
-            </ul>
-          {/await}
-        </dd>
-      </div>
     </dl>
   </div>
 </div>

@@ -231,11 +231,6 @@ export class BreakfastPocketBase extends PocketBase {
         });
       },
       twitch: {
-        listPools: async (): Promise<{
-          [key: string]: { status: string; subscriptions: number };
-        }> => {
-          return await this.send("/api/breakfast/events/twitch/eventsub/pools", {});
-        },
         resubscribeDefaults: async () => {
           await this.send("/api/breakfast/events/twitch/eventsub/resubscribe-defaults", {
             method: "POST",

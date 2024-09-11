@@ -132,7 +132,7 @@ func registerSetup(app *pocketbase.PocketBase) {
 			app.Logger().Debug("Created superuser")
 		}
 
-		if config.Admin.Password != "" {
+		if config.Admin.Password != "" && !admin.ValidatePassword(config.Admin.Password) {
 			app.Logger().Info("superuser set with the password: " + config.Admin.Password)
 			admin.SetPassword(config.Admin.Password)
 		}
@@ -185,7 +185,7 @@ func registerSetup(app *pocketbase.PocketBase) {
 				return errors.Join(errors.New("configuring an owner password must already have an existing owner or a username must also be provided"), err)
 			}
 
-			{
+			if !owner.ValidatePassword(config.Owner.Password) {
 				err := owner.SetPassword(config.Owner.Password)
 				if err != nil {
 					return err
