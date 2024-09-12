@@ -116,13 +116,18 @@ func Subscribe(id string, sub subscriptions.SubscriptionConfig, authorizerId str
 	return &subscription, nil
 }
 
-func Unsubscribe(id string, authorizerId string) error {
+func Unsubscribe(id string) error {
 	subscription, exists := activeSubscriptions[id]
 	if !exists {
 		return errors.New("subscription doesn't exist or isn't subscribed")
 	}
 
-	token, err := getAuthorizerToken(authorizerId)
+	record, err := app.App.Dao().FindRecordById("twitch_event_subscriptions", id)
+	if err != nil {
+		return err
+	}
+
+	token, err := getAuthorizerToken(record.GetString("authorizer"))
 	if err != nil {
 		return err
 	}

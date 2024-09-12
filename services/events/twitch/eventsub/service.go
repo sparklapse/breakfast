@@ -1,13 +1,20 @@
 package eventsub
 
 import (
+	bapis "breakfast/services/apis"
 	"breakfast/services/events/listener"
 	"breakfast/services/events/twitch/eventsub/connection"
 	"breakfast/services/events/twitch/eventsub/subscriptions"
 	"breakfast/services/events/types"
+	"database/sql"
 	"encoding/json"
+	"errors"
+	"io"
+	"net/http"
 
+	"github.com/labstack/echo/v5"
 	"github.com/pocketbase/pocketbase"
+	"github.com/pocketbase/pocketbase/apis"
 	"github.com/pocketbase/pocketbase/core"
 )
 
@@ -163,151 +170,158 @@ func RegisterService(app *pocketbase.PocketBase) {
 
 	// Setup APIs to manage subscriptions
 	app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
-		// e.Router.POST("/api/breakfast/events/twitch/eventsub/resubscribe-defaults", func(c echo.Context) error {
-		// 	// Validate user is authenticated
-		// 	info := apis.RequestInfo(c)
-		// 	user := info.AuthRecord
+		e.Router.POST("/api/breakfast/events/twitch/eventsub/resubscribe-defaults", func(c echo.Context) error {
+			// Validate user is authenticated
+			info := apis.RequestInfo(c)
+			user := info.AuthRecord
 
-		// 	if user == nil {
-		// 		return c.JSON(http.StatusUnauthorized, map[string]string{"message": "Unauthorized"})
-		// 	}
+			if user == nil {
+				return c.JSON(http.StatusUnauthorized, map[string]string{"message": "Unauthorized"})
+			}
 
-		// 	if user.Collection().Id != "users" {
-		// 		return c.JSON(http.StatusUnauthorized, map[string]string{"message": "Unauthorized"})
-		// 	}
+			if user.Collection().Id != "users" {
+				return c.JSON(http.StatusUnauthorized, map[string]string{"message": "Unauthorized"})
+			}
 
-		// 	err := CreateDefaultSubscriptionsForUser(user.Id)
-		// 	if err != nil {
-		// 		return c.JSON(500, map[string]string{"message": "Failed to subscribe user to defaults"})
-		// 	}
+			external, err := app.Dao().FindExternalAuthByRecordAndProvider(user, "twitch")
+			if err != nil {
+				return c.JSON(500, map[string]string{"message": "Failed to get twitch record for user"})
+			}
 
-		// 	return c.JSON(200, map[string]string{"message": "OK"})
-		// })
+			subs := subscriptions.CreateDefaultSubscriptions(external.Id)
+			for _, sub := range subs {
+				CreateSubscription(user.Id, sub)
+			}
 
-		// e.Router.POST("/api/breakfast/events/twitch/eventsub/subscribe", func(c echo.Context) error {
-		// 	// Validate user is authenticated
-		// 	info := apis.RequestInfo(c)
-		// 	user := info.AuthRecord
+			return c.JSON(200, map[string]string{"message": "OK"})
+		})
 
-		// 	if user == nil {
-		// 		return c.JSON(http.StatusUnauthorized, map[string]string{"message": "Unauthorized"})
-		// 	}
+		e.Router.POST("/api/breakfast/events/twitch/eventsub/subscribe", func(c echo.Context) error {
+			// Validate user is authenticated
+			info := apis.RequestInfo(c)
+			user := info.AuthRecord
 
-		// 	if user.Collection().Id != "users" {
-		// 		return c.JSON(http.StatusUnauthorized, map[string]string{"message": "Unauthorized"})
-		// 	}
+			if user == nil {
+				return c.JSON(http.StatusUnauthorized, map[string]string{"message": "Unauthorized"})
+			}
 
-		// 	// Get user linked twitch account
-		// 	authorizerTwitchRecord, err := pb.Dao().FindExternalAuthByRecordAndProvider(user, "twitch")
-		// 	if err != nil {
-		// 		return c.JSON(400, map[string]string{"message": "User does not have twitch linked"})
-		// 	}
+			if user.Collection().Id != "users" {
+				return c.JSON(http.StatusUnauthorized, map[string]string{"message": "Unauthorized"})
+			}
 
-		// 	// Get request body
-		// 	body, err := io.ReadAll(c.Request().Body)
-		// 	if err != nil {
-		// 		return c.JSON(500, map[string]string{"message": "Failed to read body", "error": err.Error()})
-		// 	}
+			// Get user linked twitch account
+			authorizerTwitchRecord, err := app.Dao().FindExternalAuthByRecordAndProvider(user, "twitch")
+			if err != nil {
+				return c.JSON(400, map[string]string{"message": "User does not have twitch linked"})
+			}
 
-		// 	var request struct {
-		// 		Type string         `json:"type"`
-		// 		Data map[string]any `json:"data"`
-		// 	}
-		// 	{
-		// 		err := json.Unmarshal(body, &request)
-		// 		if err != nil {
-		// 			return c.JSON(400, map[string]string{"message": "Failed to unmarshal body", "error": err.Error()})
-		// 		}
-		// 	}
+			// Get request body
+			body, err := io.ReadAll(c.Request().Body)
+			if err != nil {
+				return c.JSON(500, map[string]string{"message": "Failed to read body", "error": err.Error()})
+			}
 
-		// 	// Get broadcaster from request
-		// 	broadcasterId, idOk := request.Data["broadcasterId"].(string)
-		// 	broadcasterLogin, loginOk := request.Data["broadcasterLogin"].(string)
+			var request struct {
+				Type string         `json:"type"`
+				Data map[string]any `json:"data"`
+			}
+			{
+				err := json.Unmarshal(body, &request)
+				if err != nil {
+					return c.JSON(400, map[string]string{"message": "Failed to unmarshal body", "error": err.Error()})
+				}
+			}
 
-		// 	if !idOk && !loginOk {
-		// 		return c.JSON(400, map[string]string{"message": "No valid broadcaster id or login to use"})
-		// 	}
+			// Get broadcaster from request
+			broadcasterId, idOk := request.Data["broadcasterId"].(string)
+			broadcasterLogin, loginOk := request.Data["broadcasterLogin"].(string)
 
-		// 	var id string
-		// 	if idOk {
-		// 		id = broadcasterId
-		// 	} else {
-		// 		user, err := bapis.GetTwitchUserByLogin(broadcasterLogin)
-		// 		if err != nil {
-		// 			return c.JSON(500, map[string]string{"message": "Failed to find user with provided login", "error": err.Error()})
-		// 		}
+			if !idOk && !loginOk {
+				return c.JSON(400, map[string]string{"message": "No valid broadcaster id or login to use"})
+			}
 
-		// 		id = user.Id
-		// 	}
+			var id string
+			if idOk {
+				id = broadcasterId
+			} else {
+				user, err := bapis.GetTwitchUserByLogin(broadcasterLogin)
+				if err != nil {
+					return c.JSON(500, map[string]string{"message": "Failed to find user with provided login", "error": err.Error()})
+				}
 
-		// 	if id == "" {
-		// 		return c.JSON(400, map[string]string{"message": "Broadcaster cannot be empty"})
-		// 	}
+				id = user.Id
+			}
 
-		// 	switch request.Type {
-		// 	case "chat":
-		// 		errs := []error{}
-		// 		{
-		// 			config := subscriptions.CreateChannelChatMessageSubscription(id, authorizerTwitchRecord.ProviderId)
-		// 			errs = append(errs, CreateSubscription(user.Id, config))
-		// 		}
+			if id == "" {
+				return c.JSON(400, map[string]string{"message": "Broadcaster cannot be empty"})
+			}
 
-		// 		{
-		// 			config := subscriptions.CreateChannelChatMessageDeleteSubscription(id, authorizerTwitchRecord.ProviderId)
-		// 			errs = append(errs, CreateSubscription(user.Id, config))
-		// 		}
+			switch request.Type {
+			case "chat":
+				errs := []error{}
+				{
+					config := subscriptions.CreateChannelChatMessageSubscription(id, authorizerTwitchRecord.ProviderId)
+					_, err := CreateSubscription(user.Id, config)
+					errs = append(errs, err)
+				}
 
-		// 		err := errors.Join(errs...)
-		// 		if err != nil {
-		// 			return c.JSON(500, map[string]string{"message": "Failed to create subscriptions for chat", "error": err.Error()})
-		// 		}
-		// 	case subscriptions.TypeChannelChatMessage:
-		// 		config := subscriptions.CreateChannelChatMessageSubscription(id, authorizerTwitchRecord.ProviderId)
-		// 		err := CreateSubscription(user.Id, config)
-		// 		if err != nil {
-		// 			return c.JSON(500, map[string]string{"message": "Failed to create subscription", "error": err.Error()})
-		// 		}
-		// 	default:
-		// 		return c.JSON(400, map[string]string{"message": "Cant make a subscription of that type"})
-		// 	}
+				{
+					config := subscriptions.CreateChannelChatMessageDeleteSubscription(id, authorizerTwitchRecord.ProviderId)
+					_, err := CreateSubscription(user.Id, config)
+					errs = append(errs, err)
+				}
 
-		// 	return c.JSON(200, map[string]string{"message": "OK"})
-		// })
+				err := errors.Join(errs...)
+				if err != nil {
+					return c.JSON(500, map[string]string{"message": "Failed to create subscriptions for chat", "error": err.Error()})
+				}
+			case subscriptions.TypeChannelChatMessage:
+				config := subscriptions.CreateChannelChatMessageSubscription(id, authorizerTwitchRecord.ProviderId)
+				_, err := CreateSubscription(user.Id, config)
+				if err != nil {
+					return c.JSON(500, map[string]string{"message": "Failed to create subscription", "error": err.Error()})
+				}
+			default:
+				return c.JSON(400, map[string]string{"message": "Cant make a subscription of that type"})
+			}
 
-		// e.Router.POST("/api/breakfast/events/twitch/eventsub/unsubscribe/:id", func(c echo.Context) error {
-		// 	// Validate user is authenticated
-		// 	info := apis.RequestInfo(c)
-		// 	user := info.AuthRecord
+			return c.JSON(200, map[string]string{"message": "OK"})
+		})
 
-		// 	if user == nil {
-		// 		return c.JSON(http.StatusUnauthorized, map[string]string{"message": "Unauthorized"})
-		// 	}
+		e.Router.POST("/api/breakfast/events/twitch/eventsub/unsubscribe/:id", func(c echo.Context) error {
+			// Validate user is authenticated
+			info := apis.RequestInfo(c)
+			user := info.AuthRecord
 
-		// 	if user.Collection().Id != "users" {
-		// 		return c.JSON(http.StatusUnauthorized, map[string]string{"message": "Unauthorized"})
-		// 	}
+			if user == nil {
+				return c.JSON(http.StatusUnauthorized, map[string]string{"message": "Unauthorized"})
+			}
 
-		// 	subscriptionId := c.PathParam("id")
-		// 	record, err := app.Dao().FindRecordById("twitch_event_subscriptions", subscriptionId)
+			if user.Collection().Id != "users" {
+				return c.JSON(http.StatusUnauthorized, map[string]string{"message": "Unauthorized"})
+			}
 
-		// 	if errors.Is(err, sql.ErrNoRows) {
-		// 		return c.JSON(404, map[string]string{"message": "Subscription not found"})
-		// 	}
+			subscriptionId := c.PathParam("id")
+			record, err := app.Dao().FindRecordById("twitch_event_subscriptions", subscriptionId)
 
-		// 	if err != nil {
-		// 		return c.JSON(500, map[string]string{"message": "Failed to query for subscription", "error": err.Error()})
-		// 	}
+			if errors.Is(err, sql.ErrNoRows) {
+				return c.JSON(404, map[string]string{"message": "Subscription not found"})
+			}
 
-		// 	Unsubscribe(record.Id)
-		// 	{
-		// 		err := app.Dao().DeleteRecord(record)
-		// 		if err != nil {
-		// 			return c.JSON(500, map[string]string{"message": "Failed to delete record", "error": err.Error()})
-		// 		}
-		// 	}
+			if err != nil {
+				return c.JSON(500, map[string]string{"message": "Failed to query for subscription", "error": err.Error()})
+			}
 
-		// 	return c.JSON(200, map[string]string{"message": "OK"})
-		// })
+			DeleteSubscription(record.Id)
+			{
+				err := app.Dao().DeleteRecord(record)
+				if err != nil {
+					return c.JSON(500, map[string]string{"message": "Failed to delete record", "error": err.Error()})
+				}
+			}
+
+			return c.JSON(200, map[string]string{"message": "OK"})
+		})
 
 		return nil
 	})
