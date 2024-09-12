@@ -3,7 +3,6 @@ package viewers
 import (
 	"breakfast/services/apis"
 	"database/sql"
-	"encoding/json"
 	"errors"
 	"time"
 
@@ -23,39 +22,14 @@ func init() {
 }
 
 func GetViewerById(id string) (*Viewer, error) {
-	var query map[string]any
-	{
-		err := pb.Dao().DB().
-			Select("id", "displayName", "wallet").
-			From("viewers").
-			Where(dbx.NewExp(
-				"id = {:id}",
-				dbx.Params{"id": id},
-			)).
-			One(&query)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	id, ok := query["id"].(string)
-	if !ok {
-		return nil, errors.New("id was invalid")
-	}
-
-	displayName, ok := query["displayName"].(string)
-	if !ok {
-		return nil, errors.New("displayName was invalid")
-	}
-
-	walletRaw, ok := query["wallet"].([]byte)
-	if !ok {
-		return nil, errors.New("wallet was invalid")
+	record, err := pb.Dao().FindRecordById("viewers", id)
+	if err != nil {
+		return nil, err
 	}
 
 	var wallet map[string]int
 	{
-		err := json.Unmarshal(walletRaw, &wallet)
+		err := record.UnmarshalJSONField("wallet", &wallet)
 		if err != nil {
 			return nil, err
 		}
@@ -63,7 +37,7 @@ func GetViewerById(id string) (*Viewer, error) {
 
 	return &Viewer{
 		Id:          id,
-		DisplayName: displayName,
+		DisplayName: record.GetString("displayName"),
 		Wallet:      wallet,
 	}, nil
 }
@@ -96,6 +70,11 @@ func CreateViewerByProviderId(provider string, id string) (*Viewer, error) {
 		case "twitch":
 			user, err := apis.GetTwitchUserById(id)
 			if err != nil {
+				pb.Logger().Error(
+					"VIEWERS Failed to create a twitch user",
+					"userId", id,
+					"error", err.Error(),
+				)
 				return err
 			}
 			viewerRecord.Set("displayName", user.DisplayName)
@@ -192,7 +171,7 @@ func GetViewerByProviderId(provider string, providerId string) (*Viewer, error) 
 			return nil, err
 		}
 
-		providerToViewerIdCache.SetDefault(provider+"-"+providerId, viewer)
+		providerToViewerIdCache.SetDefault(provider+"-"+providerId, viewer.Id)
 		return viewer, nil
 	} else if err != nil {
 		return nil, err
