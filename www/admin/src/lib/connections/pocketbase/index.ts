@@ -314,22 +314,6 @@ export class BreakfastPocketBase extends PocketBase {
     };
     this.authStore = new SvelteAuthStore();
 
-    const url = new URL(window.location.toString());
-    const existingUserAuth =
-      url.searchParams.get("token") ?? window.localStorage.getItem("pb_users_auth");
-    if (existingUserAuth) {
-      this.authStore.save(existingUserAuth);
-      this.collection("users")
-        .authRefresh()
-        .then(() => {
-          if (url.searchParams.get("token")) window.history.replaceState(null, "", "/breakfast");
-        })
-        .catch((err) => {
-          console.error("Failed to auth with stored token:", err);
-          this.authStore.clear();
-        });
-    }
-
     this.authStore.onChange((token, model) => {
       if (token === "") {
         window.localStorage.removeItem("pb_users_auth");
