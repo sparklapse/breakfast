@@ -117,8 +117,8 @@ func GetTwitchUserById(id string) (*TwitchUser, error) {
 		}
 	}
 
-	url := "http://api.twitch.tv/helix/users?id=" + id
-	req, err := http.NewRequest("POST", url, strings.NewReader(""))
+	url := "https://api.twitch.tv/helix/users?id=" + id
+	req, err := http.NewRequest("GET", url, strings.NewReader(""))
 	if err != nil {
 		return nil, err
 	}
@@ -168,8 +168,8 @@ func GetTwitchUserByLogin(login string) (*TwitchUser, error) {
 		}
 	}
 
-	url := "http://api.twitch.tv/helix/users?login=" + login
-	req, err := http.NewRequest("POST", url, strings.NewReader(""))
+	url := "https://api.twitch.tv/helix/users?login=" + login
+	req, err := http.NewRequest("GET", url, strings.NewReader(""))
 	if err != nil {
 		return nil, err
 	}
