@@ -4,6 +4,10 @@
   import { Toaster } from "svelte-french-toast";
 </script>
 
+<svelte:head>
+  <title>Breakfast</title>
+</svelte:head>
+
 <slot />
 
 <Toaster position="top-center" />
