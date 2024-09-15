@@ -295,6 +295,9 @@ export class BreakfastPocketBase extends PocketBase {
       activeCurrencies: async (options?: SendOptions): Promise<{ currencies: string[] }> => {
         return await this.send("/api/breakfast/viewers/currencies", options ?? {});
       },
+      getDefaultProfileItem: async (options?: SendOptions): Promise<{ id: string }> => {
+        return await this.send("/api/breakfast/viewers/default-profile-base", options ?? {});
+      },
       getProfileItems: async (
         viewerId: string,
         options?: SendOptions,

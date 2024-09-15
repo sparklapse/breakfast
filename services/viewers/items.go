@@ -5,6 +5,7 @@ import (
 	"errors"
 	"time"
 
+	"github.com/labstack/echo/v5"
 	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase"
 	"github.com/pocketbase/pocketbase/core"
@@ -123,6 +124,14 @@ func registerItemsService(app *pocketbase.PocketBase) {
 				).
 				Execute()
 		}
+
+		return nil
+	})
+
+	app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
+		e.Router.GET("/api/breakfast/viewers/default-profile-base", func(c echo.Context) error {
+			return c.JSON(200, map[string]string{"id": defaultProfileBaseItemId})
+		})
 
 		return nil
 	})

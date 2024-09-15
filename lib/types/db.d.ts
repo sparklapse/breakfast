@@ -13,9 +13,11 @@ export type ItemType =
   | "COLLECTABLE"
   | "CONSUMABLE"
   | "PROFILE_BASE"
-  | "PROFILE_ACCESSORY";
+  | "PROFILE_ACCESSORY"
+  | (string & {});
 
 export type Item = {
+  id: string;
   type: ItemType;
   label: string;
   description: string | null;
