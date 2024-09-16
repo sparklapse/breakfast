@@ -13,6 +13,7 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v5"
+	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase"
 	"github.com/pocketbase/pocketbase/apis"
 	"github.com/pocketbase/pocketbase/core"
@@ -190,7 +191,19 @@ func RegisterService(app *pocketbase.PocketBase) {
 
 			subs := subscriptions.CreateDefaultSubscriptions(external.ProviderId)
 			for _, sub := range subs {
-				CreateSubscription(user.Id, sub)
+				_, err := CreateSubscription(user.Id, sub)
+				if errors.Is(err, connection.ErrAlreadSubscribed) {
+					continue
+				}
+
+				if err != nil {
+					app.Logger().Error(
+						"EVENTS Twitch eventsub failed to subscribe",
+						"error", err.Error(),
+					)
+
+					return c.JSON(500, map[string]string{"message": "Failed to subscribe"})
+				}
 			}
 
 			return c.JSON(200, map[string]string{"message": "OK"})
@@ -328,13 +341,47 @@ func RegisterService(app *pocketbase.PocketBase) {
 
 	// Subscribe to default twitch subscriptions
 	app.OnRecordAfterAuthWithOAuth2Request("users").Add(func(e *core.RecordAuthWithOAuth2Event) error {
-		// TODO
+		if e.ProviderName != "twitch" {
+			return nil
+		}
+
+		for _, sub := range subscriptions.CreateDefaultSubscriptions(e.OAuth2User.Id) {
+			CreateSubscription(e.Record.Id, sub)
+		}
+
 		return nil
 	})
 
 	// Unsubscribe all events authorized by user
-	app.OnRecordAfterUnlinkExternalAuthRequest("users").Add(func(e *core.RecordUnlinkExternalAuthEvent) error {
-		// TODO
+	app.OnRecordBeforeUnlinkExternalAuthRequest("users").Add(func(e *core.RecordUnlinkExternalAuthEvent) error {
+		records, err := app.Dao().FindRecordsByFilter(
+			"twitch_event_subscriptions",
+			"authorizer = {:userId}",
+			"-created",
+			-1,
+			0,
+			dbx.Params{"userId": e.Record.Id},
+		)
+
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil
+		}
+
+		if err != nil {
+			return err
+		}
+
+		for _, record := range records {
+			err := DeleteSubscription(record.Id)
+			if err != nil {
+				app.Logger().Error(
+					"EVENTS Failed to delete twitch eventsub subscription",
+					"error", err.Error(),
+					"subscription", record.Id,
+				)
+			}
+		}
+
 		return nil
 	})
 

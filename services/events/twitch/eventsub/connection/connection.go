@@ -47,6 +47,10 @@ func Disconnect() error {
 	ws.Close()
 	ws = nil
 
+	app.App.Logger().Debug(
+		"EVENTS Twitch eventsub disconnected",
+	)
+
 	return nil
 }
 
