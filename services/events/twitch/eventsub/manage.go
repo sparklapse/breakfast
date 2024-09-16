@@ -29,7 +29,7 @@ func CreateSubscription(userId string, config subscriptions.SubscriptionConfig) 
 	{
 		_, err := connection.Subscribe(record.Id, config, userId)
 		if err != nil {
-			return "", nil
+			return "", err
 		}
 	}
 
