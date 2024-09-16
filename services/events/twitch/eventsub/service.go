@@ -188,7 +188,7 @@ func RegisterService(app *pocketbase.PocketBase) {
 				return c.JSON(500, map[string]string{"message": "Failed to get twitch record for user"})
 			}
 
-			subs := subscriptions.CreateDefaultSubscriptions(external.Id)
+			subs := subscriptions.CreateDefaultSubscriptions(external.ProviderId)
 			for _, sub := range subs {
 				CreateSubscription(user.Id, sub)
 			}
@@ -323,6 +323,18 @@ func RegisterService(app *pocketbase.PocketBase) {
 			return c.JSON(200, map[string]string{"message": "OK"})
 		})
 
+		return nil
+	})
+
+	// Subscribe to default twitch subscriptions
+	app.OnRecordAfterAuthWithOAuth2Request("users").Add(func(e *core.RecordAuthWithOAuth2Event) error {
+		// TODO
+		return nil
+	})
+
+	// Unsubscribe all events authorized by user
+	app.OnRecordAfterUnlinkExternalAuthRequest("users").Add(func(e *core.RecordUnlinkExternalAuthEvent) error {
+		// TODO
 		return nil
 	})
 

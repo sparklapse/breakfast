@@ -16,7 +16,10 @@ var activeSubscriptions map[string]*Subscription = make(map[string]*Subscription
 
 func requestSubscription(subType string, subVersion string, subCondition map[string]string, accessToken string) (*SubscriptionResponse, error) {
 	if ws == nil || sessionId == "" {
-		return nil, errors.New("socket or session is nil")
+		err := Connect(EventSubWsUrl)
+		if err != nil {
+			return nil, errors.Join(errors.New("socket not connected and failed to connect"), err)
+		}
 	}
 
 	clientId := app.App.Settings().TwitchAuth.ClientId
