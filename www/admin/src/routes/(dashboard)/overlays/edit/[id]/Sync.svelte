@@ -13,10 +13,14 @@
   export let abortAS: (() => void) | undefined;
 
   import type { PageData } from "./$types";
+  import { getTransformBounds, transformFromPoints } from "$lib/math";
   $: data = $page.data as PageData | undefined;
   $: obsConnected = data?.obs.connectedStore ?? readable(false);
 
-  const { label } = useEditor();
+  const {
+    label,
+    sources: { sources },
+  } = useEditor();
 
   const steps: { label: string }[] = [
     {
@@ -51,6 +55,9 @@
       throw existing.error;
     }
 
+    const bounds = getTransformBounds(...$sources.map((s) => s.transform));
+    const transform = transformFromPoints(...bounds, 0);
+
     for (const source of existing.data.sceneItems) {
       if (source.inputKind !== "browser_source") continue;
       const settings = await data.obs.request({
@@ -67,15 +74,41 @@
           type: "PressInputPropertiesButton",
           options: { inputName: source.sourceName, propertyName: "refreshnocache" },
         });
+        const name = `${label}${invisId()}`;
         await data.obs.request({
           type: "SetInputName",
-          options: { inputName: source.sourceName, newInputName: `${$label}${invisId()}` },
+          options: { inputName: source.sourceName, newInputName: name },
+        });
+        await data.obs.request({
+          type: "SetInputSettings",
+          options: {
+            inputName: name,
+            inputSettings: {
+              css: `body { transform: translate(${-transform.x}px, ${-transform.y}px) }`,
+              width: transform.width,
+              height: transform.height,
+            },
+            overlay: true,
+          },
+        });
+        await data.obs.request({
+          type: "SetSceneItemTransform",
+          options: {
+            sceneUuid,
+            sceneItemId: source.sceneItemId,
+            sceneItemTransform: {
+              positionX: transform.x,
+              positionY: transform.y,
+              scaleX: 1,
+              scaleY: 1,
+            },
+          },
         });
         return;
       }
     }
 
-    await data.obs.request({
+    const input = await data.obs.request({
       type: "CreateInput",
       options: {
         sceneUuid,
@@ -83,9 +116,28 @@
         inputName: `${$label}${invisId()}`,
         inputSettings: {
           breakfastOverlayId: $page.params.id,
+          css: `body { transform: translate(${-transform.x}px, ${-transform.y}px) }`,
           url: `${window.location.origin}/overlays/render/${$page.params.id}`,
-          width: 1920,
-          height: 1080,
+          width: transform.width,
+          height: transform.height,
+        },
+      },
+    });
+
+    if (input.status === "error") {
+      return;
+    }
+
+    await data.obs.request({
+      type: "SetSceneItemTransform",
+      options: {
+        sceneUuid,
+        sceneItemId: input.data.sceneItemId,
+        sceneItemTransform: {
+          positionX: transform.x,
+          positionY: transform.y,
+          scaleX: 1,
+          scaleY: 1,
         },
       },
     });
