@@ -93,6 +93,17 @@ func Subscribe(id string, sub subscriptions.SubscriptionConfig, authorizerId str
 		return nil, err
 	}
 
+	for _, active := range activeSubscriptions {
+		if active.Type == sub.Type && active.Condition["broadcaster_user_id"] == sub.Condition["broadcaster_user_id"] {
+			record, _ := app.App.Dao().FindRecordById("twitch_event_subscriptions", id)
+			if record != nil {
+				app.App.Dao().DeleteRecord(record)
+			}
+
+			return nil, ErrAlreadSubscribed
+		}
+	}
+
 	resp, err := requestSubscription(
 		sub.Type,
 		sub.Version,
@@ -154,7 +165,11 @@ func Unsubscribe(id string) error {
 		return errors.New("bad unsubscribe request: " + resp.Status)
 	}
 
-	delete(activeSubscriptions, subscription.Id)
+	delete(activeSubscriptions, id)
+
+	if len(activeSubscriptions) == 0 {
+		Disconnect()
+	}
 
 	return nil
 }
