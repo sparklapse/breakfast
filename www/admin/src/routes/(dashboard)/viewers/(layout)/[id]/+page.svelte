@@ -25,7 +25,7 @@
   };
 </script>
 
-<div class="flex items-start justify-between">
+<div class="mb-2 flex items-start justify-between">
   <div class="flex gap-2">
     <div>
       {#await data.suspense.profileItems}
