@@ -1,9 +1,9 @@
 <script lang="ts">
   import toast from "svelte-french-toast";
-  import type { ComponentType } from "svelte";
   import { Layers3, Settings, Unplug, UsersRound } from "lucide-svelte";
   import Stats from "$lib/components/obs/Stats.svelte";
   import Obs from "$lib/components/icons/OBS.svelte";
+  import type { ComponentType } from "svelte";
 
   import type { PageData } from "./$types";
   export let data: PageData;
