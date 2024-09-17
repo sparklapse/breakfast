@@ -126,10 +126,10 @@ func ProcessChannelChatMessageEventPayload(payload map[string]any) (*types.ChatM
 		reply = &types.ChatMessageReply{
 			RepliedToMessageId: replied_to_message_id,
 			RepliedToChatter: types.Chatter{
-				Viewer:      viewer,
 				Username:    replied_to_chatter_login,
 				DisplayName: replied_to_chatter_name,
 			},
+			RepliedToViewer: viewer,
 		}
 	}
 
@@ -146,10 +146,10 @@ func ProcessChannelChatMessageEventPayload(payload map[string]any) (*types.ChatM
 			DisplayName: broadcaster_user_name,
 		},
 		Chatter: types.Chatter{
-			Viewer:      viewer,
 			Username:    chatter_user_login,
 			DisplayName: chatter_user_name,
 		},
+		Viewer:   viewer,
 		Features: features,
 	}, nil
 }

@@ -12,7 +12,6 @@ export type Viewer = {
 };
 
 export type Chatter = {
-  viewer: Viewer;
   username: string;
   displayName: string;
 };
@@ -35,9 +34,11 @@ export type ChatMessageEvent = {
     id: string;
     channel: Channel;
     chatter: Chatter;
+    viewer: Viewer | null;
     reply: {
       repliedToMessageId: string;
       repliedToChatter: Chatter;
+      repliedToViewer: Viewer | null;
     } | null;
     text: string;
     color: string;
@@ -68,6 +69,7 @@ export type SubscriptionEvent = {
   data: {
     channel: Channel;
     chatter: Chatter;
+    viewer: Viewer | null;
     tier: string;
     gifted: boolean;
   };
@@ -90,6 +92,9 @@ interface BreakfastGlobal {
     listen: (
       listener: (event: BreakfastEvent) => void | Promise<void>,
     ) => Promise<() => Promise<void>>;
+  };
+  message: {
+    renderEmotes: (message: string) => string;
   };
 }
 

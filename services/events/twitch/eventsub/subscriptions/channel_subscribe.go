@@ -67,10 +67,10 @@ func ProcessChannelSubscribePayload(payload map[string]any) (*types.Subscription
 			DisplayName: broadcaster_user_name,
 		},
 		Chatter: types.Chatter{
-			Viewer:      viewer,
 			Username:    user_login,
 			DisplayName: user_name,
 		},
+		Viewer: viewer,
 		Gifted: is_gift,
 		Tier:   tier,
 	}, nil

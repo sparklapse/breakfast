@@ -1,19 +1,23 @@
 package types
 
+import "breakfast/services/viewers"
+
 type ChatMessageFragment struct {
 	Type string `json:"type"`
 	Text string `json:"text"`
 }
 
 type ChatMessageReply struct {
-	RepliedToMessageId string  `json:"repliedToMessageId"`
-	RepliedToChatter   Chatter `json:"repliedToChatter"`
+	RepliedToMessageId string          `json:"repliedToMessageId"`
+	RepliedToChatter   Chatter         `json:"repliedToChatter"`
+	RepliedToViewer    *viewers.Viewer `json:"repliedToViewer"`
 }
 
 type ChatMessage struct {
 	Id        string                `json:"id"`
 	Channel   Channel               `json:"channel"`
 	Chatter   Chatter               `json:"chatter"`
+	Viewer    *viewers.Viewer       `json:"viewer"`
 	Reply     *ChatMessageReply     `json:"reply"`
 	Text      string                `json:"text"`
 	Color     string                `json:"color"`

@@ -60,7 +60,9 @@
   });
 
   const getName = (ev: ChatMessageEvent) =>
-    names === "custom" ? ev.data.chatter.viewer.displayName : ev.data.chatter.displayName;
+    names === "custom"
+      ? (ev.data.viewer?.displayName ?? ev.data.chatter.displayName)
+      : ev.data.chatter.displayName;
 
   /**
    * Remove when out of frame

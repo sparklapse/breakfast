@@ -78,13 +78,13 @@
           </p>
           {#if event.type === "chat-message"}
             <p class="leading-none">
-              <span style:color={event.data.color}
-                >{event.data.chatter.viewer?.displayName || event.data.chatter.displayName}</span
+              <span style:color={event.data.color} title={event.data.chatter.displayName}
+                >{event.data.viewer?.displayName || event.data.chatter.displayName}</span
               >: {event.data.text}
             </p>
           {:else if event.type === "subscription"}
             <p>
-              {event.data.chatter.viewer.displayName}
+              {event.data.viewer?.displayName}
               {event.data.gifted ? "was gifted a sub" : "has subscribed"}!
             </p>
           {/if}
@@ -128,9 +128,9 @@
               <DropdownMenu.Separator class="my-2 border-t border-slate-200" />
             {/if}
             <DropdownMenu.Label class="px-2 text-xs text-slate-400">Event</DropdownMenu.Label>
-            {#if event.data?.chatter?.viewer?.id}
+            {#if event.data?.viewer?.id}
               <DropdownMenu.Item
-                href="/breakfast/viewers/{event.data.chatter.viewer.id}"
+                href="/breakfast/viewers/{event.data.viewer.id}"
                 class="px-2 hover:bg-slate-50">View Viewer</DropdownMenu.Item
               >
             {/if}
