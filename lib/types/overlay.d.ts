@@ -93,9 +93,6 @@ interface BreakfastGlobal {
       listener: (event: BreakfastEvent) => void | Promise<void>,
     ) => Promise<() => Promise<void>>;
   };
-  message: {
-    renderEmotes: (message: string) => string;
-  };
 }
 
 declare global {
