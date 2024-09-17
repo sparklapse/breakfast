@@ -22,7 +22,7 @@
 <div class="container mx-auto p-4">
   <div class="mb-4 flex flex-col justify-between gap-4 sm:flex-row">
     <div
-      class="flex w-full items-center gap-2 rounded bg-white px-2 outline-slate-700 focus-within:outline"
+      class="flex w-full items-center gap-2 rounded border border-slate-700 bg-white px-2 outline-slate-700 focus-within:outline"
     >
       <Search class="size-4" />
       <input
@@ -60,7 +60,7 @@
             <p>{item.label.replaceAll(" ", "").slice(0, 2).toUpperCase()}</p>
           {/if}
         </div>
-        <div class="flex flex-grow flex-col justify-between bg-white p-2">
+        <div class="flex flex-grow flex-col justify-between bg-white p-2 text-left">
           <p class="truncate text-sm font-semibold">{item.label}</p>
           <p class="mt-1 truncate text-xs text-gray-600">{item.description}</p>
         </div>

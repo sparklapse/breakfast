@@ -1,11 +1,13 @@
 <script lang="ts">
   import toast from "svelte-french-toast";
   import { fly } from "svelte/transition";
-  import { DropdownMenu } from "bits-ui";
-  import { EllipsisVertical } from "lucide-svelte";
+  import { DropdownMenu, Dialog } from "bits-ui";
+  import { EllipsisVertical, CirclePlus, Trash2 } from "lucide-svelte";
+  import { goto, invalidate } from "$app/navigation";
 
   import type { PageData } from "./$types";
-  import { goto } from "$app/navigation";
+  import ItemGrid from "$lib/components/items/ItemGrid.svelte";
+  import { page } from "$app/stores";
   export let data: PageData;
 
   const providersArr = data.viewer.providers!.split(",");
@@ -16,6 +18,7 @@
   let displayName = data.viewer.displayName;
   let renaming = false;
   let verified: boolean = data.viewer.verified;
+  let addItemMenu = false;
 
   const focus = (el: HTMLElement) => {
     setTimeout(() => el.focus(), 100);
@@ -145,4 +148,82 @@
       >
     </DropdownMenu.Content>
   </DropdownMenu.Root>
+</div>
+
+<div class="grid md:grid-cols-2 lg:grid-cols-3">
+  <div>
+    <div class="flex items-center justify-between">
+      <h3 class="font-semibold">Items</h3>
+      <Dialog.Root bind:open={addItemMenu}>
+        <Dialog.Trigger class="flex items-center gap-1 rounded bg-slate-700 px-2 text-white">
+          <CirclePlus size="1rem" /> Give Item
+        </Dialog.Trigger>
+        <Dialog.Portal>
+          <Dialog.Content
+            class="fixed left-1/2 top-1/2 h-[32rem] w-full max-w-xl -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded bg-white p-2 shadow-lg"
+          >
+            <p>Pick an item</p>
+            <ItemGrid
+              onclick={(item) => {
+                addItemMenu = false;
+                toast.promise(
+                  data.pb
+                    .collection("viewer_items")
+                    .create({
+                      owner: $page.params.id,
+                      item: item.id,
+                    })
+                    .then(() => invalidate("db:viewer")),
+                  {
+                    loading: "Giving viewer item...",
+                    success: `Viewer given a ${item.label}`,
+                    error: (err) => `Failed to give viewer item: ${err.message}`,
+                  },
+                );
+              }}
+            />
+          </Dialog.Content>
+        </Dialog.Portal>
+      </Dialog.Root>
+    </div>
+    {#await data.suspense.items}
+      <p>Loading</p>
+    {:then items}
+      <ul class="mt-1 divide-y divide-slate-200">
+        {#each items as { id, expand: { item } } (id)}
+          <li class="flex items-center justify-between py-2">
+            <div class="flex items-center gap-2">
+              {#if typeof item.image === "string" && item.image !== ""}
+                {@const imageUrl = data.pb.files.getUrl(item, item.image, { thumb: "256x256f" })}
+                <img class="size-10 object-cover" src={imageUrl} alt={item.image} />
+              {:else}
+                <p>{item.label.replaceAll(" ", "").slice(0, 2).toUpperCase()}</p>
+              {/if}
+              <div>
+                <p>{item.label}</p>
+                <p class="max-w-sm truncate text-sm">{item.description}</p>
+              </div>
+            </div>
+            <button
+              on:click={() => {
+                toast.promise(
+                  data.pb
+                    .collection("viewer_items")
+                    .delete(id)
+                    .then(() => invalidate("db:viewer")),
+                  {
+                    loading: "Deleting viewer item...",
+                    success: "Viewer no longer has the item!",
+                    error: (err) => `Failed to delete viewer item: ${err.message}`,
+                  },
+                );
+              }}><Trash2 class="text-red-900" size="1.25rem" /></button
+            >
+          </li>
+        {:else}
+          <li>This viewer has nothing :(</li>
+        {/each}
+      </ul>
+    {/await}
+  </div>
 </div>
