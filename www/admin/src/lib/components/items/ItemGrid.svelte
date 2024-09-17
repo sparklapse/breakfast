@@ -14,8 +14,8 @@
   );
 
   onMount(async () => {
-    const initialItems = await $page.data.pb.collection<Item>("items").getList(1, 20);
-    inventory = [...inventory, ...initialItems.items];
+    const initialItems = await $page.data.pb.collection<Item>("items").getFullList();
+    inventory = [...inventory, ...initialItems];
   });
 </script>
 
