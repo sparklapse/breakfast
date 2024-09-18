@@ -288,11 +288,23 @@ func RegisterService(app *pocketbase.PocketBase) {
 				if err != nil {
 					return c.JSON(500, map[string]string{"message": "Failed to create subscriptions for chat", "error": err.Error()})
 				}
-			case subscriptions.TypeChannelChatMessage:
-				config := subscriptions.CreateChannelChatMessageSubscription(id, authorizerTwitchRecord.ProviderId)
-				_, err := CreateSubscription(user.Id, config)
+			case "live":
+				errs := []error{}
+				{
+					config := subscriptions.CreateStreamOnlineSubscription(id)
+					_, err := CreateSubscription(user.Id, config)
+					errs = append(errs, err)
+				}
+
+				{
+					config := subscriptions.CreateStreamOfflineSubscription(id)
+					_, err := CreateSubscription(user.Id, config)
+					errs = append(errs, err)
+				}
+
+				err := errors.Join(errs...)
 				if err != nil {
-					return c.JSON(500, map[string]string{"message": "Failed to create subscription", "error": err.Error()})
+					return c.JSON(500, map[string]string{"message": "Failed to create subscriptions for live", "error": err.Error()})
 				}
 			default:
 				return c.JSON(400, map[string]string{"message": "Cant make a subscription of that type"})

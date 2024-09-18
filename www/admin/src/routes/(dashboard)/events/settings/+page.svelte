@@ -17,6 +17,10 @@
       label: "Chat",
       value: "chat",
     },
+    {
+      label: "Live (Online/Offline)",
+      value: "live",
+    },
   ];
 
   const createSubscription = (
