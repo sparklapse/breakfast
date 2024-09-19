@@ -24,6 +24,11 @@ func ProcessChannelSubscribePayload(payload map[string]any) (*types.Subscription
 		return nil, errors.New("event field was not of the correct type")
 	}
 
+	broadcaster_user_id, ok := event["broadcaster_user_id"].(string)
+	if !ok {
+		return nil, errors.New("broabcaster_user_id field is not of the correct type")
+	}
+
 	broadcaster_user_login, ok := event["broadcaster_user_login"].(string)
 	if !ok {
 		return nil, errors.New("broadcaster_user_login field is not of the correct type")
@@ -63,8 +68,10 @@ func ProcessChannelSubscribePayload(payload map[string]any) (*types.Subscription
 
 	return &types.Subscription{
 		Channel: types.Channel{
+			Id:          broadcaster_user_id,
 			Username:    broadcaster_user_login,
 			DisplayName: broadcaster_user_name,
+			Platform:    "twitch",
 		},
 		Chatter: types.Chatter{
 			Username:    user_login,

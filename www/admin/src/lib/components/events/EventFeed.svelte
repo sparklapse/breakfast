@@ -1,4 +1,5 @@
 <script lang="ts">
+  import toast from "svelte-french-toast";
   import clsx from "clsx";
   import { onMount } from "svelte";
   import { fly } from "svelte/transition";
@@ -11,7 +12,6 @@
     SubscriptionEvent,
   } from "@sparklapse/breakfast/overlay";
   import type { ActionDefinition } from "@sparklapse/breakfast/scripts";
-  import toast from "svelte-french-toast";
 
   export let actions: ActionDefinition[] = [];
   export let onPauseChange: ((paused: boolean) => void) | undefined = undefined;
@@ -77,10 +77,19 @@
             {event.data.channel.displayName} - {event.platform}
           </p>
           {#if event.type === "chat-message"}
-            <p class="leading-none">
-              <span style:color={event.data.color} title={event.data.chatter.displayName}
-                >{event.data.viewer?.displayName || event.data.chatter.displayName}</span
-              >: {event.data.text}
+            <p class="flex flex-wrap items-center gap-1 leading-none">
+              <span>
+                <span style:color={event.data.color} title={event.data.chatter.displayName}
+                  >{event.data.viewer?.displayName || event.data.chatter.displayName}</span
+                >:
+              </span>
+              {#each event.data.fragments as fragment}
+                {#if fragment.type === "emote"}
+                  <img class="inline h-6" src={fragment.images.at(-1)?.url} alt={fragment.text} />
+                {:else}
+                  {fragment.text}
+                {/if}
+              {/each}
             </p>
           {:else if event.type === "subscription"}
             <p>

@@ -206,3 +206,14 @@ func GetTwitchUserByLogin(login string) (*TwitchUser, error) {
 
 	return &user, nil
 }
+
+func GetTwitchGlobalEmots() (*any, error) {
+	{
+		err := refreshToken()
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	panic("not implemented")
+}

@@ -1,6 +1,7 @@
 package subscriptions
 
 import (
+	"breakfast/services/events/emotes"
 	"breakfast/services/events/types"
 	"breakfast/services/viewers"
 	"errors"
@@ -36,10 +37,10 @@ func ProcessChannelChatMessageEventPayload(payload map[string]any) (*types.ChatM
 	if !valid {
 		return nil, errors.New("message_type was not of the correct type")
 	}
-	// broadcaster_user_id, valid := event["broadcaster_user_id"].(string)
-	// if !valid {
-	// 	return nil, errors.New("broadcaster_user_id was not of the correct type")
-	// }
+	broadcaster_user_id, valid := event["broadcaster_user_id"].(string)
+	if !valid {
+		return nil, errors.New("broadcaster_user_id was not of the correct type")
+	}
 	broadcaster_user_login, valid := event["broadcaster_user_login"].(string)
 	if !valid {
 		return nil, errors.New("broadcaster_user_login was not of the correct type")
@@ -88,9 +89,48 @@ func ProcessChannelChatMessageEventPayload(payload map[string]any) (*types.ChatM
 			return nil, errors.New("fragment text was not of the correct type")
 		}
 
+		images := []types.ChatMessageImage{}
+		if fragment_type == "emote" {
+			emote, valid := fragment["emote"].(map[string]any)
+			if !valid {
+				return nil, errors.New("emote was not of the correct type")
+			}
+
+			emoteId, valid := emote["id"].(string)
+			if !valid {
+				return nil, errors.New("emote id was not of the correct type")
+			}
+
+			formats, valid := emote["format"].([]any)
+			if !valid {
+				return nil, errors.New("emote format not of the correct type")
+			}
+
+			for _, maybeFormat := range formats {
+				format, valid := maybeFormat.(string)
+				if !valid {
+					return nil, errors.New("emote format contained a bad format not of the correct type")
+				}
+
+				images = append(
+					images,
+					types.ChatMessageImage{
+						Url: "https://static-cdn.jtvnw.net/emoticons/v2/" + emoteId + "/" + format + "/dark/1.0",
+					},
+					types.ChatMessageImage{
+						Url: "https://static-cdn.jtvnw.net/emoticons/v2/" + emoteId + "/" + format + "/dark/2.0",
+					},
+					types.ChatMessageImage{
+						Url: "https://static-cdn.jtvnw.net/emoticons/v2/" + emoteId + "/" + format + "/dark/3.0",
+					},
+				)
+			}
+		}
+
 		chat_fragments = append(chat_fragments, types.ChatMessageFragment{
-			Type: fragment_type,
-			Text: text,
+			Type:   fragment_type,
+			Text:   text,
+			Images: images,
 		})
 	}
 
@@ -139,11 +179,13 @@ func ProcessChannelChatMessageEventPayload(payload map[string]any) (*types.ChatM
 		Id:        message_id,
 		Text:      message_text,
 		Reply:     reply,
-		Fragments: chat_fragments,
+		Fragments: emotes.EmotifyFragments("twitch", broadcaster_user_id, chat_fragments),
 		Color:     color,
 		Channel: types.Channel{
+			Id:          broadcaster_user_id,
 			Username:    broadcaster_user_login,
 			DisplayName: broadcaster_user_name,
+			Platform:    "twitch",
 		},
 		Chatter: types.Chatter{
 			Username:    chatter_user_login,

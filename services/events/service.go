@@ -1,6 +1,7 @@
 package events
 
 import (
+	"breakfast/services/events/emotes"
 	"breakfast/services/events/listener"
 	"breakfast/services/events/twitch"
 	"time"
@@ -64,12 +65,15 @@ func purgeAllEvents(app *pocketbase.PocketBase) error {
 
 func RegisterService(app *pocketbase.PocketBase) {
 	listener.SetupListener(app)
+	emotes.RegisterService(app)
 	twitch.RegisterService(app)
 
 	registerSettingsAPIs(app)
 }
 
 func RegisterJobs(app *pocketbase.PocketBase, scheduler *cron.Cron) {
+	emotes.RegisterJobs(app, scheduler)
+
 	// Delete events older than store duration setting
 	app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
 		scheduler.MustAdd("eventsCleanupOld", "0 0 * * *", func() {

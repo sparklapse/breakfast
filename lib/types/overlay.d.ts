@@ -45,6 +45,7 @@ export type ChatMessageEvent = {
     fragments: {
       type: string;
       text: string;
+      images: { url: string }[];
     }[];
     features: string[];
   };

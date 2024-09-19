@@ -2,9 +2,14 @@ package types
 
 import "breakfast/services/viewers"
 
+type ChatMessageImage struct {
+	Url string `json:"url"`
+}
+
 type ChatMessageFragment struct {
-	Type string `json:"type"`
-	Text string `json:"text"`
+	Type   string             `json:"type"`
+	Text   string             `json:"text"`
+	Images []ChatMessageImage `json:"images"`
 }
 
 type ChatMessageReply struct {

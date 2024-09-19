@@ -93,13 +93,27 @@
 <div class="container" style:overflow={overflow === "overflow" ? "visible" : "clip"}>
   <ul class="messages">
     {#each messages.m as msg (msg.data.id)}
+      <p class={clsx([msg.deleted && "hidden"])}>
+        <span style:color={msg.data.color}>{getName(msg)}</span>: {msg.data.text}
+      </p>
       <p
-        class={clsx([msg.deleted && "hidden"])}
+        class={clsx(["flex flex-wrap items-center gap-1 leading-none", msg.deleted && "hidden"])}
         in:fly={{ x: -40, duration: 100 }}
         out:fade={{ duration: 2000 }}
         use:removeWhenOOF={{ messageId: msg.data.id }}
       >
-        <span style:color={msg.data.color}>{getName(msg)}</span>: {msg.data.text}
+        <span>
+          <span style:color={msg.data.color} title={msg.data.chatter.displayName}
+            >{msg.data.viewer?.displayName || msg.data.chatter.displayName}</span
+          >:
+        </span>
+        {#each msg.data.fragments as fragment}
+          {#if fragment.type === "emote"}
+            <img class="inline h-6" src={fragment.images.at(-1)?.url} alt={fragment.text} />
+          {:else}
+            {fragment.text}
+          {/if}
+        {/each}
       </p>
     {/each}
   </ul>
