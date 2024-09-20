@@ -77,7 +77,7 @@
             {event.data.channel.displayName} - {event.platform}
           </p>
           {#if event.type === "chat-message"}
-            <p class="flex flex-wrap items-center gap-1 leading-none">
+            <p class="content-center leading-none">
               <span>
                 <span style:color={event.data.color} title={event.data.chatter.displayName}
                   >{event.data.viewer?.displayName || event.data.chatter.displayName}</span
@@ -85,7 +85,7 @@
               </span>
               {#each event.data.fragments as fragment}
                 {#if fragment.type === "emote"}
-                  <img class="inline h-6" src={fragment.images.at(-1)?.url} alt={fragment.text} />
+                  <img class="inline h-6 mx-0.5" src={fragment.images.at(-1)?.url} alt={fragment.text} />
                 {:else}
                   {fragment.text}
                 {/if}

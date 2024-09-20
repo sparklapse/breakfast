@@ -75,7 +75,6 @@
           const idx = m.findIndex((msg) => msg.data.id === options.messageId);
           if (idx >= 0) m.splice(idx, 1);
           messages = { m };
-          console.log("Removing message");
         }
       }
     });
@@ -93,11 +92,8 @@
 <div class="container" style:overflow={overflow === "overflow" ? "visible" : "clip"}>
   <ul class="messages">
     {#each messages.m as msg (msg.data.id)}
-      <p class={clsx([msg.deleted && "hidden"])}>
-        <span style:color={msg.data.color}>{getName(msg)}</span>: {msg.data.text}
-      </p>
       <p
-        class={clsx(["flex flex-wrap items-center gap-1 leading-none", msg.deleted && "hidden"])}
+        class={clsx([msg.deleted && "hidden"])}
         in:fly={{ x: -40, duration: 100 }}
         out:fade={{ duration: 2000 }}
         use:removeWhenOOF={{ messageId: msg.data.id }}
@@ -109,7 +105,12 @@
         </span>
         {#each msg.data.fragments as fragment}
           {#if fragment.type === "emote"}
-            <img class="inline h-6" src={fragment.images.at(-1)?.url} alt={fragment.text} />
+            <img
+              style:height="1.5em"
+              style:margin="0 0.125rem"
+              src={fragment.images.at(-1)?.url}
+              alt={fragment.text}
+            />
           {:else}
             {fragment.text}
           {/if}
@@ -128,8 +129,12 @@
     height: 100%;
   }
   p {
+    line-height: 1;
     margin: 0;
     padding: 0;
+  }
+  p > img {
+    display: inline;
   }
   .container {
     position: absolute;
