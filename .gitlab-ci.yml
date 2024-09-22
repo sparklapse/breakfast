@@ -11,7 +11,7 @@ generate_meta:
   script:
     - apt update && apt -yqq install curl jq
     - export VERSION=$(jq -r 'version' package.json)
-    - echo "Extracted VERSION: $VERSION"
+    - 'echo "Extracted VERSION: $VERSION"'
     - RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" https://hub.docker.com/v2/repositories/$DOCKER_IMAGE_NAME/tags/$VERSION/)
     - if [ "$RESPONSE" == "200"]; then
         echo "An image with that version ($VERSION) already exists";
