@@ -106,7 +106,7 @@
         {#each msg.data.fragments as fragment}
           {#if fragment.type === "emote"}
             <img
-              style:height="1.5em"
+              style:height="1em"
               style:margin="0 0.125rem"
               src={fragment.images.at(-1)?.url}
               alt={fragment.text}
