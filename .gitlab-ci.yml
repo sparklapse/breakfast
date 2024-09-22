@@ -1,31 +1,46 @@
-image: docker:latest
-
-services:
-  - docker:dind
-
 variables:
   DOCKER_IMAGE_NAME: sparklapse/breakfast
-  DOCKER_DRIVER: overlay2
 
 stages:
-  - build
-  - push
+  - generate_meta
+  - build_and_push
 
-before_script:
-  - docker login -u "$DOCKERHUB_USERNAME" -p "$DOCKERHUB_PASSWORD"
-
-build:
-  stage: build
+generate_meta:
+  stage: generate_meta
+  image: debian:latest
   script:
-    - docker build -t $DOCKER_IMAGE_NAME:$CI_COMMIT_SHORT_SHA .
-    - docker tag $DOCKER_IMAGE_NAME:$CI_COMMIT_SHORT_SHA $DOCKER_IMAGE_NAME:latest
+    - apt update && apt -yqq install curl jq
+    - export VERSION=$(jq -r 'version' package.json)
+    - echo "Extracted VERSION: $VERSION"
+    - RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" https://hub.docker.com/v2/repositories/$DOCKER_IMAGE_NAME/tags/$VERSION/)
+    - if [ "$RESPONSE" == "200"]; then
+        echo "An image with that version ($VERSION) already exists";
+        exit 1;
+      fi
+    - echo "VERSION=$VERSION" > meta.env
+  artifacts:
+    reports:
+      dotenv: meta.env
   only:
     - main
 
-push:
-  stage: push
+build_and_push:
+  stage: build_and_push
+  image: docker:latest
+  services:
+    - docker:dind
+  variables:
+    DOCKER_DRIVER: overlay2
+  needs:
+    - job: generate_meta
+      artifacts: true
+  before_script:
+    - docker login -u "$DOCKERHUB_USERNAME" -p "$DOCKERHUB_PASSWORD"
   script:
-    - docker push $DOCKER_IMAGE_NAME:$CI_COMMIT_SHORT_SHA
+    - docker build -t $DOCKER_IMAGE_NAME:$VERSION .
+    - docker tag $DOCKER_IMAGE_NAME:$VERSION $DOCKER_IMAGE_NAME:latest
+    - docker push $DOCKER_IMAGE_NAME:$VERSION
     - docker push $DOCKER_IMAGE_NAME:latest
   only:
     - main
+
