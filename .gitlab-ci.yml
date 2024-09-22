@@ -10,7 +10,7 @@ generate_meta:
   image: debian:latest
   script:
     - apt update && apt -yqq install curl jq
-    - export VERSION=$(jq -r 'version' package.json)
+    - export VERSION=$(jq -r '.version' package.json)
     - 'echo "Extracted VERSION: $VERSION"'
     - RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" https://hub.docker.com/v2/repositories/$DOCKER_IMAGE_NAME/tags/$VERSION/)
     - if [ "$RESPONSE" == "200"]; then
