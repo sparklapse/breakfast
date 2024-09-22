@@ -4,7 +4,7 @@
   "private": true,
   "workspaces": [
     "lib",
-    "www/admin",
-    "www/overlay"
+    "www/*"
   ]
 }
+
