@@ -52,6 +52,12 @@ export const basics: OverlayScript<typeof SOURCE_INPUTS> = {
         {
           group: [
             {
+              type: "color",
+              label: "Text Color",
+              target: "style.color",
+              defaultValue: "#000000",
+            },
+            {
               type: "number",
               label: "Display Time",
               target: "props.removeTime",
