@@ -65,6 +65,7 @@ export type ChatMessageDeleteEvent = {
 };
 
 export type SubscriptionEvent = {
+  id: string | null;
   type: "subscription";
   platform: Platforms;
   data: {
