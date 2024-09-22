@@ -483,7 +483,20 @@
     {#if $page.params.id !== "new"}
       <button
         class="rounded-md bg-red-700 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-600"
-        >Delete</button
+        type="button"
+        on:click={() => {
+          toast.promise(
+            data.pb
+              .collection("items")
+              .delete($page.params.id)
+              .then(() => goto("/breakfast/items")),
+            {
+              loading: "Deleting item...",
+              success: "Item deleted!",
+              error: (err) => `Failed to delete item: ${err.message}`,
+            },
+          );
+        }}>Delete</button
       >
     {/if}
     <button
