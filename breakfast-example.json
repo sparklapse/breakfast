@@ -1,0 +1,6 @@
+{
+  "twitch": {
+    "clientId": "<YOUR_TWITCH_DEV_CLIENT_ID>",
+    "clientSecret": "<YOUR_TWITCH_DEV_CLIENT_SECRET>"
+  }
+}

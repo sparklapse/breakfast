@@ -1,12 +1,16 @@
 package main
 
 import (
+	ba "breakfast/app"
 	_ "breakfast/migrations"
 	"breakfast/services/account"
+	"breakfast/services/apis"
 	"breakfast/services/auth"
 	"breakfast/services/events"
+	"breakfast/services/overlays"
 	"breakfast/services/pages"
 	"breakfast/services/saas"
+	"breakfast/services/viewers"
 	"breakfast/www"
 	"log"
 
@@ -24,18 +28,22 @@ func main() {
 		Dir: "migrations",
 	})
 
-	// Setup UI
-	app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
-		www.RegisterBreakfastAdmin(e)
-		return nil
-	})
+	// Setup App Global
+	ba.RegisterApp(app)
 
 	// Setup Services
 	saas.RegisterService(app)
+	auth.RegisterService(app)
 	account.RegisterService(app)
-	auth.RegisterService(app, scheduler)
+	apis.RegisterService(app)
+	viewers.RegisterService(app)
 	events.RegisterService(app)
+	overlays.RegisterService(app)
 	pages.RegisterService(app)
+	www.RegisterService(app)
+
+	// Setup jobs
+	auth.RegisterJobs(app, scheduler)
 
 	app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
 		scheduler.Start()

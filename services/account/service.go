@@ -20,6 +20,10 @@ func RegisterService(app *pocketbase.PocketBase) {
 				return c.JSON(http.StatusUnauthorized, map[string]string{"message": "Unauthorized"})
 			}
 
+			if user.Collection().Id != "users" {
+				return c.JSON(http.StatusUnauthorized, map[string]string{"message": "Unauthorized"})
+			}
+
 			newKey := security.RandomString(21)
 			user.Set("streamKey", newKey)
 

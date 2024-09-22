@@ -5,13 +5,16 @@ import (
 	"errors"
 
 	"github.com/pocketbase/pocketbase"
-	"github.com/pocketbase/pocketbase/apis"
 	"github.com/pocketbase/pocketbase/core"
 	"github.com/pocketbase/pocketbase/tools/cron"
 )
 
-func RegisterService(app *pocketbase.PocketBase, scheduler *cron.Cron) {
-	tokens.RegisterService(app, scheduler)
+func RegisterService(app *pocketbase.PocketBase) {
+	// Refresh any existing tokens before anything else
+	app.OnBeforeServe().PreAdd(func(e *core.ServeEvent) error {
+		tokens.RefreshExpiredTwitchTokens(app)
+		return nil
+	})
 
 	// Don't create accounts with OAuth
 	app.OnRecordBeforeAuthWithOAuth2Request("users").PreAdd(func(e *core.RecordAuthWithOAuth2Event) error {
@@ -21,12 +24,15 @@ func RegisterService(app *pocketbase.PocketBase, scheduler *cron.Cron) {
 		return nil
 	})
 
-	// Don't allow listing auth providers if not singed in
-	app.OnRecordListExternalAuthsRequest("users").Add(func(e *core.RecordListExternalAuthsEvent) error {
-		info := apis.RequestInfo(e.HttpContext)
-		if info.AuthRecord == nil && info.Admin == nil {
-			return errors.New("unauthorized")
-		}
+	app.OnRecordAfterAuthWithOAuth2Request("users").PreAdd(func(e *core.RecordAuthWithOAuth2Event) error {
+		// Save tokens from auth provider to database
+		return tokens.StoreTokenResponse(app, e)
+	})
+}
+
+func RegisterJobs(app *pocketbase.PocketBase, scheduler *cron.Cron) {
+	app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
+		tokens.ScheduleTwitchTokenRefresh(app, scheduler)
 		return nil
 	})
 }

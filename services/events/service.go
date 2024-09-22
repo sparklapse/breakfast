@@ -1,75 +1,87 @@
 package events
 
 import (
+	"breakfast/services/events/emotes"
+	"breakfast/services/events/listener"
 	"breakfast/services/events/twitch"
-	"encoding/json"
-	"errors"
-	"net/url"
-	"strings"
+	"time"
 
 	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase"
-	"github.com/pocketbase/pocketbase/apis"
 	"github.com/pocketbase/pocketbase/core"
-	"github.com/pocketbase/pocketbase/models"
-	"github.com/pocketbase/pocketbase/tools/subscriptions"
+	"github.com/pocketbase/pocketbase/tools/cron"
+	pbTypes "github.com/pocketbase/pocketbase/tools/types"
 )
 
+func purgeOldEvents(app *pocketbase.PocketBase) error {
+	var query struct {
+		Value string `db:"value"`
+	}
+
+	err := app.Dao().DB().
+		Select("value").
+		From("_params").
+		Where(dbx.NewExp("key = 'breakfast-events-stored-duration")).
+		One(&query)
+
+	if err != nil {
+		return err
+	}
+
+	duration, err := time.ParseDuration(query.Value)
+	if err != nil {
+		return err
+	}
+
+	{
+		_, err := app.Dao().DB().
+			Delete("events", dbx.NewExp(
+				"created < :time",
+				dbx.Params{
+					"time": time.Now().Add(duration * -1).UTC().Format(pbTypes.DefaultDateLayout),
+				}),
+			).
+			Execute()
+
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func purgeAllEvents(app *pocketbase.PocketBase) error {
+	_, err := app.Dao().DB().
+		Delete("events", dbx.NewExp("")).
+		Execute()
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func RegisterService(app *pocketbase.PocketBase) {
+	listener.SetupListener(app)
+	emotes.RegisterService(app)
 	twitch.RegisterService(app)
 
-	app.OnRealtimeBeforeSubscribeRequest().Add(func(e *core.RealtimeSubscribeEvent) error {
-		for _, subscription := range e.Subscriptions {
-			if !strings.HasPrefix(subscription, "breakfast/events") {
-				continue
-			}
+	registerSettingsAPIs(app)
+}
 
-			_, optionsUrl, hasOptions := strings.Cut(subscription, "?options=")
-			optionsString, err := url.QueryUnescape(optionsUrl)
+func RegisterJobs(app *pocketbase.PocketBase, scheduler *cron.Cron) {
+	emotes.RegisterJobs(app, scheduler)
+
+	// Delete events older than store duration setting
+	app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
+		scheduler.MustAdd("eventsCleanupOld", "0 0 * * *", func() {
+			err := purgeOldEvents(app)
 			if err != nil {
-				return errors.New("breakfast/events options was not a valid url encoded string")
+				app.Logger().Error("EVENTS Failed to purge old events", "error", err.Error())
 			}
-
-			var options subscriptions.SubscriptionOptions
-			if hasOptions {
-				err := json.Unmarshal([]byte(optionsString), &options)
-				if err != nil {
-					return errors.New("failed to unmarshal options")
-				}
-			}
-
-			var user *models.Record
-			if hasOptions && options.Query != nil {
-				streamKey, valid := options.Query["sk"].(string)
-				if !valid {
-					return errors.New("an invalid stream key was provided")
-				}
-				records, err := app.Dao().FindRecordsByFilter(
-					"users",
-					"streamKey = {:streamKey}",
-					"-created",
-					1,
-					0,
-					dbx.Params{"streamKey": streamKey},
-				)
-				if err != nil || len(records) != 1 {
-					return errors.Join(errors.New("failed to get user by streamKey"), err)
-				}
-				user = records[0]
-			}
-
-			if user == nil {
-				info := apis.RequestInfo(e.HttpContext)
-				user = info.AuthRecord
-			}
-
-			if user == nil {
-				return errors.New("no user authenticated")
-			}
-
-			e.Client.Set(subscription+"-user", user.Id)
-		}
-
+		})
 		return nil
 	})
 }

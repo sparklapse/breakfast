@@ -9,7 +9,6 @@ import (
 
 	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase"
-	"github.com/pocketbase/pocketbase/core"
 	"github.com/pocketbase/pocketbase/tools/cron"
 	"github.com/pocketbase/pocketbase/tools/types"
 )
@@ -159,8 +158,8 @@ func RefreshExpiredTwitchTokens(app *pocketbase.PocketBase) {
 	}
 }
 
-func ScheduleTwitchTokenRefresh(e *core.ServeEvent, scheduler *cron.Cron) {
+func ScheduleTwitchTokenRefresh(app *pocketbase.PocketBase, scheduler *cron.Cron) {
 	scheduler.MustAdd(twitch_job_name, twitch_job_cron, func() {
-		RefreshExpiredTwitchTokens(e.App.(*pocketbase.PocketBase))
+		RefreshExpiredTwitchTokens(app)
 	})
 }
