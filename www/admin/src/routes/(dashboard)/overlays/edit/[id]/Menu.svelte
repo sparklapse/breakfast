@@ -3,12 +3,12 @@
   import toast from "svelte-french-toast";
   import { fly } from "svelte/transition";
   import { goto } from "$app/navigation";
-  import { useEditor } from "$lib/overlay/contexts";
+  import { useEditor } from "@sparklapse/breakfast/overlay";
   import { DEFAULT_SCRIPTS } from "$lib/overlay/scripts";
   import EventFeed from "$lib/components/events/EventFeed.svelte";
   import Action from "$lib/components/events/Action.svelte";
   import Sync from "./Sync.svelte";
-  import type { ActionDefinition } from "@sparklapse/breakfast/scripts";
+  import type { ActionDefinition } from "@sparklapse/breakfast/overlay";
 
   export let save: () => Promise<void>;
   export let abortAS: (() => void) | undefined;

@@ -6,3 +6,4 @@ export type Action = {
   inputs: Record<string, any>;
   event: BreakfastEvent | null;
 };
+

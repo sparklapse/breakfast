@@ -1,6 +1,6 @@
 import { nanoid } from "nanoid";
 import type { PageLoad } from "./$types";
-import type { OverlayScript } from "@sparklapse/breakfast/scripts";
+import type { OverlayScript } from "@sparklapse/breakfast/overlay";
 
 export const load: PageLoad = async ({ parent }) => {
   const data = await parent();

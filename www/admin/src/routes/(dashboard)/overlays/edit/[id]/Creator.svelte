@@ -1,12 +1,8 @@
 <script lang="ts">
   import Fuse from "fuse.js";
   import { scale } from "svelte/transition";
-  import { useEditor, useViewport } from "$lib/overlay/contexts";
-  import { avgPoints, transformFromPoints } from "$lib/math";
-  import type { Point } from "$lib/math";
-  import type { Source } from "$lib/overlay/types";
-  import type { SourceDefinition, TargetRoots } from "@sparklapse/breakfast/scripts";
-  import type { SOURCE_INPUTS } from "$lib/overlay/sources/inputs";
+  import { useEditor, useViewport, avgPoints, transformFromPoints } from "@sparklapse/breakfast/overlay";
+  import type { Point, Source, SourceDefinition, TargetRoots } from "@sparklapse/breakfast/overlay";
 
   const {
     utils: { screenToLocal },
@@ -87,7 +83,7 @@
 
   const applyDefaultsFromInputs = (
     source: Source,
-    inputs: SourceDefinition<typeof SOURCE_INPUTS>["inputs"],
+    inputs: SourceDefinition["inputs"],
   ) => {
     for (const input of inputs) {
       if ("group" in input) {

@@ -16,7 +16,7 @@
 <script lang="ts">
   import clsx from "clsx";
   import { onMount } from "svelte";
-  import { useViewport } from "$lib/overlay/contexts";
+  import { useViewport } from "@sparklapse/breakfast/overlay";
 
   const {
     stores: { transform, offset },

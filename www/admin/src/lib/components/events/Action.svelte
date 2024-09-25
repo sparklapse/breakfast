@@ -1,8 +1,8 @@
 <script lang="ts">
-  import Fuse from "fuse.js";
-  import type { ActionDefinition } from "@sparklapse/breakfast/scripts";
   import toast from "svelte-french-toast";
+  import Fuse from "fuse.js";
   import { page } from "$app/stores";
+  import type { ActionDefinition } from "@sparklapse/breakfast/overlay";
 
   export let actions: ActionDefinition[] = [];
 

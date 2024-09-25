@@ -5,7 +5,7 @@
   import EventFeed from "$lib/components/events/EventFeed.svelte";
 
   import type { PageData } from "./$types";
-  import type { ActionDefinition, OverlayScript } from "@sparklapse/breakfast/scripts";
+  import type { ActionDefinition, OverlayScript } from "@sparklapse/breakfast/overlay";
   export let data: PageData;
 
   let overlays: Awaited<typeof data.suspense.overlays> | undefined = undefined;

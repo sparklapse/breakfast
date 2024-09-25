@@ -2,8 +2,7 @@
   import clsx from "clsx";
   import toast from "svelte-french-toast";
   import { Hand, Maximize, MousePointer2, PlusSquare } from "lucide-svelte";
-  import { createViewport, createEditor } from "$lib/overlay/contexts";
-  import { sourceType } from "$lib/overlay/types";
+  import { createViewport, createEditor, sourceType, sourceId } from "@sparklapse/breakfast/overlay";
   import { page } from "$app/stores";
   import Viewport, { DEFAULT_GRID, DEFAULT_VIEW } from "./Viewport.svelte";
   import Menu from "./Menu.svelte";
@@ -13,7 +12,6 @@
   import Inspector from "./Inspector.svelte";
 
   import type { PageData } from "./$types";
-  import { sourceId } from "$lib/overlay/naming";
   export let data: PageData;
   const { user } = data;
 
