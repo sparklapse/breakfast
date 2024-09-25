@@ -11,4 +11,3 @@ export * from "./types/action.js";
 export * from "./types/event.js";
 
 export { DefinedEditor };
-

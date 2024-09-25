@@ -17,4 +17,3 @@ interface BreakfastGlobal {
 declare global {
   var breakfast: BreakfastGlobal;
 }
-

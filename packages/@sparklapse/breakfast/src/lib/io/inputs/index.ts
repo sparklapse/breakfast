@@ -19,4 +19,3 @@ export const INPUT_EDITORS = {
 } satisfies Record<string, ComponentType<SvelteComponent<InputProps, any, any>>>;
 
 export { Text, Number, Select, ColorPicker };
-

@@ -16,4 +16,3 @@ export const sourceType: z.ZodType<Source> = baseSourceType.extend({
 export type Source = z.infer<typeof baseSourceType> & {
   children: (Source | string)[];
 };
-

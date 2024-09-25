@@ -1,11 +1,7 @@
 import { writable, derived, get } from "svelte/store";
 import { useViewport } from "./viewport.js";
 import { getContext, onMount, setContext } from "svelte";
-import {
-  avgPoints,
-  rotatePoint,
-  subPoints,
-} from "$lib/overlay/math/point.js";
+import { avgPoints, rotatePoint, subPoints } from "$lib/overlay/math/point.js";
 import {
   getTransformBounds,
   transformFromAltPoints,
