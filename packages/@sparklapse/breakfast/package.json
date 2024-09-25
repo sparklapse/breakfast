@@ -38,7 +38,8 @@
       "svelte": "./dist/overlay/index.js"
     },
     "./overlay/global": {
-      "types": "./dist/overlay/global.d.ts"
+      "types": "./dist/overlay/global.d.ts",
+      "import": "./dist/overlay/global.js"
     }
   },
   "files": [
