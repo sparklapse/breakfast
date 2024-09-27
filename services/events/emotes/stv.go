@@ -1,7 +1,7 @@
 package emotes
 
 import (
-	"breakfast/app"
+	"breakfast/services"
 	"encoding/json"
 	"errors"
 	"io"
@@ -85,7 +85,7 @@ func RefreshSTVGlobalEmotes() error {
 }
 
 func RefreshSTVEmotes(provider string, providerId string) error {
-	app.App.Logger().Debug(
+	services.App.Logger().Debug(
 		"EMOTES Refreshing emotes",
 		"provider", provider,
 		"providerId", providerId,
@@ -99,7 +99,7 @@ func RefreshSTVEmotes(provider string, providerId string) error {
 	defer resp.Body.Close()
 
 	if resp.StatusCode == 404 {
-		app.App.Logger().Debug(
+		services.App.Logger().Debug(
 			"EMOTES User does not have stv emotes (or bad url)",
 			"provider", provider,
 			"providerId", providerId,
@@ -125,7 +125,7 @@ func RefreshSTVEmotes(provider string, providerId string) error {
 	}
 
 	stvConnections[provider+"-"+providerId] = connection
-	app.App.Logger().Debug(
+	services.App.Logger().Debug(
 		"EMOTES Refreshed emotes for user",
 		"provider", provider,
 		"providerId", providerId,
@@ -139,14 +139,14 @@ func GetAllSTVEmotesForTwitch() error {
 		UserId string `db:"userId"`
 	}
 	{
-		err := app.App.Dao().DB().
+		err := services.App.Dao().DB().
 			Select("json_extract(tes.config, '$.condition.broadcaster_user_id') as userId").
 			Distinct(true).
 			From("twitch_event_subscriptions as tes").
 			Where(dbx.NewExp("userId IS NOT NULL")).
 			All(&query)
 		if err != nil {
-			app.App.Logger().Error(
+			services.App.Logger().Error(
 				"EMOTES Failed to get distinct twitch subscription users",
 				"error", err.Error(),
 			)
@@ -157,7 +157,7 @@ func GetAllSTVEmotesForTwitch() error {
 	for _, user := range query {
 		err := RefreshSTVEmotes("twitch", user.UserId)
 		if err != nil {
-			app.App.Logger().Error(
+			services.App.Logger().Error(
 				"EMOTES Failed to get emotes for twitch user",
 				"twitchId", user.UserId,
 				"error", err.Error(),

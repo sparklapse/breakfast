@@ -1,7 +1,7 @@
 package connection
 
 import (
-	"breakfast/app"
+	"breakfast/services"
 	"breakfast/services/events/twitch/eventsub/subscriptions"
 	"encoding/json"
 	"errors"
@@ -47,7 +47,7 @@ func Disconnect() error {
 	ws.Close()
 	ws = nil
 
-	app.App.Logger().Debug(
+	services.App.Logger().Debug(
 		"EVENTS Twitch eventsub disconnected",
 	)
 
@@ -63,7 +63,7 @@ func Connect(url string) error {
 
 	welcome := make(chan string)
 
-	app.App.Logger().Debug(
+	services.App.Logger().Debug(
 		"EVENTS Twitch eventsub connected, starting welcome",
 	)
 
@@ -132,7 +132,7 @@ func Connect(url string) error {
 					if len(activeSubscriptions) == 0 {
 						Disconnect()
 					} else {
-						app.App.Logger().Error(
+						services.App.Logger().Error(
 							"EVENTS Twitch eventsub timed out, reconnecting...",
 						)
 						Reconnect()
@@ -144,7 +144,7 @@ func Connect(url string) error {
 				welcome <- message.Payload["session"].(map[string]any)["id"].(string)
 				welcome_sent = true
 
-				app.App.Logger().Debug(
+				services.App.Logger().Debug(
 					"EVENTS Twitch eventsub welcome received",
 				)
 			case "session_keepalive":
@@ -155,14 +155,14 @@ func Connect(url string) error {
 				reconnect_url := message.Payload["session"].(map[string]any)["reconnect_url"].(string)
 				err := Connect(reconnect_url)
 				if err != nil {
-					app.App.Logger().Error(
+					services.App.Logger().Error(
 						"EVENTS Twitch eventsub was requested to reconnect but failed",
 						"error", err.Error(),
 					)
 					break
 				}
 
-				app.App.Logger().Debug(
+				services.App.Logger().Debug(
 					"EVENTS Twitch eventsub was requested to reconnect",
 				)
 				return
@@ -178,14 +178,14 @@ func Connect(url string) error {
 
 				eventSub, ok := message.Payload["subscription"].(map[string]any)
 				if !ok {
-					app.App.Logger().Error(
+					services.App.Logger().Error(
 						"EVENTS Twitch eventsub got a bad subscription from twitch",
 					)
 					break
 				}
 				subscription, err := SubscriptionFromPayload(eventSub)
 				if err != nil {
-					app.App.Logger().Error(
+					services.App.Logger().Error(
 						"EVENTS Twitch eventsub failed to parse subscription",
 						"error", err.Error(),
 					)
@@ -196,27 +196,27 @@ func Connect(url string) error {
 			}
 		}
 
-		app.App.Logger().Debug(
+		services.App.Logger().Debug(
 			"EVENTS Twitch eventsub reader done reading",
 		)
 
 		if !shutdown {
-			app.App.Logger().Info(
+			services.App.Logger().Info(
 				"EVENTS Twitch eventsub reconnecting",
 			)
 
 			err := Connect(EventSubWsUrl)
 			if err != nil {
-				app.App.Logger().Error(
+				services.App.Logger().Error(
 					"EVENTS Twitch eventsub failed to reconnect",
 				)
 				return
 			}
 
 			for id := range activeSubscriptions {
-				record, err := app.App.Dao().FindRecordById("twitch_event_subscriptions", id)
+				record, err := services.App.Dao().FindRecordById("twitch_event_subscriptions", id)
 				if err != nil {
-					app.App.Logger().Error(
+					services.App.Logger().Error(
 						"EVENTS Twitch eventsub failed to find active subscription",
 						"error", err.Error(),
 					)
@@ -228,7 +228,7 @@ func Connect(url string) error {
 				{
 					err := record.UnmarshalJSONField("config", &config)
 					if err != nil {
-						app.App.Logger().Error(
+						services.App.Logger().Error(
 							"EVENTS Twitch eventsub failed to unmarshal a config",
 							"subscriptionId", record.Id,
 							"error", err.Error(),
@@ -240,7 +240,7 @@ func Connect(url string) error {
 				{
 					_, err := Subscribe(id, config, record.GetString("authorizer"))
 					if err != nil {
-						app.App.Logger().Error(
+						services.App.Logger().Error(
 							"EVENTS Twitch eventsub failed to resubscribe subscription",
 							"error", err.Error(),
 						)

@@ -1,7 +1,7 @@
 package connection
 
 import (
-	"breakfast/app"
+	"breakfast/services"
 	"breakfast/services/events/twitch/eventsub/subscriptions"
 	"bytes"
 	"encoding/json"
@@ -22,7 +22,7 @@ func requestSubscription(subType string, subVersion string, subCondition map[str
 		}
 	}
 
-	clientId := app.App.Settings().TwitchAuth.ClientId
+	clientId := services.App.Settings().TwitchAuth.ClientId
 	subRequest := SubscriptionRequest{
 		Type:      subType,
 		Version:   subVersion,
@@ -75,7 +75,7 @@ func getAuthorizerToken(userId string) (string, error) {
 	var query struct {
 		AccessToken string `db:"accessToken"`
 	}
-	err := app.App.Dao().DB().
+	err := services.App.Dao().DB().
 		Select("accessToken").
 		From("tokens").
 		Where(dbx.NewExp("user = {:userId}", dbx.Params{"userId": userId})).
@@ -95,9 +95,9 @@ func Subscribe(id string, sub subscriptions.SubscriptionConfig, authorizerId str
 
 	for _, active := range activeSubscriptions {
 		if active.Type == sub.Type && active.Condition["broadcaster_user_id"] == sub.Condition["broadcaster_user_id"] {
-			record, _ := app.App.Dao().FindRecordById("twitch_event_subscriptions", id)
+			record, _ := services.App.Dao().FindRecordById("twitch_event_subscriptions", id)
 			if record != nil {
-				app.App.Dao().DeleteRecord(record)
+				services.App.Dao().DeleteRecord(record)
 			}
 
 			return nil, ErrAlreadSubscribed
@@ -136,7 +136,7 @@ func Unsubscribe(id string) error {
 		return errors.New("subscription doesn't exist or isn't subscribed")
 	}
 
-	record, err := app.App.Dao().FindRecordById("twitch_event_subscriptions", id)
+	record, err := services.App.Dao().FindRecordById("twitch_event_subscriptions", id)
 	if err != nil {
 		return err
 	}
@@ -146,7 +146,7 @@ func Unsubscribe(id string) error {
 		return err
 	}
 
-	clientId := app.App.Settings().TwitchAuth.ClientId
+	clientId := services.App.Settings().TwitchAuth.ClientId
 
 	req, err := http.NewRequest("DELETE", SubscriptionsUrl+"?id="+subscription.Id, nil)
 	if err != nil {
