@@ -12,7 +12,7 @@ import { radToDeg } from "$lib/overlay/math/units.js";
 import { sourceId } from "$lib/overlay/naming/source.js";
 import { BUILTIN_DEFINITIONS } from "$lib/overlay/builtin.js";
 import type {
-  OverlayScript,
+  Script,
   SourceDefinition,
   Target,
   TargetRoots,
@@ -26,7 +26,7 @@ const MANAGED_STYLES = ["top", "left", "width", "height", "transform"];
 export function createEditor(initial?: {
   label?: string;
   overlay?: string;
-  scripts?: OverlayScript[];
+  scripts?: Script[];
 }) {
   const viewport = useViewport(true);
 
@@ -359,7 +359,7 @@ export function createEditor(initial?: {
   };
 
   // MARK: Scripts
-  const managedScripts = writable<{ scripts: OverlayScript[] }>({
+  const managedScripts = writable<{ scripts: Script[] }>({
     scripts: [...(initial?.scripts ?? [])],
   });
   const scripts = derived(managedScripts, ({ scripts }) => scripts);
@@ -372,7 +372,7 @@ export function createEditor(initial?: {
     return defs;
   });
 
-  const addScript = (script: OverlayScript) => {
+  const addScript = (script: Script) => {
     if (get(scripts).find((s) => s.id === script.id)) throw new Error("Script already exists");
 
     managedScripts.update(({ scripts }) => {

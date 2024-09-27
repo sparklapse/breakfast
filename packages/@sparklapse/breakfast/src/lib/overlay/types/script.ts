@@ -53,7 +53,7 @@ export type ActionDefinition = {
     }
 );
 
-export type OverlayScript = {
+export type Script = {
   id: string;
   label: string;
   version: number;

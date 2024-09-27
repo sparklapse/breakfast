@@ -1,6 +1,6 @@
 import { nanoid } from "nanoid";
 import type { PageLoad } from "./$types";
-import type { OverlayScript } from "@sparklapse/breakfast/overlay";
+import type { Script } from "@sparklapse/breakfast/overlay";
 
 export const load: PageLoad = async ({ parent }) => {
   const data = await parent();
@@ -12,7 +12,7 @@ export const load: PageLoad = async ({ parent }) => {
       ovs.map(({ label, id, scripts }) => ({
         label: label as string,
         value: id,
-        scripts: (scripts ?? []) as OverlayScript[],
+        scripts: (scripts ?? []) as Script[],
       })),
     );
 

@@ -1,9 +1,9 @@
 import chat from "./chat.svelte?wcs";
 import highlight from "./highlight.svelte?wcs";
 
-import type { OverlayScript } from "@sparklapse/breakfast/overlay";
+import type { Script } from "@sparklapse/breakfast/overlay";
 
-export const basics: OverlayScript = {
+export const basics: Script = {
   id: "basics",
   label: "Basics",
   version: 0,
