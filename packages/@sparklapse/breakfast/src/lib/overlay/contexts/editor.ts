@@ -1,13 +1,14 @@
 import { writable, derived, get } from "svelte/store";
 import { useViewport } from "./viewport.js";
 import { getContext, onMount, setContext } from "svelte";
-import { avgPoints, rotatePoint, subPoints } from "$lib/overlay/math/point.js";
+import { avgPoints, rotatePoint } from "$lib/overlay/math/point.js";
 import {
   getTransformBounds,
   transformFromAltPoints,
   transformFromPoints,
   transformToPoints,
 } from "$lib/overlay/math/transform.js";
+import { updateElementWithSource, jtox, xtoj } from "$lib/overlay/source/index.js";
 import { radToDeg } from "$lib/overlay/math/units.js";
 import { sourceId } from "$lib/overlay/naming/source.js";
 import { BUILTIN_DEFINITIONS } from "$lib/overlay/builtin.js";
@@ -38,113 +39,11 @@ export function createEditor(initial?: {
   });
   const overlay = derived(managedOverlay, ({ fragment }) => fragment);
 
-  // MARK: Sources
-  const sources = derived(managedOverlay, ({ fragment }) => {
-    return Array.from(fragment.childNodes).map((child) => xtojSource(child as HTMLElement));
-  });
-  const updateElementWithSource = (element: HTMLElement, source: Source) => {
-    element.id = source.id;
-
-    for (const [prop, value] of Object.entries(source.props)) {
-      element.setAttribute(prop, value);
-    }
-
-    for (const [prop, value] of Object.entries(source.style)) {
-      element.style.setProperty(prop, value);
-    }
-
-    element.style.position = "absolute";
-    element.style.left = `${source.transform.x}px`;
-    element.style.top = `${source.transform.y}px`;
-    element.style.width = `${source.transform.width}px`;
-    element.style.height = `${source.transform.height}px`;
-    element.style.transform = `rotate(${source.transform.rotation}deg)`;
-
-    if (source.children.length === element.childNodes.length) {
-      for (let i = 0; i < source.children.length; i++) {
-        const node = element.childNodes[i];
-        const child = source.children[i];
-        if (node.nodeType === Node.TEXT_NODE && typeof child === "string") {
-          node.textContent = child;
-        } else if (node.nodeType === Node.ELEMENT_NODE && typeof child === "object") {
-          updateElementWithSource(node as HTMLElement, child);
-        } else {
-          node.replaceWith(
-            typeof child === "string" ? document.createTextNode(child) : jtoxSource(child),
-          );
-        }
-      }
-    } else {
-      element.replaceChildren(
-        ...source.children.map((s) =>
-          typeof s === "string" ? document.createTextNode(s) : jtoxSource(s),
-        ),
-      );
-    }
-  };
-  const jtoxSource = (source: Source): HTMLElement => {
-    const element = document.createElement(source.tag);
-    updateElementWithSource(element, source);
-    return element;
-  };
-  const xtojSource = (source: HTMLElement): Source => {
-    const attributes: Record<string, string> = {};
-    for (const { name, value } of source.attributes) {
-      if (name === "style") continue;
-      attributes[name] = value;
-    }
-    const { id, ...props } = attributes;
-    const transform: Transform = {
-      x: parseFloat(source.style.left),
-      y: parseFloat(source.style.top),
-      width: parseFloat(source.style.width),
-      height: parseFloat(source.style.height),
-      rotation: parseFloat(
-        source.style.transform.match(/(?<=rotate\()[-0-9.]+(?=deg)/)?.[0] || "0",
-      ),
-    };
-
-    let style: Record<string, string> = {};
-    for (const prop of source.style) {
-      if (MANAGED_STYLES.includes(prop)) continue;
-      style[prop] = source.style.getPropertyValue(prop);
-    }
-
-    const children: (Source | string)[] = [];
-    for (const child of source.childNodes) {
-      if (typeof child === "string") {
-        children.push(child);
-        continue;
-      }
-
-      if (child instanceof Text || child.nodeType === 3) {
-        children.push(child.textContent ?? "");
-        continue;
-      }
-
-      if (child instanceof HTMLElement) {
-        children.push(xtojSource(child));
-        continue;
-      }
-
-      console.error("Child is not a valid type", child);
-    }
-
-    return {
-      id,
-      tag: source.tagName.toLowerCase(),
-      transform,
-      props,
-      style,
-      children,
-    };
-  };
-
   if (initial?.overlay) {
     try {
       const fragment = document.createRange().createContextualFragment(initial.overlay!);
       for (const node of fragment.childNodes) {
-        if (node.nodeType === Node.ELEMENT_NODE) xtojSource(node as HTMLElement);
+        if (node.nodeType === Node.ELEMENT_NODE) xtoj(node as HTMLElement);
         else if (node.nodeType === Node.TEXT_NODE) continue;
         else throw new Error("A node was not parsable by xtoj");
       }
@@ -153,6 +52,11 @@ export function createEditor(initial?: {
       console.error("Initial overlay failed to load", err);
     }
   }
+
+  // MARK: Sources
+  const sources = derived(managedOverlay, ({ fragment }) => {
+    return Array.from(fragment.childNodes).map((child) => xtoj(child as HTMLElement));
+  });
 
   // MARK: Source Manipulation
   const createDefaultSource = (
@@ -196,7 +100,7 @@ export function createEditor(initial?: {
 
   const addSource = (source: Source) => {
     managedOverlay.update(({ fragment }) => {
-      fragment.append(jtoxSource(source));
+      fragment.append(jtox(source));
       return { fragment };
     });
   };
@@ -295,7 +199,7 @@ export function createEditor(initial?: {
           if (!Array.isArray(value)) throw new Error("Children must be an array");
           const children = value.map((v) => {
             if (typeof v === "string") return v;
-            return jtoxSource(v);
+            return jtox(v);
           });
           element.replaceChildren(...children);
           break;
@@ -440,7 +344,7 @@ export function createEditor(initial?: {
 
   const selectedIds = writable<string[]>([]);
   const selectedSources = derived([selectedIds, managedOverlay], ([$ids, { fragment }]) =>
-    $ids.map((i) => xtojSource(fragment.querySelector(`#${i}`)! as HTMLElement)),
+    $ids.map((i) => xtoj(fragment.querySelector(`#${i}`)! as HTMLElement)),
   );
   const selectedSource = derived(selectedSources, ($selectedSources) => {
     return $selectedSources.at(0);
@@ -512,7 +416,7 @@ export function createEditor(initial?: {
       });
     };
 
-    const pointerup = (ev: PointerEvent) => {
+    const pointerup = (_ev: PointerEvent) => {
       if (!isTranslating) return;
       isTranslating = false;
       action.set("selecting");
@@ -558,7 +462,7 @@ export function createEditor(initial?: {
   };
 
   onMount(() => {
-    const pointermove = ({ clientX, clientY, shiftKey }: PointerEvent) => {
+    const pointermove = ({ clientX, clientY }: PointerEvent) => {
       if (!isRotating) return;
       const localMouse = viewport.utils.screenToLocal([clientX, clientY]);
       const pivot = get(rotationPivot);
@@ -597,7 +501,7 @@ export function createEditor(initial?: {
       });
     };
 
-    const pointerup = (ev: PointerEvent) => {
+    const pointerup = (_ev: PointerEvent) => {
       if (!isRotating) return;
       isRotating = false;
       action.set("selecting");
@@ -667,7 +571,6 @@ export function createEditor(initial?: {
 
           updateElementWithSource(fragment.querySelector(`#${id}`)!, updated);
         } else {
-          const delta = subPoints(mouseLocal, resizeStart);
           const width = resizeBounds[1][0] - resizeBounds[0][0];
           const height = resizeBounds[1][1] - resizeBounds[0][1];
 
@@ -708,7 +611,7 @@ export function createEditor(initial?: {
       });
     };
 
-    const pointerup = (ev: PointerEvent) => {
+    const pointerup = (_ev: PointerEvent) => {
       if (isResizing === false) return;
       isResizing = false;
       action.set("selecting");

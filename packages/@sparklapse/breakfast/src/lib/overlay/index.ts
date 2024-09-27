@@ -1,3 +1,6 @@
+// Source
+export * as source from "./source/index.js";
+
 // Contexts
 export * from "./contexts/editor.js";
 export * from "./contexts/viewport.js";
