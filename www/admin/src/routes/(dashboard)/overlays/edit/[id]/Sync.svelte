@@ -4,11 +4,10 @@
   import { readable } from "svelte/store";
   import { fly } from "svelte/transition";
   import { Select } from "bits-ui";
-  import { useEditor } from "$lib/overlay/contexts";
-  import { invisId } from "$lib/overlay/naming";
-  import { getTransformBounds, transformFromPoints, type Transform } from "$lib/math";
+  import { useEditor, invisId, getTransformBounds, transformFromPoints } from "@sparklapse/breakfast/overlay";
   import { page } from "$app/stores";
   import { goto } from "$app/navigation";
+  import type { Transform } from "@sparklapse/breakfast/overlay";
 
   export let save: () => Promise<void>;
   export let abortAS: (() => void) | undefined;

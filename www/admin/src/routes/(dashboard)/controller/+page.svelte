@@ -5,7 +5,7 @@
   import EventFeed from "$lib/components/events/EventFeed.svelte";
 
   import type { PageData } from "./$types";
-  import type { ActionDefinition, OverlayScript } from "@sparklapse/breakfast/scripts";
+  import type { ActionDefinition, Script } from "@sparklapse/breakfast/overlay";
   export let data: PageData;
 
   let overlays: Awaited<typeof data.suspense.overlays> | undefined = undefined;
@@ -14,7 +14,7 @@
   $: data.suspense.overlays.then((o) => (overlays = o));
   $: actions = overlays
     ?.map(({ scripts }) => scripts)
-    .reduce((acc, cur) => [...acc, ...cur], [] as OverlayScript[])
+    .reduce((acc, cur) => [...acc, ...cur], [] as Script[])
     .map((s) => s.actions ?? [])
     .reduce((acc, cur) => [...acc, ...cur], [] as ActionDefinition[]);
 

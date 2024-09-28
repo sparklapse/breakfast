@@ -3,11 +3,11 @@
   import { onMount } from "svelte";
   import { fly } from "svelte/transition";
   import { ArrowDown, ArrowUp, Pin, PinOff } from "lucide-svelte";
-  import { useEditor } from "$lib/overlay/contexts";
-  import InputGroupRow from "$lib/overlay/sources/helpers/InputGroupRow.svelte";
-  import Text from "$lib/overlay/sources/inputs/Text.svelte";
-  import Number from "$lib/overlay/sources/inputs/Number.svelte";
-  import DefinedEditor from "$lib/overlay/sources/DefinedEditor.svelte";
+  import { useEditor } from "@sparklapse/breakfast/overlay";
+  import { helpers, inputs, DefinedEditor } from "@sparklapse/breakfast/io";
+
+  const { InputGroupRow } = helpers;
+  const { Text, Number } = inputs;
 
   const {
     sources: {

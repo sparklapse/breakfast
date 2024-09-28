@@ -10,8 +10,8 @@
     BreakfastEvent,
     ChatMessageEvent,
     SubscriptionEvent,
-  } from "@sparklapse/breakfast/overlay";
-  import type { ActionDefinition } from "@sparklapse/breakfast/scripts";
+  } from "@sparklapse/breakfast/io";
+  import type { ActionDefinition } from "@sparklapse/breakfast/overlay";
 
   export let actions: ActionDefinition[] = [];
   export let onPauseChange: ((paused: boolean) => void) | undefined = undefined;

@@ -41,12 +41,14 @@
   import { Combobox, Select, Switch } from "bits-ui";
   import { Image, Trash2 } from "lucide-svelte";
   import { goto } from "$app/navigation";
-  import ColorPicker from "$lib/overlay/sources/inputs/ColorPicker.svelte";
+  import { inputs } from "@sparklapse/breakfast/io";
   import type { Item } from "@sparklapse/breakfast/db";
 
   import type { PageData } from "./$types";
   import { page } from "$app/stores";
   export let data: PageData;
+
+  const { ColorPicker } = inputs;
 
   let item: Partial<Item> = {
     label: "",

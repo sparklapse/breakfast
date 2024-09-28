@@ -1,6 +1,6 @@
 <script lang="ts">
   import clsx from "clsx";
-  import { useViewport, useEditor } from "$lib/overlay/contexts";
+  import { useViewport, useEditor } from "@sparklapse/breakfast/overlay";
 
   const {
     selection: {

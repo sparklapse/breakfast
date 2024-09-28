@@ -12,7 +12,8 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { fly, fade } from "svelte/transition";
-  import type { ChatMessageEvent } from "@sparklapse/breakfast/overlay";
+  import "@sparklapse/breakfast/overlay/global";
+  import type { ChatMessageEvent } from "@sparklapse/breakfast/io";
 
   export let x: "left" | "center" | "right" = "left";
   export let y: "top" | "center" | "bottom" = "top";

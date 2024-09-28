@@ -1,10 +1,9 @@
 import chat from "./chat.svelte?wcs";
 import highlight from "./highlight.svelte?wcs";
 
-import type { OverlayScript } from "@sparklapse/breakfast/scripts";
-import type { SOURCE_INPUTS } from "$lib/overlay/sources/inputs";
+import type { Script } from "@sparklapse/breakfast/overlay";
 
-export const basics: OverlayScript<typeof SOURCE_INPUTS> = {
+export const basics: Script = {
   id: "basics",
   label: "Basics",
   version: 0,
