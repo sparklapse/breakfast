@@ -31,7 +31,7 @@ const { start, stop } = spinner();
 start("Pulling in the template...");
 
 try {
-  const emitter = degit("github:sparklapse/breakfast-kitchen/plugin", {
+  const emitter = degit("gitlab:sparklapse/cook/kitchen/templates/overlay-script-svelte", {
     force: true,
     verbose: true,
   });
