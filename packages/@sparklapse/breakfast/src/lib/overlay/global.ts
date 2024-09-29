@@ -1,4 +1,4 @@
-import type { BreakfastEvent } from "$lib/io/types/event.js";
+import type { BreakfastEvent } from "$lib/overlay/types/event.js";
 
 interface BreakfastGlobal {
   events: {

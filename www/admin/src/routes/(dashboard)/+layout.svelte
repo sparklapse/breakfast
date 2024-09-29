@@ -10,6 +10,7 @@
     Menu,
     UsersRound,
     Joystick,
+    PanelsTopLeft,
   } from "lucide-svelte";
   import { page } from "$app/stores";
   import Obs from "$lib/components/icons/OBS.svelte";
@@ -34,16 +35,22 @@
       route: "/(dashboard)/items",
     },
     {
-      label: "Events",
-      icon: SquareGanttChart,
-      href: "/breakfast/events",
-      route: "/(dashboard)/events",
+      label: "Pages",
+      icon: PanelsTopLeft,
+      href: "/breakfast/pages",
+      route: "/(dashboard)/pages",
     },
     {
       label: "Overlays",
       icon: Layers,
       href: "/breakfast/overlays",
       route: "/(dashboard)/overlays",
+    },
+    {
+      label: "Events",
+      icon: SquareGanttChart,
+      href: "/breakfast/events",
+      route: "/(dashboard)/events",
     },
     {
       label: "Controller",

@@ -10,8 +10,8 @@
     BreakfastEvent,
     ChatMessageEvent,
     SubscriptionEvent,
-  } from "@sparklapse/breakfast/io";
-  import type { ActionDefinition } from "@sparklapse/breakfast/overlay";
+    ActionDefinition,
+  } from "@sparklapse/breakfast/overlay";
 
   export let actions: ActionDefinition[] = [];
   export let onPauseChange: ((paused: boolean) => void) | undefined = undefined;
@@ -168,9 +168,7 @@
                 Save Event
               </DropdownMenu.Item>
             {:else}
-              <p class="px-2 hover:bg-slate-50 text-slate-400">
-                Event Saved
-              </p>
+              <p class="px-2 text-slate-400 hover:bg-slate-50">Event Saved</p>
             {/if}
             {#if event.data?.viewer?.id}
               <DropdownMenu.Item

@@ -14,7 +14,7 @@
   import { onMount } from "svelte";
   import { fade, fly } from "svelte/transition";
   import "@sparklapse/breakfast/overlay/global";
-  import type { ChatMessageEvent } from "@sparklapse/breakfast/io";
+  import type { ChatMessageEvent } from "@sparklapse/breakfast/overlay";
 
   export let overflow: "overflow" | "clip" = "overflow";
   export let removeTime: string = "0";

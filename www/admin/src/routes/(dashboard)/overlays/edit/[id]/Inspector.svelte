@@ -1,9 +1,10 @@
 <script lang="ts">
   import clsx from "clsx";
+  import Color from "color";
   import { onMount } from "svelte";
   import { fly } from "svelte/transition";
   import { ArrowDown, ArrowUp, Pin, PinOff } from "lucide-svelte";
-  import { useEditor } from "@sparklapse/breakfast/overlay";
+  import { useEditor, type SourceDefinition } from "@sparklapse/breakfast/overlay";
   import { helpers, inputs, DefinedEditor } from "@sparklapse/breakfast/io";
 
   const { InputGroupRow } = helpers;
@@ -12,6 +13,7 @@
   const {
     sources: {
       sources,
+      getSourceTargetValue,
       updateSourceTargetValue,
       moveSourceUp,
       moveSourceDown,
@@ -40,6 +42,23 @@
 
   // Used for keying a rerender of the inspector based on whats being edited
   $: editingSource = $selectedIds.length === 1 ? $selectedIds[0] : "none";
+
+  const getEditorValues = (inputs: SourceDefinition["inputs"]) => {
+    if (!$selectedSource?.id) return {} as Record<string, any>;
+
+    let values: Record<string, any> = {};
+    for (const input of inputs) {
+      if ("group" in input) {
+        const group = getEditorValues(input.group);
+        values = { ...values, group };
+        continue;
+      }
+
+      values[input.id] = getSourceTargetValue($selectedSource.id, input.target);
+    }
+
+    return values;
+  };
 </script>
 
 <div
@@ -205,7 +224,13 @@
 
       {@const definition = $definitions.find((d) => d.tag === $selectedSource.tag)}
       {#if definition}
-        <DefinedEditor inputs={definition.inputs} />
+        <DefinedEditor inputs={definition.inputs} values={getEditorValues(definition.inputs)} onchange={(input, value) => {
+        if (value instanceof Color) value = value.hex();
+        const formatted = input.format ? input.format.replace("{}", value.toString()) : value;
+        if (input.target === "children")
+          updateSourceTargetValue($selectedSource.id, input.target, [formatted]);
+        else updateSourceTargetValue($selectedSource.id, input.target, formatted);
+        }} />
       {/if}
     {/if}
   {/if}

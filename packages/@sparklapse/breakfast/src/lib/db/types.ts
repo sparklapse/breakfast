@@ -1,3 +1,5 @@
+import type { InputDefinition } from "$lib/io/types.js";
+
 export type Visibility = "PUBLIC" | "UNLISTED" | "PRIVATE";
 
 export type Viewer = {
@@ -6,6 +8,14 @@ export type Viewer = {
   wallet: Record<string, number> | null;
   providers?: string;
   providerIds?: string;
+};
+
+export type Page = {
+  id: string;
+  path: string;
+  html: string;
+  schema: InputDefinition[] | null;
+  data: { lang: string, [key: string]: any }[] | null;
 };
 
 export type ItemType =

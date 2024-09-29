@@ -7,6 +7,7 @@ export const BUILTIN_DEFINITIONS: SourceDefinition[] = [
     tag: "p",
     inputs: [
       {
+        id: "text",
         type: "text",
         label: "Text",
         target: "children",
@@ -16,12 +17,14 @@ export const BUILTIN_DEFINITIONS: SourceDefinition[] = [
       {
         group: [
           {
+            id: "color",
             type: "color",
             label: "Color",
             target: "style.color",
             defaultValue: "#2A2A2A",
           },
           {
+            id: "align",
             type: "select",
             label: "Align",
             target: "style.text-align",
@@ -34,6 +37,7 @@ export const BUILTIN_DEFINITIONS: SourceDefinition[] = [
             },
           },
           {
+            id: "size",
             type: "number",
             label: "Size",
             target: "style.font-size",
@@ -46,11 +50,13 @@ export const BUILTIN_DEFINITIONS: SourceDefinition[] = [
       {
         group: [
           {
+            id: "font",
             type: "text",
             label: "Font Family",
             target: "style.font-family",
           },
           {
+            id: "weight",
             type: "number",
             label: "Weight",
             target: "style.font-weight",
@@ -73,6 +79,7 @@ export const BUILTIN_DEFINITIONS: SourceDefinition[] = [
       {
         group: [
           {
+            id: "fitting",
             type: "select",
             label: "Fitting",
             target: "style.object-fit",
@@ -86,6 +93,7 @@ export const BUILTIN_DEFINITIONS: SourceDefinition[] = [
             },
           },
           {
+            id: "filter",
             type: "text",
             label: "CSS Filter",
             target: "style.filter",
@@ -102,12 +110,14 @@ export const BUILTIN_DEFINITIONS: SourceDefinition[] = [
       {
         group: [
           {
+            id: "color",
             type: "color",
             label: "Color",
             target: "style.background-color",
             defaultValue: "#ffaabb",
           },
           {
+            id: "opacity",
             type: "number",
             label: "Opacity",
             target: "style.opacity",
@@ -119,3 +129,4 @@ export const BUILTIN_DEFINITIONS: SourceDefinition[] = [
     ],
   },
 ];
+

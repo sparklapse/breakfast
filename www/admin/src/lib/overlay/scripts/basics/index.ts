@@ -17,6 +17,7 @@ export const basics: Script = {
         {
           group: [
             {
+              id: "size",
               type: "number",
               label: "Size",
               target: "style.font-size",
@@ -24,12 +25,14 @@ export const basics: Script = {
               format: "{}px",
             },
             {
+              id: "weight",
               type: "number",
               label: "Weight",
               target: "style.font-weight",
               options: { min: 100, step: 100, max: 1000 },
             },
             {
+              id: "overflow",
               type: "select",
               label: "Overflow",
               target: "props.overflow",
@@ -51,12 +54,14 @@ export const basics: Script = {
         {
           group: [
             {
+              id: "color",
               type: "color",
               label: "Text Color",
               target: "style.color",
               defaultValue: "#000000",
             },
             {
+              id: "display-time",
               type: "number",
               label: "Display Time",
               target: "props.removeTime",
@@ -64,6 +69,7 @@ export const basics: Script = {
               options: { min: -1 },
             },
             {
+              id: "name-source",
               type: "select",
               label: "Names Source",
               target: "props.names",
@@ -87,6 +93,7 @@ export const basics: Script = {
         {
           group: [
             {
+              id: "x-anchor",
               type: "select",
               label: "X",
               target: "props.x",
@@ -100,6 +107,7 @@ export const basics: Script = {
               },
             },
             {
+              id: "y-anchor",
               type: "select",
               label: "Y",
               target: "props.y",
@@ -117,6 +125,7 @@ export const basics: Script = {
         {
           group: [
             {
+              id: "size",
               type: "number",
               label: "Size",
               target: "style.font-size",
@@ -124,6 +133,7 @@ export const basics: Script = {
               format: "{}px",
             },
             {
+              id: "weight",
               type: "number",
               label: "Weight",
               target: "style.font-weight",
