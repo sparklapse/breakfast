@@ -17,7 +17,7 @@
 {#each inputs as input}
   {#if "group" in input}
     <InputGroupRow>
-      <svelte:self inputs={input.group} />
+      <svelte:self inputs={input.group} {values} {onchange} {assetHelpers} />
     </InputGroupRow>
   {:else}
     {#if input.type === "asset"}

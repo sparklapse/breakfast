@@ -1,7 +1,6 @@
 package pages
 
 import (
-	"html/template"
 	"strings"
 
 	"github.com/labstack/echo/v5"
@@ -9,6 +8,7 @@ import (
 	"github.com/pocketbase/pocketbase"
 	"github.com/pocketbase/pocketbase/apis"
 	"github.com/pocketbase/pocketbase/core"
+    "github.com/aymerick/raymond"
 )
 
 func RegisterService(app *pocketbase.PocketBase) {
@@ -72,8 +72,6 @@ func RegisterService(app *pocketbase.PocketBase) {
 				return c.HTML(200, html)
 			}
 
-			tmpl, err := template.New(record.Id).Parse(html)
-
 			requestedLang := c.QueryParam("lang")
 			accepted := strings.Split(c.Request().Header.Get("Accept-Language"), ";")
 			for _, translation := range translations {
@@ -89,15 +87,15 @@ func RegisterService(app *pocketbase.PocketBase) {
 
 				if requestedLang != "" {
 					if lang == requestedLang {
-						err := tmpl.Execute(c.Response().Writer, translation)
+						rendered, err := raymond.Render(html, translation)
 						if err != nil {
 							app.Logger().Error(
 								"PAGES Failed to parse page template",
 								"error", err.Error(),
 							)
-							return nil
+							return c.HTML(200, html)
 						}
-						return nil
+						return c.HTML(200, rendered)
 					}
 					continue
 				}
@@ -106,15 +104,15 @@ func RegisterService(app *pocketbase.PocketBase) {
 					sections := strings.Split(accept, ",")
 					for _, section := range sections {
 						if strings.HasPrefix(section, lang) {
-							err := tmpl.Execute(c.Response().Writer, translation)
-							if err != nil {
-								app.Logger().Error(
-									"PAGES Failed to parse page template",
-									"error", err.Error(),
-								)
-								return nil
-							}
-							return nil
+                            rendered, err := raymond.Render(html, translation)
+                            if err != nil {
+                                app.Logger().Error(
+                                    "PAGES Failed to parse page template",
+                                    "error", err.Error(),
+                                )
+                                return c.HTML(200, html)
+                            }
+                            return c.HTML(200, rendered)
 						}
 					}
 				}
@@ -124,11 +122,15 @@ func RegisterService(app *pocketbase.PocketBase) {
 			data := translations[0]
 			{
 				c.Response().WriteHeader(200)
-				err := tmpl.Execute(c.Response().Writer, data)
-				if err != nil {
-					return nil
-				}
-				return nil
+                rendered, err := raymond.Render(html, data)
+                if err != nil {
+                    app.Logger().Error(
+                        "PAGES Failed to parse page template",
+                        "error", err.Error(),
+                    )
+                    return c.HTML(200, html)
+                }
+                return c.HTML(200, rendered)
 			}
 		})
 

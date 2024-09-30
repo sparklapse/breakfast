@@ -1,4 +1,5 @@
 <script lang="ts">
+  import toast from "svelte-french-toast";
   import clsx from "clsx";
   import Color from "color";
   import { onMount } from "svelte";
@@ -7,6 +8,7 @@
   import ArrowUp from "lucide-svelte/icons/arrow-up";
   import Pin from "lucide-svelte/icons/pin";
   import PinOff from "lucide-svelte/icons/pin-off";
+  import { page } from "$app/stores";
   import { useEditor, type SourceDefinition } from "@sparklapse/breakfast/overlay";
   import { helpers, inputs, DefinedEditor } from "@sparklapse/breakfast/io";
 
@@ -227,13 +229,46 @@
 
       {@const definition = $definitions.find((d) => d.tag === $selectedSource.tag)}
       {#if definition}
-        <DefinedEditor inputs={definition.inputs} values={getEditorValues(definition.inputs)} onchange={(input, value) => {
-        if (value instanceof Color) value = value.hex();
-        const formatted = input.format ? input.format.replace("{}", value.toString()) : value;
-        if (input.target === "children")
-          updateSourceTargetValue($selectedSource.id, input.target, [formatted]);
-        else updateSourceTargetValue($selectedSource.id, input.target, formatted);
-        }} />
+        <DefinedEditor
+          inputs={definition.inputs}
+          values={getEditorValues(definition.inputs)}
+          onchange={(input, value) => {
+            if (value instanceof Color) value = value.hex();
+            const formatted = input.format ? input.format.replace("{}", value.toString()) : value;
+            if (input.target === "children")
+              updateSourceTargetValue($selectedSource.id, input.target, [formatted]);
+            else updateSourceTargetValue($selectedSource.id, input.target, formatted);
+          }}
+          assetHelpers={{
+            getAssets: async (filter) => {
+              const query = await $page.data.pb
+                .collection("assets")
+                .getList(1, 50, { sort: "-created", filter: `label ~ "${filter}"` });
+              const { items } = query;
+
+              return items.map((i) => ({
+                label: i.label,
+                thumb: $page.data.pb.files.getUrl(i, i.asset, { thumb: "512x512f" }),
+                url: $page.data.pb.files.getUrl(i, i.asset),
+              }));
+            },
+            uploadAsset: async (file) => {
+              const url = await toast.promise(
+                $page.data.pb
+                  .collection("assets")
+                  .create({ label: file.name, asset: file })
+                  .then((record) => $page.data.pb.files.getUrl(record, record.asset)),
+                {
+                  loading: "Uploading asset...",
+                  success: "Asset uploaded!",
+                  error: (err) => `Failed to upload asset: ${err.message}`,
+                },
+              );
+
+              return url;
+            },
+          }}
+        />
       {/if}
     {/if}
   {/if}

@@ -3,15 +3,18 @@
   import Upload from "lucide-svelte/icons/upload";
   import { page } from "$app/stores";
   import { DefinedEditor } from "@sparklapse/breakfast/io";
-  import type { Page } from "@sparklapse/breakfast/db";
 
   import type { PageData } from "./$types";
   export let data: PageData;
 
-  let lang = window.navigator.language.split("-")[0];
-  const languages = [lang, ...(data.page.data?.map((p) => p.lang).filter((p) => p !== lang) ?? [])];
+  const preferredLang = window.navigator.language.split("-")[0];
+  if (data.page.data === null || data.page.data?.length === 0)
+    data.page.data = [{ lang: preferredLang }];
   $: pageData =
-    data.page.data?.find((p) => lang === p.lang) ?? ({} as NonNullable<Page["data"]>[0]);
+    data.page.data!.find((p) => window.navigator.language.split("-")[0] === p.lang) ??
+    data.page.data![0];
+  $: lang = pageData.lang;
+  $: languages = data.page.data!.map((p) => p.lang);
 
   let addLang = false;
 
@@ -58,20 +61,23 @@
     }}
     assetHelpers={{
       getAssets: async (filter) => {
-        const query = await data.pb.collection("assets").getList(1, 50, { sort: "-created", filter: `label ~ "${filter}"` });
+        const query = await data.pb
+          .collection("assets")
+          .getList(1, 50, { sort: "-created", filter: `label ~ "${filter}"` });
         const { items } = query;
 
         return items.map((i) => ({
           label: i.label,
-          thumb: data.pb.files.getUrl(i, i.asset, { thumb: "512x512f"}),
+          thumb: data.pb.files.getUrl(i, i.asset, { thumb: "512x512f" }),
           url: data.pb.files.getUrl(i, i.asset),
         }));
       },
       uploadAsset: async (file) => {
         const url = await toast.promise(
-          data.pb.collection("assets").create(
-            {label: file.name, asset: file},
-          ).then((record) => data.pb.files.getUrl(record, record.asset)),
+          data.pb
+            .collection("assets")
+            .create({ label: file.name, asset: file })
+            .then((record) => data.pb.files.getUrl(record, record.asset)),
           {
             loading: "Uploading asset...",
             success: "Asset uploaded!",
@@ -124,16 +130,16 @@
         target="_blank">Don't know your language code?</a
       >
     </div>
-    <button class="bg-slate-700 text-white py-1 px-2 rounded shadow-sm" on:click={() => {
-      toast.promise(
-        data.pb.collection("pages").update(data.page.id, {data: data.page.data}),
-        {
+    <button
+      class="rounded bg-slate-700 px-2 py-1 text-white shadow-sm"
+      on:click={() => {
+        toast.promise(data.pb.collection("pages").update(data.page.id, { data: data.page.data }), {
           loading: "Saving page data...",
           success: "Page data saved!",
           error: (err) => `Failed to save page data: ${err.message}`,
-        },
-      );
-    }}>Save</button>
+        });
+      }}>Save</button
+    >
   </div>
 {:else}
   <p>This page has no schema that can be edited :/</p>
