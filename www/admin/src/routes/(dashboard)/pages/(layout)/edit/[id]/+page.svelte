@@ -56,6 +56,32 @@
     onchange={(input, value) => {
       pageData[input.id] = value;
     }}
+    assetHelpers={{
+      getAssets: async (filter) => {
+        const query = await data.pb.collection("assets").getList(1, 50, { sort: "-created", filter: `label ~ "${filter}"` });
+        const { items } = query;
+
+        return items.map((i) => ({
+          label: i.label,
+          thumb: data.pb.files.getUrl(i, i.asset, { thumb: "512x512f"}),
+          url: data.pb.files.getUrl(i, i.asset),
+        }));
+      },
+      uploadAsset: async (file) => {
+        const url = await toast.promise(
+          data.pb.collection("assets").create(
+            {label: file.name, asset: file},
+          ).then((record) => data.pb.files.getUrl(record, record.asset)),
+          {
+            loading: "Uploading asset...",
+            success: "Asset uploaded!",
+            error: (err) => `Failed to upload asset: ${err.message}`,
+          },
+        );
+
+        return url;
+      },
+    }}
   />
   <div class="mt-4 flex items-start justify-between">
     <div>
