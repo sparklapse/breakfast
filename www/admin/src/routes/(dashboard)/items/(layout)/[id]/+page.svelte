@@ -39,7 +39,8 @@
   import Color from "color";
   import { slide } from "svelte/transition";
   import { Combobox, Select, Switch } from "bits-ui";
-  import { Image, Trash2 } from "lucide-svelte";
+  import Image from "lucide-svelte/icons/image";
+  import Trash2 from "lucide-svelte/icons/trash-2";
   import { goto } from "$app/navigation";
   import { inputs } from "@sparklapse/breakfast/io";
   import type { Item } from "@sparklapse/breakfast/db";

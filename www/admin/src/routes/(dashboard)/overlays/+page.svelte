@@ -3,7 +3,8 @@
   import toast from "svelte-french-toast";
   import { fly } from "svelte/transition";
   import { DropdownMenu } from "bits-ui";
-  import { EllipsisVertical, PlusSquare } from "lucide-svelte";
+  import EllipsisVertical from "lucide-svelte/icons/ellipsis-vertical";
+  import PlusSquare from "lucide-svelte/icons/square-plus";
   import { navigating } from "$app/stores";
   import { goto } from "$app/navigation";
 

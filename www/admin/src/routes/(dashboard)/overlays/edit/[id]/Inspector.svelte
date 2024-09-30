@@ -3,7 +3,10 @@
   import Color from "color";
   import { onMount } from "svelte";
   import { fly } from "svelte/transition";
-  import { ArrowDown, ArrowUp, Pin, PinOff } from "lucide-svelte";
+  import ArrowDown from "lucide-svelte/icons/arrow-down";
+  import ArrowUp from "lucide-svelte/icons/arrow-up";
+  import Pin from "lucide-svelte/icons/pin";
+  import PinOff from "lucide-svelte/icons/pin-off";
   import { useEditor, type SourceDefinition } from "@sparklapse/breakfast/overlay";
   import { helpers, inputs, DefinedEditor } from "@sparklapse/breakfast/io";
 

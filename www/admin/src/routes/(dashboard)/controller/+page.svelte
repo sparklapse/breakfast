@@ -1,6 +1,6 @@
 <script lang="ts">
   import { Select } from "bits-ui";
-  import { RotateCw } from "lucide-svelte";
+  import RotateCw from "lucide-svelte/icons/rotate-cw";
   import Action from "$lib/components/events/Action.svelte";
   import EventFeed from "$lib/components/events/EventFeed.svelte";
 

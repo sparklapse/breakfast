@@ -1,6 +1,6 @@
 <script lang="ts">
   import EventFeed from "$lib/components/events/EventFeed.svelte";
-  import { CalendarCheck2 } from "lucide-svelte";
+  import CalendarCheck2 from "lucide-svelte/icons/calendar-check-2";
 
   import type { PageData } from "./$types";
   export let data: PageData;

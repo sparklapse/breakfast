@@ -1,7 +1,10 @@
 <script lang="ts">
   import clsx from "clsx";
   import toast from "svelte-french-toast";
-  import { Hand, Maximize, MousePointer2, PlusSquare } from "lucide-svelte";
+  import Hand from "lucide-svelte/icons/hand";
+  import Maximize from "lucide-svelte/icons/maximize";
+  import MousePointer2 from "lucide-svelte/icons/mouse-pointer-2";
+  import PlusSquare from "lucide-svelte/icons/square-plus";
   import { createViewport, createEditor, sourceType, sourceId } from "@sparklapse/breakfast/overlay";
   import { page } from "$app/stores";
   import Viewport, { DEFAULT_GRID, DEFAULT_VIEW } from "./Viewport.svelte";

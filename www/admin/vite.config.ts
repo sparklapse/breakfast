@@ -4,6 +4,9 @@ import swc from "rollup-plugin-svelte-wc";
 
 export default defineConfig({
   plugins: [swc(), sveltekit() as any],
+  optimizeDeps: {
+    include: ["lucide-svelte/icons/*"],
+  },
   test: {
     include: ["src/**/*.{test,spec}.{js,ts}"],
   },

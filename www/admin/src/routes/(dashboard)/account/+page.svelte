@@ -1,7 +1,8 @@
 <script lang="ts">
   import clsx from "clsx";
   import toast from "svelte-french-toast";
-  import { Eye, EyeOff } from "lucide-svelte";
+  import Eye from "lucide-svelte/icons/eye";
+  import EyeOff from "lucide-svelte/icons/eye-off";
   import { invalidate, invalidateAll } from "$app/navigation";
 
   import type { PageData } from "./$types";

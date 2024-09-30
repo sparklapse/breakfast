@@ -1,6 +1,6 @@
 <script lang="ts">
   import toast from "svelte-french-toast";
-  import { Upload } from "lucide-svelte";
+  import Upload from "lucide-svelte/icons/upload";
   import { page } from "$app/stores";
   import { DefinedEditor } from "@sparklapse/breakfast/io";
   import type { Page } from "@sparklapse/breakfast/db";

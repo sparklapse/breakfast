@@ -3,14 +3,14 @@
   import clsx from "clsx";
   import { fly } from "svelte/transition";
   import { DropdownMenu } from "bits-ui";
-  import { EllipsisVertical } from "lucide-svelte";
+  import EllipsisVertical from "lucide-svelte/icons/ellipsis-vertical";
   import { navigating } from "$app/stores";
 
   import type { PageData } from "./$types";
   export let data: PageData;
 </script>
 
-<h2>Pages</h2>
+<h2 class="text-lg font-semibold">Pages</h2>
 
 <ul role="list" class="divide-y divide-gray-100">
   {#if data.pages.length === 0}

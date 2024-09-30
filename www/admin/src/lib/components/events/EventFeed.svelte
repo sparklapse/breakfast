@@ -4,7 +4,7 @@
   import { onMount } from "svelte";
   import { fly } from "svelte/transition";
   import { DropdownMenu } from "bits-ui";
-  import { EllipsisVertical } from "lucide-svelte";
+  import EllipsisVertical from "lucide-svelte/icons/ellipsis-vertical";
   import { page } from "$app/stores";
   import type {
     BreakfastEvent,

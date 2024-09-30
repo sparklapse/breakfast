@@ -13,7 +13,9 @@
   import toast from "svelte-french-toast";
   import { fade, fly } from "svelte/transition";
   import { Dialog, Select } from "bits-ui";
-  import { ChevronRight, LoaderCircle, Search } from "lucide-svelte";
+  import ChevronRight from "lucide-svelte/icons/chevron-right";
+  import LoaderCircle from "lucide-svelte/icons/loader-circle";
+  import Search from "lucide-svelte/icons/search";
 
   import type { PageData } from "./$types";
   import { goto } from "$app/navigation";
