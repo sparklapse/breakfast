@@ -1,7 +1,7 @@
 <script lang="ts">
   import { fade } from "svelte/transition";
   import { Dialog } from "bits-ui";
-  import { X } from "lucide-svelte";
+  import X from "lucide-svelte/icons/x";
 
   export let label: string = "Asset";
   export let value: string | undefined = undefined;

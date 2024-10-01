@@ -1,7 +1,7 @@
 import { INPUT_EDITORS } from "./inputs/index.js";
 import type { ComponentType } from "svelte";
 
-type SvelteProps<C extends ComponentType> = NonNullable<ConstructorParameters<C>["0"]["props"]>;
+export type SvelteProps<C extends ComponentType> = NonNullable<ConstructorParameters<C>["0"]["props"]>;
 
 export type InputDefinition = {
   [K in keyof typeof INPUT_EDITORS]: {
@@ -14,5 +14,11 @@ export type InputDefinition = {
 
 export type InputDefinitionGroup<Input extends InputDefinition = InputDefinition> = {
   group: Input[]
+};
+
+export type InputListDefinition<Input extends InputDefinition = InputDefinition> = {
+  id: string;
+  label?: string;
+  list: Input | Input[];
 };
 
