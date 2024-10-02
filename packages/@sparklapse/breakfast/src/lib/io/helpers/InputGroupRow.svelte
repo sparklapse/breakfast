@@ -5,6 +5,6 @@
 {#if label}
   <p>{label}</p>
 {/if}
-<div class="flex items-center justify-between w-full gap-2">
+<div class="flex justify-between w-full gap-2">
   <slot />
 </div>
