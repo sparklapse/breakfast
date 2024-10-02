@@ -8,9 +8,44 @@
 
   import type { PageData } from "./$types";
   export let data: PageData;
+
+  const pathRe = /^\/.*\/?$/;
+  let newPath = "";
 </script>
 
-<h2 class="text-lg font-semibold">Pages</h2>
+<div class="mb-4 flex justify-between">
+  <h2 class="text-lg font-semibold">Pages</h2>
+  <DropdownMenu.Root>
+    <DropdownMenu.Trigger class="rounded bg-slate-700 px-2 text-white"
+      >New Page</DropdownMenu.Trigger
+    >
+    <DropdownMenu.Content class="mt-2 rounded bg-white p-2 shadow-lg" align="end">
+      <form
+        on:submit={(ev) => {
+          ev.preventDefault();
+          if (!newPath.match(pathRe)) return toast.error("Invalid path");
+          toast.promise(
+            data.pb
+              .collection("pages")
+              .create({ path: newPath, html: "<h1>New Page</h1>" })
+              .then((record) => {
+                data.pages = [...data.pages, record];
+              })
+              .then(() => (newPath = "")),
+            {
+              loading: "Creating new page...",
+              success: "Page created!",
+              error: (err) => `Failed to create page: ${err.message}`,
+            },
+          );
+        }}
+      >
+        <input type="text" placeholder="Enter a path" bind:value={newPath} />
+        <button class="rounded bg-slate-700 px-2 text-white">Create</button>
+      </form>
+    </DropdownMenu.Content>
+  </DropdownMenu.Root>
+</div>
 
 <ul role="list" class="divide-y divide-gray-100">
   {#if data.pages.length === 0}

@@ -4,6 +4,8 @@
 </script>
 
 <slot />
+<div class="my-8" role="separator" />
+
 <a
   href="/breakfast/pages"
   class="fixed bottom-8 left-8 z-10 flex items-center gap-1 rounded bg-slate-700 px-2 py-1 text-white shadow-lg lg:left-80"
