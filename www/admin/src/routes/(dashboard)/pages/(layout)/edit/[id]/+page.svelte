@@ -24,11 +24,41 @@
       html,
     });
   };
+
+  const uploadSchema = async (file: File) => {
+    const json = await file.text();
+    const schema = JSON.parse(json);
+
+    await data.pb.collection("pages").update($page.params.id, {
+      schema,
+    });
+    data.page.schema = schema;
+  };
 </script>
 
 <div class="mb-2 flex items-baseline justify-between">
   <h2>Edit Page</h2>
-  <div>
+  <div class="flex gap-1">
+    <label
+      class="flex cursor-pointer items-center gap-1 rounded bg-slate-700 px-2 py-1 text-white shadow-sm"
+      for="upload-schema"><Upload size="1rem" />Upload Schema</label
+    >
+    <input
+      id="upload-schema"
+      class="hidden"
+      type="file"
+      accept="application/json"
+      on:input={(ev) => {
+        if (!ev.currentTarget.files || ev.currentTarget.files?.length !== 1) return;
+        const file = ev.currentTarget.files[0];
+        toast.promise(uploadSchema(file), {
+          loading: "Uploading schema...",
+          success: "Schema Uploaded!",
+          error: (err) => `Failed to upload Schema: ${err.message}`,
+        });
+        ev.currentTarget.value = "";
+      }}
+    />
     <label
       class="flex cursor-pointer items-center gap-1 rounded bg-slate-700 px-2 py-1 text-white shadow-sm"
       for="upload-html"><Upload size="1rem" />Upload HTML</label
