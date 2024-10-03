@@ -1,5 +1,8 @@
 <script lang="ts">
-  import { ArrowUp, BadgeCent, Gift, UsersRound } from "lucide-svelte";
+  import ArrowUp from "lucide-svelte/icons/arrow-up";
+  import BadgeCent from "lucide-svelte/icons/badge-cent";
+  import Gift from "lucide-svelte/icons/gift";
+  import UsersRound from "lucide-svelte/icons/users-round";
   import { onMount } from "svelte";
 
   import type { PageData } from "./$types";

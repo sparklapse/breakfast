@@ -1,7 +1,7 @@
 package main
 
 import (
-	ba "breakfast/app"
+	"breakfast/services"
 	_ "breakfast/migrations"
 	"breakfast/services/account"
 	"breakfast/services/apis"
@@ -29,7 +29,7 @@ func main() {
 	})
 
 	// Setup App Global
-	ba.RegisterApp(app)
+	services.RegisterApp(app)
 
 	// Setup Services
 	saas.RegisterService(app)

@@ -11,7 +11,8 @@
 
 <script lang="ts">
   import { onMount } from "svelte";
-  import { fly } from "svelte/transition";
+  import { fly, fade } from "svelte/transition";
+  import "@sparklapse/breakfast/overlay/global";
   import type { ChatMessageEvent } from "@sparklapse/breakfast/overlay";
 
   export let x: "left" | "center" | "right" = "left";
@@ -53,9 +54,27 @@
     transition:fly={{ x: -100, duration: 100 }}
   >
     {#if message}
-      <p>
-        <span style:color={message.data.color}>{message.data.chatter.displayName}</span>: {message
-          .data.text}
+      <p
+        in:fly={{ x: -40, duration: 100 }}
+        out:fade={{ duration: 2000 }}
+      >
+        <span>
+          <span style:color={message.data.color} title={message.data.chatter.displayName}
+            >{message.data.viewer?.displayName || message.data.chatter.displayName}</span
+          >:
+        </span>
+        {#each message.data.fragments as fragment}
+          {#if fragment.type === "emote"}
+            <img
+              style:height="1em"
+              style:margin="0 0.125rem"
+              src={fragment.images.at(-1)?.url}
+              alt={fragment.text}
+            />
+          {:else}
+            {fragment.text}
+          {/if}
+        {/each}
       </p>
     {/if}
   </div>
@@ -65,16 +84,19 @@
   .container {
     position: absolute;
   }
-
   p {
     color: white;
     margin: 0;
-    padding: 0 1rem;
+    padding: 0.5rem 1rem;
     width: fit-content;
+    line-height: 1;
     border-radius: 0.375rem;
     background-color: #2a2a2a;
     box-shadow:
       0 10px 15px -3px rgb(0 0 0 / 0.1),
       0 4px 6px -4px rgb(0 0 0 / 0.1);
+  }
+  p > img {
+    display: inline;
   }
 </style>

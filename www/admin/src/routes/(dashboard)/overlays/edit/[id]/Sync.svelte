@@ -4,16 +4,15 @@
   import { readable } from "svelte/store";
   import { fly } from "svelte/transition";
   import { Select } from "bits-ui";
-  import { useEditor } from "$lib/overlay/contexts";
-  import { invisId } from "$lib/overlay/naming";
+  import { useEditor, invisId, getTransformBounds, transformFromPoints } from "@sparklapse/breakfast/overlay";
   import { page } from "$app/stores";
   import { goto } from "$app/navigation";
+  import type { Transform } from "@sparklapse/breakfast/overlay";
 
   export let save: () => Promise<void>;
   export let abortAS: (() => void) | undefined;
 
   import type { PageData } from "./$types";
-  import { getTransformBounds, transformFromPoints } from "$lib/math";
   $: data = $page.data as PageData | undefined;
   $: obsConnected = data?.obs.connectedStore ?? readable(false);
 
@@ -46,6 +45,7 @@
     ? data!.obs.request({ type: "GetSceneList", options: undefined })
     : undefined;
 
+  let smallestPossibleSource = false;
   const sync = async () => {
     if (sceneUuid === "") return;
     if (!data) return;
@@ -55,8 +55,16 @@
       throw existing.error;
     }
 
-    const bounds = getTransformBounds(...$sources.map((s) => s.transform));
-    const transform = transformFromPoints(...bounds, 0);
+    const transform: Transform = smallestPossibleSource
+      ? transformFromPoints(...getTransformBounds(...$sources.map((s) => s.transform)), 0)
+      : {
+          x: 0,
+          y: 0,
+          width: 1920,
+          height: 1080,
+          rotation: 0,
+        };
+    const css = smallestPossibleSource ? `body { transform: translate(${-transform.x}px, ${-transform.y}px) }` : "";
 
     for (const source of existing.data.sceneItems) {
       if (source.inputKind !== "browser_source") continue;
@@ -74,7 +82,7 @@
           type: "PressInputPropertiesButton",
           options: { inputName: source.sourceName, propertyName: "refreshnocache" },
         });
-        const name = `${label}${invisId()}`;
+        const name = `${$label}${invisId()}`;
         await data.obs.request({
           type: "SetInputName",
           options: { inputName: source.sourceName, newInputName: name },
@@ -84,7 +92,7 @@
           options: {
             inputName: name,
             inputSettings: {
-              css: `body { transform: translate(${-transform.x}px, ${-transform.y}px) }`,
+              css,
               width: transform.width,
               height: transform.height,
             },
@@ -116,7 +124,7 @@
         inputName: `${$label}${invisId()}`,
         inputSettings: {
           breakfastOverlayId: $page.params.id,
-          css: `body { transform: translate(${-transform.x}px, ${-transform.y}px) }`,
+          css,
           url: `${window.location.origin}/overlays/render/${$page.params.id}`,
           width: transform.width,
           height: transform.height,
@@ -201,6 +209,10 @@
       {/await}
     </div>
   {:else if step === 2 || step === 3}
+    <div>
+      <input id="sync-bounds" type="checkbox" bind:checked={smallestPossibleSource} />
+      <label for="sync-bounds">Create smallest possible source</label>
+    </div>
     <div class="flex justify-between gap-2" in:fly={{ x: 100, duration: 100, delay: 100 }}>
       <button
         class="w-full rounded bg-slate-700 text-white"

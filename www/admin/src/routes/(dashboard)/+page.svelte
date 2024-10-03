@@ -1,6 +1,9 @@
 <script lang="ts">
   import toast from "svelte-french-toast";
-  import { Layers3, Settings, Unplug, UsersRound } from "lucide-svelte";
+  import Layers3 from "lucide-svelte/icons/layers-3";
+  import Settings from "lucide-svelte/icons/settings";
+  import Unplug from "lucide-svelte/icons/unplug";
+  import UsersRound from "lucide-svelte/icons/users-round";
   import Stats from "$lib/components/obs/Stats.svelte";
   import Obs from "$lib/components/icons/OBS.svelte";
   import type { ComponentType } from "svelte";

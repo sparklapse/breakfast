@@ -17,7 +17,7 @@ image:
 	docker build -t sparklapse/breakfast:latest .
 
 dev:
-	go run main.go serve
+	go run main.go serve --http=0.0.0.0:8090
 
 clean:
 	rm -rf pb_data

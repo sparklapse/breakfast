@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { Point } from "$lib/math";
+  import type { Point } from "@sparklapse/breakfast/overlay";
 
   export let canSelect = true;
 

@@ -4,14 +4,14 @@
   import { onMount } from "svelte";
   import { fly } from "svelte/transition";
   import { DropdownMenu } from "bits-ui";
-  import { EllipsisVertical } from "lucide-svelte";
+  import EllipsisVertical from "lucide-svelte/icons/ellipsis-vertical";
   import { page } from "$app/stores";
   import type {
     BreakfastEvent,
     ChatMessageEvent,
     SubscriptionEvent,
+    ActionDefinition,
   } from "@sparklapse/breakfast/overlay";
-  import type { ActionDefinition } from "@sparklapse/breakfast/scripts";
 
   export let actions: ActionDefinition[] = [];
   export let onPauseChange: ((paused: boolean) => void) | undefined = undefined;
@@ -85,7 +85,11 @@
               </span>
               {#each event.data.fragments as fragment}
                 {#if fragment.type === "emote"}
-                  <img class="inline h-6 mx-0.5" src={fragment.images.at(-1)?.url} alt={fragment.text} />
+                  <img
+                    class="mx-0.5 inline h-6"
+                    src={fragment.images.at(-1)?.url}
+                    alt={fragment.text}
+                  />
                 {:else}
                   {fragment.text}
                 {/if}
@@ -137,6 +141,35 @@
               <DropdownMenu.Separator class="my-2 border-t border-slate-200" />
             {/if}
             <DropdownMenu.Label class="px-2 text-xs text-slate-400">Event</DropdownMenu.Label>
+            {#if event.id === null}
+              <DropdownMenu.Item
+                class="cursor-pointer px-2 hover:bg-slate-50"
+                on:click={() => {
+                  toast.promise(
+                    $page.data.pb
+                      .collection("events")
+                      .create({
+                        provider: "manually-saved",
+                        providerId: null,
+                        type: event.type,
+                        data: event.data,
+                      })
+                      .then((record) => {
+                        event.id = record.id;
+                      }),
+                    {
+                      loading: "Saving event...",
+                      success: "Event saved!",
+                      error: (err) => `Failed to save event: ${err.message}`,
+                    },
+                  );
+                }}
+              >
+                Save Event
+              </DropdownMenu.Item>
+            {:else}
+              <p class="px-2 text-slate-400 hover:bg-slate-50">Event Saved</p>
+            {/if}
             {#if event.data?.viewer?.id}
               <DropdownMenu.Item
                 href="/breakfast/viewers/{event.data.viewer.id}"

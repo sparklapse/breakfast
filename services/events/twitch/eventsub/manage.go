@@ -1,7 +1,7 @@
 package eventsub
 
 import (
-	"breakfast/app"
+	"breakfast/services"
 	"breakfast/services/events/twitch/eventsub/connection"
 	"breakfast/services/events/twitch/eventsub/subscriptions"
 
@@ -9,7 +9,7 @@ import (
 )
 
 func CreateSubscription(userId string, config subscriptions.SubscriptionConfig) (string, error) {
-	collection, err := app.App.Dao().FindCollectionByNameOrId("twitch_event_subscriptions")
+	collection, err := services.App.Dao().FindCollectionByNameOrId("twitch_event_subscriptions")
 	if err != nil {
 		return "", err
 	}
@@ -20,7 +20,7 @@ func CreateSubscription(userId string, config subscriptions.SubscriptionConfig) 
 	record.Set("config", config)
 
 	{
-		err := app.App.Dao().SaveRecord(record)
+		err := services.App.Dao().SaveRecord(record)
 		if err != nil {
 			return "", err
 		}
@@ -37,7 +37,7 @@ func CreateSubscription(userId string, config subscriptions.SubscriptionConfig) 
 }
 
 func DeleteSubscription(subscriptionId string) error {
-	record, err := app.App.Dao().FindRecordById("twitch_event_subscriptions", subscriptionId)
+	record, err := services.App.Dao().FindRecordById("twitch_event_subscriptions", subscriptionId)
 	if err != nil {
 		return err
 	}
@@ -50,7 +50,7 @@ func DeleteSubscription(subscriptionId string) error {
 	}
 
 	{
-		err := app.App.Dao().DeleteRecord(record)
+		err := services.App.Dao().DeleteRecord(record)
 		if err != nil {
 			return err
 		}

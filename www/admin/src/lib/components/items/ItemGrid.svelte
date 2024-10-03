@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { Search, PlusCircle } from "lucide-svelte";
+  import Search from "lucide-svelte/icons/search";
+  import PlusCircle from "lucide-svelte/icons/circle-plus";
   import { page } from "$app/stores";
   import type { Item } from "@sparklapse/breakfast/db";
 

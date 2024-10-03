@@ -1,7 +1,9 @@
 <script lang="ts">
   import toast from "svelte-french-toast";
   import { Dialog, Select } from "bits-ui";
-  import { Check, Trash2, X } from "lucide-svelte";
+  import Check from "lucide-svelte/icons/check";
+  import Trash2 from "lucide-svelte/icons/trash-2";
+  import X from "lucide-svelte/icons/x";
   import { invalidate } from "$app/navigation";
 
   import type { PageData } from "./$types";

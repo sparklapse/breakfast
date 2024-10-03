@@ -2,7 +2,8 @@
   import toast from "svelte-french-toast";
   import { fly } from "svelte/transition";
   import { nanoid } from "nanoid";
-  import { Ellipsis, PlusSquare } from "lucide-svelte";
+  import Ellipsis from "lucide-svelte/icons/ellipsis";
+  import PlusSquare from "lucide-svelte/icons/square-plus";
   import { DropdownMenu } from "bits-ui";
 
   import type { PageData } from "./$types";

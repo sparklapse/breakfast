@@ -1,16 +1,15 @@
 <script lang="ts">
   import clsx from "clsx";
   import { fade, fly } from "svelte/transition";
-  import {
-    Gift,
-    Home,
-    Layers,
-    Image,
-    SquareGanttChart,
-    Menu,
-    UsersRound,
-    Joystick,
-  } from "lucide-svelte";
+  import Gift from "lucide-svelte/icons/gift";
+  import Home from "lucide-svelte/icons/house";
+  import Layers from "lucide-svelte/icons/layers";
+  import Image from "lucide-svelte/icons/image";
+  import SquareGanttChart from "lucide-svelte/icons/square-chart-gantt";
+  import Menu from "lucide-svelte/icons/menu";
+  import UsersRound from "lucide-svelte/icons/users-round";
+  import Joystick from "lucide-svelte/icons/joystick";
+  import PanelsTopLeft from "lucide-svelte/icons/panels-top-left";
   import { page } from "$app/stores";
   import Obs from "$lib/components/icons/OBS.svelte";
   import type { ComponentType } from "svelte";
@@ -34,16 +33,22 @@
       route: "/(dashboard)/items",
     },
     {
-      label: "Events",
-      icon: SquareGanttChart,
-      href: "/breakfast/events",
-      route: "/(dashboard)/events",
+      label: "Pages",
+      icon: PanelsTopLeft,
+      href: "/breakfast/pages",
+      route: "/(dashboard)/pages",
     },
     {
       label: "Overlays",
       icon: Layers,
       href: "/breakfast/overlays",
       route: "/(dashboard)/overlays",
+    },
+    {
+      label: "Events",
+      icon: SquareGanttChart,
+      href: "/breakfast/events",
+      route: "/(dashboard)/events",
     },
     {
       label: "Controller",

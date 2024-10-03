@@ -2,7 +2,9 @@
   import toast from "svelte-french-toast";
   import { fly } from "svelte/transition";
   import { DropdownMenu, Dialog } from "bits-ui";
-  import { EllipsisVertical, CirclePlus, Trash2 } from "lucide-svelte";
+  import EllipsisVertical from "lucide-svelte/icons/ellipsis-vertical";
+  import CirclePlus from "lucide-svelte/icons/circle-plus";
+  import Trash2 from "lucide-svelte/icons/trash-2";
   import { goto, invalidate } from "$app/navigation";
 
   import type { PageData } from "./$types";

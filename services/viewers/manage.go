@@ -145,6 +145,8 @@ func registerManageAPIs(app *pocketbase.PocketBase) {
 				return c.JSON(http.StatusUnauthorized, map[string]string{"message": "Unauthorized"})
 			}
 
+			viewerId := c.PathParam("id")
+
 			var query struct {
 				Id          string `db:"id" json:"id"`
 				DisplayName string `db:"displayName" json:"displayName"`
@@ -168,7 +170,7 @@ func registerManageAPIs(app *pocketbase.PocketBase) {
 					).
 					GroupBy("v.id").
 					OrderBy("v.created DESC").
-					Where(dbx.NewExp("")).
+					Where(dbx.NewExp("v.id = {:id}", dbx.Params{"id": viewerId})).
 					One(&query)
 				if errors.Is(err, sql.ErrNoRows) {
 					return c.JSON(404, map[string]string{"message": "Viewer not found"})

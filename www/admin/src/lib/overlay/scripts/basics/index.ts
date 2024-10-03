@@ -1,10 +1,9 @@
 import chat from "./chat.svelte?wcs";
 import highlight from "./highlight.svelte?wcs";
 
-import type { OverlayScript } from "@sparklapse/breakfast/scripts";
-import type { SOURCE_INPUTS } from "$lib/overlay/sources/inputs";
+import type { Script } from "@sparklapse/breakfast/overlay";
 
-export const basics: OverlayScript<typeof SOURCE_INPUTS> = {
+export const basics: Script = {
   id: "basics",
   label: "Basics",
   version: 0,
@@ -18,6 +17,7 @@ export const basics: OverlayScript<typeof SOURCE_INPUTS> = {
         {
           group: [
             {
+              id: "size",
               type: "number",
               label: "Size",
               target: "style.font-size",
@@ -25,12 +25,14 @@ export const basics: OverlayScript<typeof SOURCE_INPUTS> = {
               format: "{}px",
             },
             {
+              id: "weight",
               type: "number",
               label: "Weight",
               target: "style.font-weight",
               options: { min: 100, step: 100, max: 1000 },
             },
             {
+              id: "overflow",
               type: "select",
               label: "Overflow",
               target: "props.overflow",
@@ -52,6 +54,14 @@ export const basics: OverlayScript<typeof SOURCE_INPUTS> = {
         {
           group: [
             {
+              id: "color",
+              type: "color",
+              label: "Text Color",
+              target: "style.color",
+              defaultValue: "#000000",
+            },
+            {
+              id: "display-time",
               type: "number",
               label: "Display Time",
               target: "props.removeTime",
@@ -59,6 +69,7 @@ export const basics: OverlayScript<typeof SOURCE_INPUTS> = {
               options: { min: -1 },
             },
             {
+              id: "name-source",
               type: "select",
               label: "Names Source",
               target: "props.names",
@@ -82,6 +93,7 @@ export const basics: OverlayScript<typeof SOURCE_INPUTS> = {
         {
           group: [
             {
+              id: "x-anchor",
               type: "select",
               label: "X",
               target: "props.x",
@@ -95,6 +107,7 @@ export const basics: OverlayScript<typeof SOURCE_INPUTS> = {
               },
             },
             {
+              id: "y-anchor",
               type: "select",
               label: "Y",
               target: "props.y",
@@ -112,6 +125,7 @@ export const basics: OverlayScript<typeof SOURCE_INPUTS> = {
         {
           group: [
             {
+              id: "size",
               type: "number",
               label: "Size",
               target: "style.font-size",
@@ -119,6 +133,7 @@ export const basics: OverlayScript<typeof SOURCE_INPUTS> = {
               format: "{}px",
             },
             {
+              id: "weight",
               type: "number",
               label: "Weight",
               target: "style.font-weight",

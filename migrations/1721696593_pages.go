@@ -25,7 +25,7 @@ func init() {
 				UpdateRule: types.Pointer("@request.auth.verified = true && @request.auth.collectionName = \"users\""),
 				DeleteRule: types.Pointer("@request.auth.verified = true && @request.auth.collectionName = \"users\""),
 				Indexes: types.JsonArray[string]{
-					"CREATE INDEX pages_path_idx ON pages (path)",
+					"CREATE UNIQUE INDEX pages_path_idx ON pages (path)",
 				},
 				Options: types.JsonMap{},
 				Schema: schema.NewSchema(
@@ -34,7 +34,7 @@ func init() {
 						Name:        "path",
 						Type:        schema.FieldTypeText,
 						Required:    true,
-						Presentable: false,
+						Presentable: true,
 						Options: types.JsonMap{
 							"min":     nil,
 							"max":     nil,
@@ -51,6 +51,26 @@ func init() {
 							"min":     nil,
 							"max":     nil,
 							"pattern": "",
+						},
+					},
+					&schema.SchemaField{
+						Id:          "schema",
+						Name:        "schema",
+						Type:        schema.FieldTypeJson,
+						Required:    false,
+						Presentable: false,
+						Options: types.JsonMap{
+							"maxSize": 1_000_000_000, // 1GB
+						},
+					},
+					&schema.SchemaField{
+						Id:          "data",
+						Name:        "data",
+						Type:        schema.FieldTypeJson,
+						Required:    false,
+						Presentable: false,
+						Options: types.JsonMap{
+							"maxSize": 1_000_000_000, // 1GB
 						},
 					},
 				),
