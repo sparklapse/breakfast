@@ -11,7 +11,7 @@ RUN make install
 RUN make build
 
 
-FROM scratch
+FROM alpine:latest
 
 COPY --from=build /app/breakfast /breakfast
 EXPOSE 1234
