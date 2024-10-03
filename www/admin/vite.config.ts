@@ -11,6 +11,7 @@ export default defineConfig({
     include: ["src/**/*.{test,spec}.{js,ts}"],
   },
   server: {
+    host: "0.0.0.0",
     proxy: {
       "/_": {
         target: "http://localhost:8090",
