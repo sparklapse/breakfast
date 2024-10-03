@@ -3,6 +3,7 @@ module breakfast
 go 1.22.3
 
 require (
+	github.com/aymerick/raymond v2.0.2+incompatible
 	github.com/gorilla/websocket v1.5.3
 	github.com/labstack/echo/v5 v5.0.0-20230722203903-ec5b858dab61
 	github.com/patrickmn/go-cache v2.1.0+incompatible
@@ -32,7 +33,6 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.27.3 // indirect
 	github.com/aws/aws-sdk-go-v2/service/sts v1.31.3 // indirect
 	github.com/aws/smithy-go v1.21.0 // indirect
-	github.com/aymerick/raymond v2.0.2+incompatible // indirect
 	github.com/disintegration/imaging v1.6.2 // indirect
 	github.com/domodwyer/mailyak/v3 v3.6.2 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
