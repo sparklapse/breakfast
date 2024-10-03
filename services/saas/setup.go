@@ -53,6 +53,18 @@ func init() {
 		}
 	}
 
+	// URL config
+	{
+		if config.Url == "" {
+			url, ok := os.LookupEnv("BREAKFAST_APP_URL")
+			if ok && url != "" {
+				config.Url = url
+			} else {
+              config.Url = "http://localhost:8090"
+            }
+		}
+	}
+
 	// Remote config
 	{
 		if config.Remote.Secret == "" {
