@@ -22,4 +22,5 @@ dev:
 
 clean:
 	rm -rf pb_data
+	rm -rf node_modules
 
