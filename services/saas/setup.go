@@ -43,16 +43,13 @@ var config BreakfastConfig
 
 func init() {
 	data, err := os.ReadFile("breakfast.json")
-	if err != nil {
-		println("Failed to load breakfast.json: " + err.Error())
-		os.Exit(1)
-	}
-
-	{
-		err := json.Unmarshal(data, &config)
-		if err != nil {
-			println("Failed to parse breakfast.config: " + err.Error())
-			os.Exit(0)
+	if err == nil {
+		{
+			err := json.Unmarshal(data, &config)
+			if err != nil {
+				println("breakfast.json provided but failed to parse: " + err.Error())
+				os.Exit(1)
+			}
 		}
 	}
 
