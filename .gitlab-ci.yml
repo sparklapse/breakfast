@@ -15,7 +15,7 @@ generate_meta:
     - RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" https://hub.docker.com/v2/repositories/$DOCKER_IMAGE_NAME/tags/$VERSION/)
     - |
       echo "Image Status: $RESPONSE"
-      if [ "$RESPONSE" == "200"]; then
+      if [ "$RESPONSE" == "200" ]; then
         echo "An image with that version ($VERSION) already exists";
         exit 1;
       fi
