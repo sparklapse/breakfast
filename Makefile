@@ -1,5 +1,6 @@
 install:
 	bun install
+	cd packages/@sparklapse/breakfast; bun run build
 	go get
 
 overlays:
