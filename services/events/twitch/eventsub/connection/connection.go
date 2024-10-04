@@ -214,13 +214,14 @@ func Connect(url string) error {
 			}
 
 			for id := range activeSubscriptions {
+				delete(activeSubscriptions, id)
+
 				record, err := services.App.Dao().FindRecordById("twitch_event_subscriptions", id)
 				if err != nil {
 					services.App.Logger().Error(
 						"EVENTS Twitch eventsub failed to find active subscription",
 						"error", err.Error(),
 					)
-					delete(activeSubscriptions, id)
 					continue
 				}
 

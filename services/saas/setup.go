@@ -60,8 +60,8 @@ func init() {
 			if ok && url != "" {
 				config.Url = url
 			} else {
-              config.Url = "http://localhost:8090"
-            }
+				config.Url = "http://localhost:8090"
+			}
 		}
 	}
 
@@ -78,8 +78,13 @@ func init() {
 	// Admin config
 	{
 		if config.Admin.Password == "" {
-			config.Admin.Password = security.RandomString(21)
-			println("No admin password was provided so a random one will be generated and saved")
+			pass, ok := os.LookupEnv("BREAKFAST_ADMIN_PASSWORD")
+			if ok && pass != "" {
+				config.Admin.Password = pass
+			} else {
+				config.Admin.Password = security.RandomString(21)
+				println("No admin password was provided so a random one will be generated")
+			}
 		}
 	}
 

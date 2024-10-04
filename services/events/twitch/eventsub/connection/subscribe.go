@@ -95,11 +95,6 @@ func Subscribe(id string, sub subscriptions.SubscriptionConfig, authorizerId str
 
 	for _, active := range activeSubscriptions {
 		if active.Type == sub.Type && active.Condition["broadcaster_user_id"] == sub.Condition["broadcaster_user_id"] {
-			record, _ := services.App.Dao().FindRecordById("twitch_event_subscriptions", id)
-			if record != nil {
-				services.App.Dao().DeleteRecord(record)
-			}
-
 			return nil, ErrAlreadSubscribed
 		}
 	}

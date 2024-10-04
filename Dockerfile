@@ -13,6 +13,8 @@ RUN make build
 
 FROM alpine:latest
 
+RUN apk add ca-certificates
+
 COPY --from=build /app/breakfast /breakfast
 EXPOSE 1234
 

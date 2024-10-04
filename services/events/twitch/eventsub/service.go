@@ -337,11 +337,10 @@ func RegisterService(app *pocketbase.PocketBase) {
 				return c.JSON(500, map[string]string{"message": "Failed to query for subscription", "error": err.Error()})
 			}
 
-			DeleteSubscription(record.Id)
 			{
-				err := app.Dao().DeleteRecord(record)
+				err := DeleteSubscription(record.Id)
 				if err != nil {
-					return c.JSON(500, map[string]string{"message": "Failed to delete record", "error": err.Error()})
+					return c.JSON(500, map[string]string{"message": "Failed to delete subscription", "error": err.Error()})
 				}
 			}
 
