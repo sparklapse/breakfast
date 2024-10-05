@@ -5,7 +5,12 @@
   import Maximize from "lucide-svelte/icons/maximize";
   import MousePointer2 from "lucide-svelte/icons/mouse-pointer-2";
   import PlusSquare from "lucide-svelte/icons/square-plus";
-  import { createViewport, createEditor, sourceType, sourceId } from "@sparklapse/breakfast/overlay";
+  import {
+    createViewport,
+    createEditor,
+    sourceType,
+    sourceId,
+  } from "@sparklapse/breakfast/overlay";
   import { page } from "$app/stores";
   import Viewport, { DEFAULT_GRID, DEFAULT_VIEW } from "./Viewport.svelte";
   import Menu from "./Menu.svelte";
@@ -311,5 +316,5 @@
   <!-- Inspector -->
   <Inspector />
   <!-- Menu -->
-  <Menu abortAS={abort} {save} />
+  <Menu {data} abortAS={abort} {save} />
 </div>

@@ -1,6 +1,7 @@
 package apis
 
 import (
+	"breakfast/services"
 	"encoding/json"
 	"errors"
 	"io"
@@ -8,12 +9,14 @@ import (
 	"net/url"
 	"strings"
 	"time"
+
+	"github.com/pocketbase/dbx"
 )
 
 var twitchClient string
 var twitchSecret string
 
-var twitchAppToken string
+var twitchToken string
 var twitchAppTokenExpires time.Time
 
 func init() {
@@ -21,7 +24,7 @@ func init() {
 }
 
 func getTwitchSettings() error {
-	settings := pb.Settings()
+	settings := services.App.Settings()
 
 	if !settings.TwitchAuth.Enabled {
 		return errors.New("twitch auth not enabled")
@@ -38,6 +41,32 @@ func getTwitchSettings() error {
 }
 
 func refreshToken() error {
+	var query struct {
+		Token string `db:"accessToken"`
+	}
+
+	{
+		err := services.App.Dao().DB().
+			Select("accessToken").
+            From("tokens").
+			Where(dbx.NewExp(
+				"provider = 'twitch' AND expires < {:now}",
+				dbx.Params{"now": time.Now()},
+			)).
+            Limit(1).
+			One(&query)
+
+		if err == nil {
+			twitchToken = query.Token
+			return nil
+		}
+
+		services.App.Logger().Warn(
+			"APIS Twitch API call made and needs app token",
+			"error", err.Error(),
+		)
+	}
+
 	// Token is still valid
 	if time.Now().Add(30 * time.Second).Before(twitchAppTokenExpires) {
 		return nil
@@ -90,7 +119,7 @@ func GetTwitchAppToken(clientId string, clientSecret string) (string, error) {
 		}
 	}
 
-	twitchAppToken = token.AccessToken
+	twitchToken = token.AccessToken
 	twitchAppTokenExpires = time.Now().Add(time.Duration(token.ExpiresIn-300) * time.Second)
 
 	return token.AccessToken, nil
@@ -123,7 +152,7 @@ func GetTwitchUserById(id string) (*TwitchUser, error) {
 		return nil, err
 	}
 
-	req.Header.Set("Authorization", "Bearer "+twitchAppToken)
+	req.Header.Set("Authorization", "Bearer "+twitchToken)
 	req.Header.Set("Client-Id", twitchClient)
 
 	response, err := http.DefaultClient.Do(req)
@@ -174,7 +203,7 @@ func GetTwitchUserByLogin(login string) (*TwitchUser, error) {
 		return nil, err
 	}
 
-	req.Header.Set("Authorization", "Bearer "+twitchAppToken)
+	req.Header.Set("Authorization", "Bearer "+twitchToken)
 	req.Header.Set("Client-Id", twitchClient)
 
 	response, err := http.DefaultClient.Do(req)

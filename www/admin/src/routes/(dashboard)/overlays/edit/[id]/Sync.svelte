@@ -4,16 +4,23 @@
   import { readable } from "svelte/store";
   import { fly } from "svelte/transition";
   import { Select } from "bits-ui";
-  import { useEditor, invisId, getTransformBounds, transformFromPoints } from "@sparklapse/breakfast/overlay";
+  import {
+    useEditor,
+    invisId,
+    getTransformBounds,
+    transformFromPoints,
+  } from "@sparklapse/breakfast/overlay";
   import { page } from "$app/stores";
   import { goto } from "$app/navigation";
   import type { Transform } from "@sparklapse/breakfast/overlay";
 
+  import type { PageData } from "./$types";
+  export let data: PageData;
+  const { user } = data;
+
   export let save: () => Promise<void>;
   export let abortAS: (() => void) | undefined;
 
-  import type { PageData } from "./$types";
-  $: data = $page.data as PageData | undefined;
   $: obsConnected = data?.obs.connectedStore ?? readable(false);
 
   const {
@@ -47,6 +54,7 @@
 
   let smallestPossibleSource = false;
   const sync = async () => {
+    if (!$user) return;
     if (sceneUuid === "") return;
     if (!data) return;
 
@@ -64,7 +72,9 @@
           height: 1080,
           rotation: 0,
         };
-    const css = smallestPossibleSource ? `body { transform: translate(${-transform.x}px, ${-transform.y}px) }` : "";
+    const css = smallestPossibleSource
+      ? `body { transform: translate(${-transform.x}px, ${-transform.y}px) }`
+      : "";
 
     for (const source of existing.data.sceneItems) {
       if (source.inputKind !== "browser_source") continue;
@@ -125,7 +135,7 @@
         inputSettings: {
           breakfastOverlayId: $page.params.id,
           css,
-          url: `${window.location.origin}/overlays/render/${$page.params.id}`,
+          url: `${window.location.origin}/overlays/render/${$page.params.id}?sk=${$user.id}.${$user.streamKey}`,
           width: transform.width,
           height: transform.height,
         },

@@ -10,6 +10,9 @@
   import Sync from "./Sync.svelte";
   import type { ActionDefinition } from "@sparklapse/breakfast/overlay";
 
+  import type { PageData } from "./$types";
+  export let data: PageData;
+  
   export let save: () => Promise<void>;
   export let abortAS: (() => void) | undefined;
 
@@ -70,7 +73,7 @@
 
   <!-- OBS Sync -->
   <h3 class="font-semibold">OBS Sync</h3>
-  <Sync {abortAS} {save} />
+  <Sync {data} {abortAS} {save} />
 
   <!-- Actions controls -->
   <h3 class="mt-4 font-semibold">Actions</h3>

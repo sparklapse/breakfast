@@ -11,6 +11,7 @@
   import ItemGrid from "$lib/components/items/ItemGrid.svelte";
   import { page } from "$app/stores";
   export let data: PageData;
+  const { user } = data;
 
   const providersArr = data.viewer.providers!.split(",");
   const providerIdsArr = data.viewer.providerIds!.split(",");
@@ -73,7 +74,10 @@
       <ul class="flex gap-2">
         {#each providers as [provider, id]}
           <li class="underline">
-            <a href="/redirect/to-provider/{provider}/{id}" target="_blank">{provider}</a>
+            <a
+              href="/redirect/to-provider/{provider}/{id}?sk={$user?.id}.{$user?.streamKey}"
+              target="_blank">{provider}</a
+            >
           </li>
         {:else}
           <li>No connected providers</li>

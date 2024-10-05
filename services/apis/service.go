@@ -1,16 +1,15 @@
 package apis
 
 import (
+    "net/http"
+
 	"github.com/labstack/echo/v5"
 	"github.com/pocketbase/pocketbase"
+	"github.com/pocketbase/pocketbase/apis"
 	"github.com/pocketbase/pocketbase/core"
 )
 
-var pb *pocketbase.PocketBase
-
 func RegisterService(app *pocketbase.PocketBase) {
-	pb = app
-
 	app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
 		getTwitchSettings()
 		return nil
@@ -18,6 +17,18 @@ func RegisterService(app *pocketbase.PocketBase) {
 
 	app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
 		e.Router.GET("/redirect/to-provider/:provider/:id", func(c echo.Context) error {
+			// Validate user is authenticated
+			info := apis.RequestInfo(c)
+			user := info.AuthRecord
+
+			if user == nil {
+				return c.JSON(http.StatusUnauthorized, map[string]string{"message": "Unauthorized"})
+			}
+
+			if user.Collection().Id != "users" {
+				return c.JSON(http.StatusUnauthorized, map[string]string{"message": "Unauthorized"})
+			}
+
 			provider := c.PathParams().Get("provider", "unknown")
 			id := c.PathParams().Get("id", "unknown")
 
