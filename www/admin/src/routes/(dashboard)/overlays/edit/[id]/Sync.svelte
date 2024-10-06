@@ -57,6 +57,7 @@
     if (!$user) return;
     if (sceneUuid === "") return;
     if (!data) return;
+    if ($sources.length === 0) throw new Error("Can't sync an empty scene!");
 
     const existing = await data.obs.request({ type: "GetSceneItemList", options: { sceneUuid } });
     if (existing.status === "error") {
