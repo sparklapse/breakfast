@@ -2,12 +2,10 @@
   import toast from "svelte-french-toast";
   import clsx from "clsx";
   import Color from "color";
-  import { onMount } from "svelte";
   import { fly } from "svelte/transition";
   import ArrowDown from "lucide-svelte/icons/arrow-down";
   import ArrowUp from "lucide-svelte/icons/arrow-up";
-  import Pin from "lucide-svelte/icons/pin";
-  import PinOff from "lucide-svelte/icons/pin-off";
+  import Trash from "lucide-svelte/icons/trash-2";
   import { page } from "$app/stores";
   import { useEditor, type SourceDefinition } from "@sparklapse/breakfast/overlay";
   import { helpers, inputs, DefinedEditor } from "@sparklapse/breakfast/io";
@@ -24,29 +22,13 @@
       moveSourceDown,
       moveSourceToTop,
       moveSourceToBottom,
+      removeSource,
     },
     selection: { selectedIds, selectedSource, singleSelect, addSelect, deselect },
     scripts: { definitions },
   } = useEditor();
 
-  let showInspector = false;
-  let pinOpen = true;
-  let tab: "source" | "overlay" = "overlay";
-
-  onMount(() => {
-    const saved = localStorage.getItem("editor.inspector.pinOpen");
-    if (saved) {
-      try {
-        const restore = JSON.parse(saved);
-        pinOpen = !!restore;
-      } catch {
-        localStorage.removeItem("editor.inspector.pinOpen");
-      }
-    }
-  });
-
-  // Used for keying a rerender of the inspector based on whats being edited
-  $: editingSource = $selectedIds.length === 1 ? $selectedIds[0] : "none";
+  let tab: "properties" | "sources" = "sources";
 
   const getEditorValues = (inputs: SourceDefinition["inputs"]) => {
     if (!$selectedSource?.id) return {} as Record<string, any>;
@@ -67,16 +49,7 @@
 </script>
 
 <div
-  class={clsx([
-    "fixed right-4 top-4 h-[24rem] w-full max-w-md overflow-y-auto rounded border border-slate-200 bg-white p-4 shadow transition-transform",
-    !(showInspector || pinOpen) && "translate-x-[90%]",
-  ])}
-  on:pointerenter={() => {
-    showInspector = true;
-  }}
-  on:pointerleave={() => {
-    showInspector = false;
-  }}
+  class="fixed right-4 top-4 h-[24rem] w-full max-w-md overflow-y-auto rounded border border-slate-200 bg-white p-4 shadow transition-transform"
   on:pointerdown={(ev) => {
     ev.stopPropagation();
   }}
@@ -85,47 +58,31 @@
   }}
   transition:fly|global={{ x: 50, duration: 250 }}
 >
-  <button
-    class={clsx([
-      "absolute left-1 top-1 z-10 p-1 transition-opacity",
-      !(showInspector || pinOpen) && "opacity-25",
-    ])}
-    on:click={() => {
-      pinOpen = !pinOpen;
-      localStorage.setItem("editor.inspector.pinOpen", JSON.stringify(pinOpen));
-    }}
-  >
-    {#if pinOpen}
-      <PinOff size="1rem" />
-    {:else}
-      <Pin size="1rem" />
-    {/if}
-  </button>
   <div class="relative mb-2 flex items-center justify-between gap-1">
     <button
       class="w-full"
       on:click={() => {
-        tab = "overlay";
+        tab = "sources";
       }}
     >
-      Overlay
+      Sources
     </button>
     <button
       class="w-full"
       on:click={() => {
-        tab = "source";
+        tab = "properties";
       }}
     >
-      Source
+      Properties
     </button>
     <div
       class={clsx([
         "absolute bottom-0 h-0.5 w-1/2 bg-slate-700 transition-[left]",
-        tab === "overlay" ? "left-0" : "left-1/2",
+        tab === "sources" ? "left-0" : "left-1/2",
       ])}
     />
   </div>
-  {#if tab === "overlay"}
+  {#if tab === "sources"}
     <ul>
       {#each structuredClone($sources).reverse() as source}
         {@const def = $definitions.find((d) => d.tag === source.tag)}
@@ -170,13 +127,21 @@
               >
                 <ArrowDown size="1rem" />
               </button>
+              <button
+                on:click={(ev) => {
+                  ev.stopPropagation();
+                  removeSource(source.id);
+                }}
+              >
+                <Trash class="text-red-900" size="1rem" />
+              </button>
             </div>
           </button>
         </li>
       {/each}
     </ul>
-  {:else if tab === "source"}
-    {#if !$selectedSource}
+  {:else if tab === "properties"}
+    {#if !$selectedSource || $selectedIds.length > 1}
       <p class="text-center text-sm text-slate-700">{$selectedIds.length} Sources selected</p>
     {:else}
       <InputGroupRow>

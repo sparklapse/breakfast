@@ -1,24 +1,22 @@
 <script lang="ts">
   import Fuse from "fuse.js";
-  import { scale } from "svelte/transition";
-  import { useEditor, useViewport, avgPoints, transformFromPoints } from "@sparklapse/breakfast/overlay";
-  import type { Point, Source, SourceDefinition, TargetRoots } from "@sparklapse/breakfast/overlay";
+  import { useEditor, useViewport } from "@sparklapse/breakfast/overlay";
+  import type {
+    Source,
+    SourceDefinition,
+    TargetRoots,
+    Transform,
+  } from "@sparklapse/breakfast/overlay";
 
   const {
     utils: { screenToLocal },
   } = useViewport();
   const {
-    sources: { createDefaultSource },
+    sources: { createDefaultSource, addSource },
+    selection: { singleSelect },
     scripts: { definitions },
   } = useEditor();
 
-  export let canCreate = true;
-  export let oncreate: ((source: Source) => any) | undefined = undefined;
-
-  let isCreating = false;
-  let createStart: Point = [0, 0];
-  let createEnd: Point = [0, 0];
-  let showCreateMenu = false;
   let search = "";
   const fuse = new Fuse($definitions, {
     keys: [
@@ -30,61 +28,7 @@
   $: if ($definitions) fuse.setCollection($definitions);
   $: filteredSourceTypes = search ? fuse.search(search).map((r) => r.item) : $definitions;
 
-  $: if (!isCreating) {
-    search = "";
-  }
-
-  $: if (!canCreate) {
-    isCreating = false;
-    showCreateMenu = false;
-  }
-
-  const onpointerdown = (
-    ev: PointerEvent & {
-      currentTarget: EventTarget & Window;
-    },
-  ) => {
-    if (!canCreate) return;
-    if (ev.buttons !== 1) return;
-
-    createStart = [ev.clientX, ev.clientY];
-    createEnd = [ev.clientX, ev.clientY];
-    isCreating = true;
-    showCreateMenu = false;
-  };
-
-  const onpointermove = (
-    ev: PointerEvent & {
-      currentTarget: EventTarget & Window;
-    },
-  ) => {
-    if (!isCreating) return;
-    createEnd = [ev.clientX, ev.clientY];
-  };
-
-  const onpointerup = (
-    ev: PointerEvent & {
-      currentTarget: EventTarget & Window;
-    },
-  ) => {
-    if (!isCreating) return;
-    isCreating = false;
-    createEnd = [ev.clientX, ev.clientY];
-    const xDelta = createEnd[0] - createStart[0];
-    const yDelta = createEnd[1] - createStart[1];
-    const delta = Math.abs(Math.sqrt(xDelta * xDelta + yDelta * yDelta));
-    if (delta < 10) {
-      createStart = [ev.clientX - 100, ev.clientY - 100];
-      createEnd = [ev.clientX + 100, ev.clientY + 100];
-    }
-
-    showCreateMenu = true;
-  };
-
-  const applyDefaultsFromInputs = (
-    source: Source,
-    inputs: SourceDefinition["inputs"],
-  ) => {
+  const applyDefaultsFromInputs = (source: Source, inputs: SourceDefinition["inputs"]) => {
     for (const input of inputs) {
       if ("group" in input) {
         applyDefaultsFromInputs(source, input.group);
@@ -101,97 +45,47 @@
     if (!tag) tag = filteredSourceTypes[0].tag;
     if (!tag) return;
 
-    const viewportStart = screenToLocal([
-      Math.min(createStart[0], createEnd[0]),
-      Math.min(createStart[1], createEnd[1]),
-    ]);
-    const viewportEnd = screenToLocal([
-      Math.max(createStart[0], createEnd[0]),
-      Math.max(createStart[1], createEnd[1]),
-    ]);
-    const transform = transformFromPoints(viewportStart, viewportEnd, 0);
+    const viewportSpace = screenToLocal([window.innerWidth / 2, window.innerHeight / 2]);
+    const transform: Transform = {
+      x: viewportSpace[0] - 200,
+      y: viewportSpace[1] - 200,
+      width: 400,
+      height: 400,
+      rotation: 0,
+    };
 
     const source = createDefaultSource(tag, transform);
-
-    oncreate?.(source);
-    showCreateMenu = false;
-  };
-
-  const focus = (el: HTMLElement) => {
-    setTimeout(() => {
-      el.focus();
-    }, 100);
+    addSource(source);
+    singleSelect(source.id);
   };
 </script>
 
-<svelte:window
-  on:pointerdown={onpointerdown}
-  on:pointermove={onpointermove}
-  on:pointerup={onpointerup}
-/>
+<div class="flex w-full flex-col">
+  <input
+    class="rounded-t border border-zinc-200 px-2 py-1 outline-none"
+    type="text"
+    placeholder="Search for a source to add ({$definitions.length} total)"
+    bind:value={search}
+    on:keydown={({ key }) => {
+      if (key !== "Enter") return;
+      if (filteredSourceTypes.length === 0) return;
 
-{#if isCreating || showCreateMenu}
-  <div
-    class="absolute bg-green-700/25"
-    style:left="{Math.min(createStart[0], createEnd[0])}px"
-    style:top="{Math.min(createStart[1], createEnd[1])}px"
-    style:width="{Math.max(createStart[0], createEnd[0]) -
-      Math.min(createStart[0], createEnd[0])}px"
-    style:height="{Math.max(createStart[1], createEnd[1]) -
-      Math.min(createStart[1], createEnd[1])}px"
-  />
-{/if}
-
-{#if showCreateMenu}
-  <div
-    class="fixed inset-0"
-    on:pointerdown={() => {
-      showCreateMenu = false;
+      create();
     }}
   />
-
-  {@const center = avgPoints(createStart, createEnd)}
-  <div
-    class="absolute z-10 flex w-full max-w-sm -translate-x-1/2 -translate-y-1/2 flex-col rounded bg-white shadow"
-    style:left="{center[0]}px"
-    style:top="{center[1]}px"
-    on:pointerdown={(ev) => {
-      ev.stopPropagation();
-    }}
-    transition:scale={{ start: 0.9, duration: 100 }}
-  >
-    <input
-      class="p-2"
-      type="text"
-      placeholder="Search for source"
-      bind:value={search}
-      on:keydown={({ key }) => {
-        if (key === "Escape") {
-          showCreateMenu = false;
-          return;
-        }
-        if (key !== "Enter") return;
-        if (filteredSourceTypes.length === 0) return;
-
-        create();
-      }}
-      use:focus
-    />
-    <div class="border-b border-slate-200" />
-    <ul class="flex max-h-32 flex-col overflow-y-auto">
-      {#each filteredSourceTypes as st}
-        <li>
-          <button
-            class="w-full px-2 py-1 text-left leading-none"
-            on:click={() => {
-              create(st.tag);
-            }}
-          >
-            <p class="truncate">{st.label}</p>
-            <p class="truncate text-sm text-slate-500">{st.label}</p>
-          </button>
-        </li>
-      {/each}
-    </ul>
-  </div>
-{/if}
+  <ul class="flex h-72 flex-col overflow-y-auto rounded-b border-x border-b border-zinc-200">
+    {#each filteredSourceTypes as st}
+      <li>
+        <button
+          class="w-full px-2 py-1 text-left leading-none hover:bg-slate-50"
+          on:click={() => {
+            create(st.tag);
+          }}
+        >
+          <p class="truncate">{st.label}</p>
+          <p class="truncate text-sm text-slate-500">{st.label}</p>
+        </button>
+      </li>
+    {/each}
+  </ul>
+</div>

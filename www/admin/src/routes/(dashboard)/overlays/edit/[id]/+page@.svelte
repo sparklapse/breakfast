@@ -4,7 +4,6 @@
   import Hand from "lucide-svelte/icons/hand";
   import Maximize from "lucide-svelte/icons/maximize";
   import MousePointer2 from "lucide-svelte/icons/mouse-pointer-2";
-  import PlusSquare from "lucide-svelte/icons/square-plus";
   import {
     createViewport,
     createEditor,
@@ -16,7 +15,6 @@
   import Menu from "./Menu.svelte";
   import Selector from "./Selector.svelte";
   import Transformer from "./Transformer.svelte";
-  import Creator from "./Creator.svelte";
   import Inspector from "./Inspector.svelte";
 
   import type { PageData } from "./$types";
@@ -28,6 +26,7 @@
     utils: { screenToLocal, panTo },
   } = createViewport({ initialView: DEFAULT_VIEW });
   const {
+    label,
     mount,
     overlay,
     scripts: { scripts },
@@ -63,12 +62,13 @@
 
     localStorage.setItem(`autosave.${$page.params.id}.sources`, sources);
     await data.pb.collection("overlays").update($page.params.id, {
+      label: $label,
       sources,
       scripts: $scripts,
     });
   };
 
-  type Tools = "select" | "pan" | "create";
+  type Tools = "select" | "pan";
   let baseTool: Tools = "select";
   let isShifting = false;
   let isSpacing = false;
@@ -115,9 +115,6 @@
         break;
       case "2":
         baseTool = "pan";
-        break;
-      case "3":
-        baseTool = "create";
         break;
       case "a":
         if (ev.ctrlKey) {
@@ -263,14 +260,6 @@
     }}
     ondeselect={() => deselect()}
   />
-  <Creator
-    canCreate={tool === "create"}
-    oncreate={(source) => {
-      addSource(source);
-      singleSelect(source.id);
-      baseTool = "select";
-    }}
-  />
   <!-- Controls -->
   <div
     class="fixed bottom-4 left-1/2 flex -translate-x-1/2 items-center gap-1 rounded border border-slate-200 bg-white p-2 text-slate-700 shadow"
@@ -296,17 +285,6 @@
       }}
     >
       <Hand />
-    </button>
-    <button
-      class={clsx([
-        "rounded-sm p-1",
-        tool === "create" ? "bg-slate-700 text-white" : "hover:bg-slate-100",
-      ])}
-      on:click={() => {
-        baseTool = "create";
-      }}
-    >
-      <PlusSquare />
     </button>
     <div class="h-4 border-r border-slate-400" role="separator" />
     <button class="p-1 hover:bg-slate-100" on:click={() => panTo(DEFAULT_VIEW, 500)}>
