@@ -4,7 +4,7 @@ export const BUILTIN_DEFINITIONS: SourceDefinition[] = [
   {
     label: "Text",
     subLabel: "Builtin",
-    tag: "p",
+    tag: "pre",
     inputs: [
       {
         id: "text",
@@ -54,6 +54,7 @@ export const BUILTIN_DEFINITIONS: SourceDefinition[] = [
             type: "text",
             label: "Font Family",
             target: "style.font-family",
+            defaultValue: "Gabarito Variable",
           },
           {
             id: "weight",

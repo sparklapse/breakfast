@@ -37,7 +37,7 @@
     for (const input of inputs) {
       if ("group" in input) {
         const group = getEditorValues(input.group);
-        values = { ...values, group };
+        values = { ...values, ...group };
         continue;
       }
 

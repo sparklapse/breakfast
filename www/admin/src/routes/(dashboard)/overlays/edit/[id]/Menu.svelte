@@ -20,6 +20,7 @@
   import type { ActionDefinition } from "@sparklapse/breakfast/overlay";
 
   import type { PageData } from "./$types";
+  import Scripts from "./Scripts.svelte";
   export let data: PageData;
 
   export let save: () => Promise<void>;
@@ -155,29 +156,7 @@
       <h3 class="flex items-center gap-2" slot="header">
         <ScrollText class="size-4" />Scripts
       </h3>
-      <div class="flex items-center gap-2">
-        <h3 class="font-semibold">Scripts</h3>
-        <p class="text-sm text-slate-400">(Components {$definitions.length})</p>
-      </div>
-      <button
-        class="w-full rounded border border-slate-700 text-sm text-slate-700"
-        on:click={() => {
-          for (const s of DEFAULT_SCRIPTS) {
-            removeScript(s.id);
-            addScript(s);
-          }
-          reloadFrame();
-        }}
-      >
-        Reinstall Basics
-      </button>
-      <ul>
-        {#each $scripts as script}
-          <li title={script.id}>
-            {script.label} <span class="text-sm text-slate-400">(v{script.version})</span>
-          </li>
-        {/each}
-      </ul>
+      <Scripts {reloadFrame} />
     </InfoAccordion.Item>
   </InfoAccordion.Root>
 </div>
