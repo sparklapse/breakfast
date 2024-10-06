@@ -1,17 +1,20 @@
 <script lang="ts">
   import toast from "svelte-french-toast";
   import { fly } from "svelte/transition";
+  import { Select } from "bits-ui";
   import MessageSquareText from "lucide-svelte/icons/message-square-text";
   import Cable from "lucide-svelte/icons/cable";
   import Gavel from "lucide-svelte/icons/gavel";
   import ScrollText from "lucide-svelte/icons/scroll-text";
   import CopyPlus from "lucide-svelte/icons/copy-plus";
   import { useEditor } from "@sparklapse/breakfast/overlay";
+
   import { DEFAULT_SCRIPTS } from "$lib/overlay/scripts";
   import EventFeed from "$lib/components/events/EventFeed.svelte";
   import Action from "$lib/components/events/Action.svelte";
   import InfoAccordion from "$lib/components/common/info-accordion";
   import { goto } from "$app/navigation";
+
   import Sync from "./Sync.svelte";
   import Creator from "./Creator.svelte";
   import type { ActionDefinition } from "@sparklapse/breakfast/overlay";
@@ -21,6 +24,13 @@
 
   export let save: () => Promise<void>;
   export let abortAS: (() => void) | undefined;
+
+  const visibilites: { label: string; value: string }[] = [
+    { label: "Public", value: "PUBLIC" },
+    { label: "Unlisted", value: "UNLISTED" },
+    { label: "Private", value: "PRIVATE" },
+  ];
+  let visibility: string = data.overlay.visibility;
 
   const {
     label,
@@ -45,7 +55,7 @@
 >
   <div class="mb-2 flex items-center justify-between">
     <input
-      class="text-lg font-semibold"
+      class="w-44 text-lg font-semibold"
       type="text"
       bind:value={$label}
       on:blur={() => {
@@ -56,20 +66,51 @@
         ev.currentTarget.blur();
       }}
     />
-    <button
-      class="rounded-sm bg-slate-700 px-2 py-1 text-white shadow"
-      on:click={async () => {
-        abortAS?.();
-        await toast.promise(save(), {
-          loading: "Saving...",
-          success: "Overlay saved!",
-          error: (err) => `Failed to save overlay: ${err.message}`,
-        });
-        goto("/breakfast/overlays");
-      }}
-    >
-      Save & Close
-    </button>
+    <div class="flex gap-2">
+      <Select.Root
+        items={visibilites}
+        onSelectedChange={(selected) => {
+          if (!selected) return;
+          if (visibility === selected.value) return;
+          visibility = selected.value;
+          toast.promise(data.pb.collection("overlays").update(data.overlay.id, {}), {
+            loading: "Updating overlay visibility...",
+            success: "Visibility changed!",
+            error: (err) => `Failed to update visibility: ${err.message}`,
+          });
+        }}
+      >
+        <Select.Trigger class="w-24 text-right text-slate-400">
+          {visibilites.find((v) => v.value === visibility)?.label ?? "Select a visibility"}
+        </Select.Trigger>
+        <Select.Content
+          class="rounded bg-white py-2 text-right shadow-lg"
+          align="end"
+          transition={fly}
+          transitionConfig={{ y: 10, duration: 100 }}
+        >
+          {#each visibilites as vis}
+            <Select.Item class="cursor-pointer px-2 hover:bg-slate-50" value={vis.value}
+              >{vis.label}</Select.Item
+            >
+          {/each}
+        </Select.Content>
+      </Select.Root>
+      <button
+        class="rounded-sm bg-slate-700 px-2 py-1 text-white shadow"
+        on:click={async () => {
+          abortAS?.();
+          await toast.promise(save(), {
+            loading: "Saving...",
+            success: "Overlay saved!",
+            error: (err) => `Failed to save overlay: ${err.message}`,
+          });
+          goto("/breakfast/overlays");
+        }}
+      >
+        Save & Close
+      </button>
+    </div>
   </div>
 
   <hr />
