@@ -71,11 +71,12 @@ export const BUILTIN_DEFINITIONS: SourceDefinition[] = [
     subLabel: "Builtin",
     tag: "img",
     inputs: [
-      // {
-      //   type: "asset",
-      //   label: "Image",
-      //   target: "props.src",
-      // },
+      {
+        id: "src",
+        type: "asset",
+        label: "Image",
+        target: "props.src",
+      },
       {
         group: [
           {

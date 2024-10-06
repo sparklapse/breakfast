@@ -20,9 +20,15 @@
 
 <div class="w-full">
   <p>{label}</p>
-  <Dialog.Root bind:open>
+  <Dialog.Root
+    onOpenChange={(state) => {
+      if (!state) return;
+      results = getAssets(search).catch(() => []);
+    }}
+    bind:open
+  >
     <Dialog.Trigger class="w-full truncate rounded border border-slate-400 px-1 text-left bg-white">
-      {value ? value : "Select Asset"}
+      {value ? value.split("/").at(-1) : "Select Asset"}
     </Dialog.Trigger>
     <Dialog.Portal>
       <Dialog.Overlay asChild let:builder>
