@@ -1,17 +1,31 @@
 package pages
 
 import (
+	"errors"
 	"strings"
 
+	"github.com/aymerick/raymond"
 	"github.com/labstack/echo/v5"
 	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase"
 	"github.com/pocketbase/pocketbase/apis"
 	"github.com/pocketbase/pocketbase/core"
-    "github.com/aymerick/raymond"
 )
 
 func RegisterService(app *pocketbase.PocketBase) {
+	app.OnRecordBeforeCreateRequest("pages").Add(func(e *core.RecordCreateEvent) error {
+		if strings.HasPrefix(e.Record.GetString("path"), "/breakfast") {
+			return errors.New("illegal path")
+		}
+
+		if strings.HasPrefix(e.Record.GetString("path"), "/_") {
+			return errors.New("illegal path")
+		}
+
+		return nil
+	})
+
+	// Page rendering
 	app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
 		e.Router.GET("/*", func(c echo.Context) error {
 			path := c.Request().URL.Path
@@ -104,15 +118,15 @@ func RegisterService(app *pocketbase.PocketBase) {
 					sections := strings.Split(accept, ",")
 					for _, section := range sections {
 						if strings.HasPrefix(section, lang) {
-                            rendered, err := raymond.Render(html, translation)
-                            if err != nil {
-                                app.Logger().Error(
-                                    "PAGES Failed to parse page template",
-                                    "error", err.Error(),
-                                )
-                                return c.HTML(200, html)
-                            }
-                            return c.HTML(200, rendered)
+							rendered, err := raymond.Render(html, translation)
+							if err != nil {
+								app.Logger().Error(
+									"PAGES Failed to parse page template",
+									"error", err.Error(),
+								)
+								return c.HTML(200, html)
+							}
+							return c.HTML(200, rendered)
 						}
 					}
 				}
@@ -122,15 +136,15 @@ func RegisterService(app *pocketbase.PocketBase) {
 			data := translations[0]
 			{
 				c.Response().WriteHeader(200)
-                rendered, err := raymond.Render(html, data)
-                if err != nil {
-                    app.Logger().Error(
-                        "PAGES Failed to parse page template",
-                        "error", err.Error(),
-                    )
-                    return c.HTML(200, html)
-                }
-                return c.HTML(200, rendered)
+				rendered, err := raymond.Render(html, data)
+				if err != nil {
+					app.Logger().Error(
+						"PAGES Failed to parse page template",
+						"error", err.Error(),
+					)
+					return c.HTML(200, html)
+				}
+				return c.HTML(200, rendered)
 			}
 		})
 

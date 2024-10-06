@@ -24,6 +24,9 @@
         on:submit={(ev) => {
           ev.preventDefault();
           if (!newPath.match(pathRe)) return toast.error("Invalid path");
+          if (newPath.startsWith("/breakfast")) return toast.error("Illegal path");
+          if (newPath.startsWith("/_")) return toast.error("Illegal path");
+
           toast.promise(
             data.pb
               .collection("pages")
