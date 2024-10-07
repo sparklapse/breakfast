@@ -9,6 +9,9 @@ export const load: LayoutLoad = async ({ route, fetch }) => {
   const pb = new BreakfastPocketBase(fetch);
   const obs = new OBSWebSocket();
 
+  const isSetup = await pb.breakfast.setup.isSetup();
+  if (!isSetup && route.id !== "/setup") redirect(302, "/breakfast/setup");
+
   /**
    * OBS Easy Connect
    *
@@ -48,10 +51,8 @@ export const load: LayoutLoad = async ({ route, fetch }) => {
       });
   }
 
-  if (!pb.authStore.isAuthenticated()) {
-    const isSetup = await pb.breakfast.setup.isSetup();
-    if (!isSetup && route.id !== "/setup") redirect(302, "/breakfast/setup");
-    if (isSetup && route.id !== "/sign-in") redirect(302, "/breakfast/sign-in");
+  if (!pb.authStore.isAuthenticated() && route.id?.startsWith("/(authenticated)")) {
+    if (route.id !== "/sign-in") redirect(302, "/breakfast/sign-in");
   }
 
   const user = pb.authStore.modelStore;
