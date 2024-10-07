@@ -1,8 +1,8 @@
 package main
 
 import (
-	"breakfast/services"
 	_ "breakfast/migrations"
+	"breakfast/services"
 	"breakfast/services/account"
 	"breakfast/services/apis"
 	"breakfast/services/auth"

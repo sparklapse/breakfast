@@ -4,7 +4,7 @@ export const BUILTIN_DEFINITIONS: SourceDefinition[] = [
   {
     label: "Text",
     subLabel: "Builtin",
-    tag: "p",
+    tag: "pre",
     inputs: [
       {
         id: "text",
@@ -54,6 +54,7 @@ export const BUILTIN_DEFINITIONS: SourceDefinition[] = [
             type: "text",
             label: "Font Family",
             target: "style.font-family",
+            defaultValue: "Gabarito Variable",
           },
           {
             id: "weight",
@@ -71,11 +72,12 @@ export const BUILTIN_DEFINITIONS: SourceDefinition[] = [
     subLabel: "Builtin",
     tag: "img",
     inputs: [
-      // {
-      //   type: "asset",
-      //   label: "Image",
-      //   target: "props.src",
-      // },
+      {
+        id: "src",
+        type: "asset",
+        label: "Image",
+        target: "props.src",
+      },
       {
         group: [
           {
@@ -129,4 +131,3 @@ export const BUILTIN_DEFINITIONS: SourceDefinition[] = [
     ],
   },
 ];
-

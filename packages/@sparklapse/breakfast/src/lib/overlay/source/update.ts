@@ -1,7 +1,7 @@
 import { jtox } from "./serialize.js";
 import type { Source } from "$lib/overlay/types/source.js";
 
-export function updateElementWithSource (element: HTMLElement, source: Source) {
+export function updateElementWithSource(element: HTMLElement, source: Source) {
   element.id = source.id;
 
   for (const [prop, value] of Object.entries(source.props)) {
@@ -28,16 +28,12 @@ export function updateElementWithSource (element: HTMLElement, source: Source) {
       } else if (node.nodeType === Node.ELEMENT_NODE && typeof child === "object") {
         updateElementWithSource(node as HTMLElement, child);
       } else {
-        node.replaceWith(
-          typeof child === "string" ? document.createTextNode(child) : jtox(child),
-        );
+        node.replaceWith(typeof child === "string" ? document.createTextNode(child) : jtox(child));
       }
     }
   } else {
     element.replaceChildren(
-      ...source.children.map((s) =>
-        typeof s === "string" ? document.createTextNode(s) : jtox(s),
-      ),
+      ...source.children.map((s) => (typeof s === "string" ? document.createTextNode(s) : jtox(s))),
     );
   }
-};
+}

@@ -50,5 +50,7 @@
       </button>
     {/each}
   </div>
-  <p class="px-2 text-center text-sm text-slate-400">{actions.length} Total Actions</p>
+  <p class="px-2 text-center text-sm text-slate-400">
+    {actions.length} Total Action{actions.length === 1 ? "" : "s"}
+  </p>
 </div>

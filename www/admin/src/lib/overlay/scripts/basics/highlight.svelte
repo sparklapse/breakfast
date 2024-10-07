@@ -54,10 +54,7 @@
     transition:fly={{ x: -100, duration: 100 }}
   >
     {#if message}
-      <p
-        in:fly={{ x: -40, duration: 100 }}
-        out:fade={{ duration: 2000 }}
-      >
+      <p in:fly={{ x: -40, duration: 100 }} out:fade={{ duration: 2000 }}>
         <span>
           <span style:color={message.data.color} title={message.data.chatter.displayName}
             >{message.data.viewer?.displayName || message.data.chatter.displayName}</span

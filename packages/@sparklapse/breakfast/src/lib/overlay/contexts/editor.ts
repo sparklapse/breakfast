@@ -12,12 +12,7 @@ import { updateElementWithSource, jtox, xtoj } from "$lib/overlay/source/index.j
 import { radToDeg } from "$lib/overlay/math/units.js";
 import { sourceId } from "$lib/overlay/naming/source.js";
 import { BUILTIN_DEFINITIONS } from "$lib/overlay/builtin.js";
-import type {
-  Script,
-  SourceDefinition,
-  Target,
-  TargetRoots,
-} from "$lib/overlay/types/script.js";
+import type { Script, SourceDefinition, Target, TargetRoots } from "$lib/overlay/types/script.js";
 import type { Point } from "$lib/overlay/math/point.js";
 import type { Transform } from "$lib/overlay/math/transform.js";
 import type { Source } from "$lib/overlay/types/source.js";
@@ -27,7 +22,7 @@ const MANAGED_STYLES = ["top", "left", "width", "height", "transform"];
 export function createEditor(initial?: {
   label?: string;
   overlay?: string;
-  scripts?: Script[];
+  scripts?: Script[] | null;
 }) {
   const viewport = useViewport(true);
 

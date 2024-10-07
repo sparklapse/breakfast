@@ -15,11 +15,7 @@
     <div class="flex gap-2 items-start">
       {#if Array.isArray(input)}
         <div class="w-full">
-          <DefinedEditor
-            inputs={input}
-            bind:values={items[idx]}
-            {assetHelpers}
-          />
+          <DefinedEditor inputs={input} bind:values={items[idx]} {assetHelpers} />
         </div>
       {:else}
         <DefinedEditor

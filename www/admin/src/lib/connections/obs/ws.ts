@@ -85,6 +85,27 @@ export class OBSWebSocket extends EventTarget {
     return this.#address;
   }
 
+  /**
+   * Easy Connect
+   *
+   * Connects to OBS using stored password and config if any. Otherwise does nothing.
+   * @returns
+   */
+  async easyConnect() {
+    const obsPassword = localStorage.getItem("obs.password");
+    if (obsPassword !== null) {
+      const obsPort = Number.isNaN(parseInt(localStorage.getItem("obs.port") ?? "Nan"))
+        ? this.port
+        : parseInt(localStorage.getItem("obs.port")!);
+      const obsAddress =
+        localStorage.getItem("obs.address") === null
+          ? this.address
+          : localStorage.getItem("obs.address")!;
+
+      return await this.connect(obsPassword, obsPort, obsAddress);
+    }
+  }
+
   async connect(
     password: string,
     port: number = 4455,
