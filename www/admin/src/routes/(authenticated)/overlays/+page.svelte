@@ -139,6 +139,32 @@
                 >
                   View
                 </DropdownMenu.Item>
+                <DropdownMenu.Item
+                  class="block cursor-pointer px-3 py-1 text-sm leading-6 text-gray-900"
+                  on:click={() => {
+                    const promise =
+                      overlay.visibility === "PRIVATE"
+                        ? data.pb
+                            .collection("overlays")
+                            .update(overlay.id, { visibility: "UNLISTED" })
+                            .then(() =>
+                              window.navigator.clipboard.writeText(
+                                window.location.origin + "/breakfast/overlays/share/" + overlay.id,
+                              ),
+                            )
+                        : window.navigator.clipboard.writeText(
+                            window.location.origin + "/breakfast/overlays/share/" + overlay.id,
+                          );
+
+                    toast.promise(promise, {
+                      loading: "Copying sharable link...",
+                      success: "Overlay share link copied to clipboard!",
+                      error: (err) => `Failed to copy share link: ${err.messag}`,
+                    });
+                  }}
+                >
+                  Share
+                </DropdownMenu.Item>
                 <DropdownMenu.Separator class="border-t border-slate-200" />
                 <DropdownMenu.Item
                   class="block cursor-pointer px-3 py-1 text-sm leading-6 text-red-900"

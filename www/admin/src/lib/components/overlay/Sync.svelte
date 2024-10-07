@@ -1,6 +1,5 @@
 <script lang="ts">
   import clsx from "clsx";
-  import toast from "svelte-french-toast";
   import { readable } from "svelte/store";
   import { fly } from "svelte/transition";
   import { Select } from "bits-ui";
@@ -14,14 +13,13 @@
   import { goto } from "$app/navigation";
   import type { Transform } from "@sparklapse/breakfast/overlay";
 
-  import type { PageData } from "./$types";
-  export let data: PageData;
-  const { user } = data;
+  export let params: string = "";
+  export let returnUrl: string = "/breakfast/obs";
+  export let beforesync: (() => Promise<void> | void) | undefined = undefined;
+  export let aftersync: (() => Promise<void> | void) | undefined = undefined;
+  export let failedsync: ((err: any) => Promise<void> | void) | undefined = undefined;
 
-  export let save: () => Promise<void>;
-  export let abortAS: (() => void) | undefined;
-
-  $: obsConnected = data?.obs.connectedStore ?? readable(false);
+  $: obsConnected = $page.data?.obs.connectedStore ?? readable(false);
 
   const {
     label,
@@ -49,17 +47,19 @@
   }
 
   $: sceneListRequest = $obsConnected
-    ? data!.obs.request({ type: "GetSceneList", options: undefined })
+    ? $page.data!.obs.request({ type: "GetSceneList", options: undefined })
     : undefined;
 
   let smallestPossibleSource = false;
   const sync = async () => {
-    if (!$user) return;
+    if (!$page.data) return;
     if (sceneUuid === "") return;
-    if (!data) return;
     if ($sources.length === 0) throw new Error("Can't sync an empty scene!");
 
-    const existing = await data.obs.request({ type: "GetSceneItemList", options: { sceneUuid } });
+    const existing = await $page.data.obs.request({
+      type: "GetSceneItemList",
+      options: { sceneUuid },
+    });
     if (existing.status === "error") {
       throw existing.error;
     }
@@ -77,9 +77,11 @@
       ? `body { transform: translate(${-transform.x}px, ${-transform.y}px) }`
       : "";
 
+    const url = `${window.location.origin}/overlays/local/render/${$page.params.id}?${params}`;
+
     for (const source of existing.data.sceneItems) {
       if (source.inputKind !== "browser_source") continue;
-      const settings = await data.obs.request({
+      const settings = await $page.data.obs.request({
         type: "GetInputSettings",
         options: { inputName: source.sourceName },
       });
@@ -89,28 +91,29 @@
       }
 
       if (settings.data.inputSettings.breakfastOverlayId === $page.params.id) {
-        await data.obs.request({
+        await $page.data.obs.request({
           type: "PressInputPropertiesButton",
           options: { inputName: source.sourceName, propertyName: "refreshnocache" },
         });
         const name = `${$label}${invisId()}`;
-        await data.obs.request({
+        await $page.data.obs.request({
           type: "SetInputName",
           options: { inputName: source.sourceName, newInputName: name },
         });
-        await data.obs.request({
+        await $page.data.obs.request({
           type: "SetInputSettings",
           options: {
             inputName: name,
             inputSettings: {
               css,
+              url,
               width: transform.width,
               height: transform.height,
             },
             overlay: true,
           },
         });
-        await data.obs.request({
+        await $page.data.obs.request({
           type: "SetSceneItemTransform",
           options: {
             sceneUuid,
@@ -127,7 +130,7 @@
       }
     }
 
-    const input = await data.obs.request({
+    const input = await $page.data.obs.request({
       type: "CreateInput",
       options: {
         sceneUuid,
@@ -136,7 +139,7 @@
         inputSettings: {
           breakfastOverlayId: $page.params.id,
           css,
-          url: `${window.location.origin}/overlays/render/${$page.params.id}?sk=${$user.id}.${$user.streamKey}`,
+          url,
           width: transform.width,
           height: transform.height,
         },
@@ -147,7 +150,7 @@
       return;
     }
 
-    await data.obs.request({
+    await $page.data.obs.request({
       type: "SetSceneItemTransform",
       options: {
         sceneUuid,
@@ -166,13 +169,13 @@
 <div class="mb-4 flex gap-2">
   {#each steps as s, idx}
     <div class="w-full">
+      <p>{s.label}</p>
       <div
         class={clsx([
           "h-1 w-full rounded transition-colors",
           step > idx ? "bg-green-700" : "bg-slate-200",
         ])}
       />
-      <p>{s.label}</p>
     </div>
   {/each}
 </div>
@@ -228,16 +231,15 @@
       <button
         class="w-full rounded bg-slate-700 text-white"
         on:click={async () => {
-          abortAS?.();
-          await toast.promise(
-            save().then(() => sync()) ??
-              Promise.reject(new Error("Failed to save overlay before syncing")),
-            {
-              loading: "Syncing overlay to OBS...",
-              success: "Synced overlay to OBS!",
-              error: (err) => `Failed to sync overlay to OBS: ${err.message}`,
-            },
-          );
+          await beforesync?.();
+          try {
+            await sync();
+          } catch (err) {
+            await failedsync?.(err);
+            return;
+          }
+          await aftersync?.();
+
           step = 3;
         }}
       >
@@ -260,17 +262,11 @@
     <button
       class="w-full rounded bg-slate-700 px-2 text-white"
       on:click={async () => {
-        if (!data?.obsEC) return;
+        if (!$page.data?.obs) return;
 
-        await toast.promise(save(), {
-          loading: "Saving overlay...",
-          success: "Overylay saved!",
-          error: (err) => `Failed to save overlay: ${err.message}`,
-        });
-
-        const didConnect = await data.obsEC();
+        const didConnect = await $page.data.obs.easyConnect();
         if (!didConnect || didConnect?.status !== "success") {
-          goto("/breakfast/obs");
+          goto("/breakfast/obs/wizard?return=" + returnUrl);
         }
       }}
     >

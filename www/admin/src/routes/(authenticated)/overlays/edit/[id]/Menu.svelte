@@ -12,14 +12,15 @@
   import EventFeed from "$lib/components/events/EventFeed.svelte";
   import Action from "$lib/components/events/Action.svelte";
   import InfoAccordion from "$lib/components/common/info-accordion";
+  import Sync from "$lib/components/overlay/Sync.svelte";
   import { goto } from "$app/navigation";
 
-  import Sync from "./Sync.svelte";
   import Creator from "./Creator.svelte";
   import type { ActionDefinition } from "@sparklapse/breakfast/overlay";
 
   import type { PageData } from "./$types";
   import Scripts from "./Scripts.svelte";
+  import { promise } from "zod";
   export let data: PageData;
 
   export let save: () => Promise<void>;
@@ -36,6 +37,7 @@
     label,
     reloadFrame,
     scripts: { scripts },
+    sources: { sources },
   } = useEditor();
 
   $: actions = $scripts
@@ -121,7 +123,23 @@
       <h3 class="flex items-center gap-2" slot="header">
         <Cable class="size-5" />OBS Sync
       </h3>
-      <Sync {data} {abortAS} {save} />
+      <Sync
+        beforesync={async () => {
+          if ($sources.length === 0) {
+            toast.error("Can't sync an empty scene");
+            throw new Error("empty scene");
+          }
+          abortAS?.();
+          await toast.promise(save(), {
+            loading: "Saving overlay before sync...",
+            success: "Overlay saved!",
+            error: (err) => `Failed to save overlay: ${err.message}`,
+          });
+        }}
+        aftersync={() => {
+          toast.success("Synced to OBS!");
+        }}
+      />
     </InfoAccordion.Item>
 
     <!-- Source creator -->

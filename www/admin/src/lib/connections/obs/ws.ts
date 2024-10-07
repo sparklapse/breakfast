@@ -26,11 +26,11 @@ const OBSWebSocketEvent = <K extends keyof EventsMap>(
 
 type CustomEventListener<E> =
   | {
-      (evt: CustomEvent<E>): void;
-    }
+    (evt: CustomEvent<E>): void;
+  }
   | {
-      handleEvent(object: CustomEvent<E>): void;
-    };
+    handleEvent(object: CustomEvent<E>): void;
+  };
 
 export class OBSWebSocket extends EventTarget {
   #ws: WebSocket | undefined;
@@ -83,6 +83,27 @@ export class OBSWebSocket extends EventTarget {
 
   get address() {
     return this.#address;
+  }
+
+  /**
+   * Easy Connect
+   *
+   * Connects to OBS using stored password and config if any. Otherwise does nothing.
+   * @returns
+   */
+  async easyConnect() {
+    const obsPassword = localStorage.getItem("obs.password");
+    if (obsPassword !== null) {
+      const obsPort = Number.isNaN(parseInt(localStorage.getItem("obs.port") ?? "Nan"))
+        ? this.port
+        : parseInt(localStorage.getItem("obs.port")!);
+      const obsAddress =
+        localStorage.getItem("obs.address") === null
+          ? this.address
+          : localStorage.getItem("obs.address")!;
+
+      return await this.connect(obsPassword, obsPort, obsAddress);
+    }
   }
 
   async connect(
