@@ -5,6 +5,7 @@ install:
 
 overlays:
 	cd www/overlay; bun run build
+	cd www/overlay-local; bun run build
 
 admin:
 	cd www/admin; bun run build

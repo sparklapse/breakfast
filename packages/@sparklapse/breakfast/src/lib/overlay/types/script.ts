@@ -29,7 +29,9 @@ export const sourceDefinitionType = z.object({
   label: z.string(),
   subLabel: z.string(),
   tag: z.string(),
-  inputs: sourceInputDefinitionType.or(z.object({ group: sourceInputDefinitionType.array() })).array(),
+  inputs: sourceInputDefinitionType
+    .or(z.object({ group: sourceInputDefinitionType.array() }))
+    .array(),
 }) satisfies ZodType<SourceDefinition>;
 
 export type ActionInputDefinition = InputDefinition;
@@ -42,14 +44,14 @@ export type ActionDefinition = {
   emit: string;
   inputs?: ActionInputDefinition[];
 } & (
-    | {
+  | {
       type: "on-event";
       filter?: string[];
     }
-    | {
+  | {
       type: "trigger";
     }
-  );
+);
 
 const actionDefinitionBaseType = z.object({
   label: z.string(),

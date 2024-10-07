@@ -3,7 +3,9 @@ import { INPUT_EDITORS } from "./inputs/index.js";
 import type { ComponentType } from "svelte";
 import type { ZodType } from "zod";
 
-export type SvelteProps<C extends ComponentType> = NonNullable<ConstructorParameters<C>["0"]["props"]>;
+export type SvelteProps<C extends ComponentType> = NonNullable<
+  ConstructorParameters<C>["0"]["props"]
+>;
 
 export type InputDefinition = {
   [K in keyof typeof INPUT_EDITORS]: {
@@ -22,7 +24,7 @@ export const inputDefinitionType = z.object({
 }) satisfies ZodType<InputDefinition>;
 
 export type InputDefinitionGroup<Input extends InputDefinition = InputDefinition> = {
-  group: Input[]
+  group: Input[];
 };
 
 export type InputListDefinition<Input extends InputDefinition = InputDefinition> = {
@@ -30,4 +32,3 @@ export type InputListDefinition<Input extends InputDefinition = InputDefinition>
   label?: string;
   list: Input | Input[];
 };
-

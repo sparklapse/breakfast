@@ -9,7 +9,6 @@
   import CopyPlus from "lucide-svelte/icons/copy-plus";
   import { useEditor } from "@sparklapse/breakfast/overlay";
 
-  import { DEFAULT_SCRIPTS } from "$lib/overlay/scripts";
   import EventFeed from "$lib/components/events/EventFeed.svelte";
   import Action from "$lib/components/events/Action.svelte";
   import InfoAccordion from "$lib/components/common/info-accordion";
@@ -36,7 +35,7 @@
   const {
     label,
     reloadFrame,
-    scripts: { scripts, definitions, addScript, removeScript },
+    scripts: { scripts },
   } = useEditor();
 
   $: actions = $scripts
@@ -74,7 +73,7 @@
           if (!selected) return;
           if (visibility === selected.value) return;
           visibility = selected.value;
-          toast.promise(data.pb.collection("overlays").update(data.overlay.id, {}), {
+          toast.promise(data.pb.collection("overlays").update(data.overlay.id, { visibility }), {
             loading: "Updating overlay visibility...",
             success: "Visibility changed!",
             error: (err) => `Failed to update visibility: ${err.message}`,
@@ -156,7 +155,7 @@
       <h3 class="flex items-center gap-2" slot="header">
         <ScrollText class="size-4" />Scripts
       </h3>
-      <Scripts {reloadFrame} />
+      <Scripts {reloadFrame} {save} />
     </InfoAccordion.Item>
   </InfoAccordion.Root>
 </div>

@@ -8,6 +8,7 @@
   import { DEFAULT_SCRIPTS } from "$lib/overlay/scripts";
 
   export let reloadFrame: () => void;
+  export let save: () => Promise<void>;
 
   let warningDialog: boolean = false;
   let installDialog: boolean = false;
@@ -103,6 +104,7 @@
                 if (!toBeInstalled) return;
                 addScript(toBeInstalled);
                 installDialog = false;
+                save();
                 toast.success("Script installed!");
               }}>Install</button
             >
