@@ -19,7 +19,11 @@ import type { Source } from "$lib/overlay/types/source.js";
 
 const MANAGED_STYLES = ["top", "left", "width", "height", "transform"];
 
-export function createEditor(initial?: { label?: string; overlay?: string; scripts?: Script[] | null }) {
+export function createEditor(initial?: {
+  label?: string;
+  overlay?: string;
+  scripts?: Script[] | null;
+}) {
   const viewport = useViewport(true);
 
   const label = writable(initial?.label ?? "");

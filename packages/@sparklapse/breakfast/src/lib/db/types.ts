@@ -42,7 +42,7 @@ export type Page = {
   path: string;
   html: string;
   schema: InputDefinition[] | null;
-  data: { lang: string;[key: string]: any }[] | null;
+  data: { lang: string; [key: string]: any }[] | null;
 };
 
 export type ItemType =
@@ -63,10 +63,10 @@ export type Item = {
   shopPurchasable: boolean;
   shopInfo: {
     prices:
-    | {
-      [key: string]: number;
-    }
-    | "free";
+      | {
+          [key: string]: number;
+        }
+      | "free";
   } | null;
   meta: any | null;
   visibility: Visibility;

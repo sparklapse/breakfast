@@ -19,7 +19,7 @@ export const load: PageLoad = async ({ parent, params }) => {
     if (err != null || item == null) {
       error(404, "Item not found");
     }
-    
+
     if (item.type === "PROFILE_BASE") {
       const def = await data.pb.breakfast.viewers.getDefaultProfileItem({ requestKey: nanoid() });
       if (def.id === item.id) isDefaultBase = true;

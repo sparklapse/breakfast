@@ -16,4 +16,3 @@ export const load: PageLoad = async ({ parent, params }) => {
     overlay,
   };
 };
-

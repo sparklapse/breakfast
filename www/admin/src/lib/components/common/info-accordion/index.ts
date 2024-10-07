@@ -4,4 +4,4 @@ import Item from "./AccordionItem.svelte";
 export default {
   Root,
   Item,
-}
+};

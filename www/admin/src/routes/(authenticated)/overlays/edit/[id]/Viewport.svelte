@@ -55,10 +55,7 @@
   // #endregion
 </script>
 
-<div
-  class={clsx(["relative size-full overflow-hidden", classes])}
-  use:attachcontainer
->
+<div class={clsx(["relative size-full overflow-hidden", classes])} use:attachcontainer>
   {#if grid}
     <svg
       class="absolute inset-0 h-full w-full"

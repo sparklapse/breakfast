@@ -26,11 +26,11 @@ const OBSWebSocketEvent = <K extends keyof EventsMap>(
 
 type CustomEventListener<E> =
   | {
-    (evt: CustomEvent<E>): void;
-  }
+      (evt: CustomEvent<E>): void;
+    }
   | {
-    handleEvent(object: CustomEvent<E>): void;
-  };
+      handleEvent(object: CustomEvent<E>): void;
+    };
 
 export class OBSWebSocket extends EventTarget {
   #ws: WebSocket | undefined;

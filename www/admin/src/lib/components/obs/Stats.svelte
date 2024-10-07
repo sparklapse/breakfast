@@ -108,9 +108,7 @@
   {#if shownStats.includes("show-more") && $page.route.id !== "/(dashboard)/obs"}
     <div class="flex justify-between gap-x-4 py-3">
       <p class="text-gray-500">Show all stats</p>
-      <a href="/breakfast/obs" class="rounded bg-slate-700 text-white px-2">
-        See all Stats
-      </a>
+      <a href="/breakfast/obs" class="rounded bg-slate-700 px-2 text-white"> See all Stats </a>
     </div>
   {/if}
 {/if}

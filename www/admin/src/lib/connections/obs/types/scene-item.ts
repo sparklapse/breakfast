@@ -3,7 +3,7 @@ import { z } from "zod";
 export const sceneItemTransformType = z.object({
   /**
    * The anchor point is a 4 bit mask
-   * 
+   *
    * ```text
    * ▼ these bits represent the Y anchor
    * 00_00

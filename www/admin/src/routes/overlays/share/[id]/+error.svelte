@@ -4,4 +4,3 @@
 
 <h1>Uh oh</h1>
 <p>{$page.error?.message}</p>
-
