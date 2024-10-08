@@ -1,6 +1,18 @@
 {
   "name": "@sparklapse/breakfast",
+  "description": "The core tools for creating a great content creator experience",
   "version": "0.1.0",
+  "homepage": "https://brekkie.stream",
+  "repository": {
+    "type": "git",
+    "url": "git+https://gitlab.com/sparklapse/cook/breakfast.git",
+    "directory": "packages/@sparklapse/breakfast"
+  },
+  "bugs": {
+    "url": "https://gitlab.com/sparklapse/cook/breakfast/-/issues"
+  },
+  "license": "GNU AGPLv3",
+  "funding": "https://ko-fi.com/brekkie_stream",
   "scripts": {
     "dev": "vite dev",
     "build": "vite build && npm run package",
