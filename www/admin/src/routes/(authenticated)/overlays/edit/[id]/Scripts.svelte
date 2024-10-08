@@ -7,7 +7,6 @@
   import { scriptType, useEditor, type Script } from "@sparklapse/breakfast/overlay";
   import { DEFAULT_SCRIPTS } from "$lib/overlay/scripts";
 
-  export let reloadFrame: () => void;
   export let save: () => Promise<void>;
 
   let warningDialog: boolean = false;
@@ -15,6 +14,7 @@
   let toBeInstalled: Script | undefined = undefined;
 
   const {
+    reloadFrame,
     scripts: { scripts, addScript, removeScript },
   } = useEditor();
 </script>
@@ -106,6 +106,7 @@
                 installDialog = false;
                 save();
                 toast.success("Script installed!");
+                reloadFrame();
               }}>Install</button
             >
           </div>
@@ -136,7 +137,10 @@
       const data = JSON.parse(await ev.currentTarget.files[0].text());
       const parsed = scriptType.safeParse(data);
 
-      if (!parsed.success) return toast.error("Invalid script file");
+      if (!parsed.success) {
+        console.error(parsed.error);
+        return toast.error("Invalid script file");
+      }
       const exists = $scripts.findIndex((s) => s.id === parsed.data.id);
       if (exists !== -1)
         return toast.error(
@@ -169,6 +173,7 @@
       <button
         on:click={() => {
           removeScript(script.id);
+          reloadFrame();
         }}
       >
         <Trash class="text-red-900" size="1rem" />

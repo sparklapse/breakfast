@@ -16,11 +16,10 @@
   import { goto } from "$app/navigation";
 
   import Creator from "./Creator.svelte";
+  import Scripts from "./Scripts.svelte";
   import type { ActionDefinition } from "@sparklapse/breakfast/overlay";
 
   import type { PageData } from "./$types";
-  import Scripts from "./Scripts.svelte";
-  import { promise } from "zod";
   export let data: PageData;
 
   export let save: () => Promise<void>;
@@ -173,7 +172,7 @@
       <h3 class="flex items-center gap-2" slot="header">
         <ScrollText class="size-4" />Scripts
       </h3>
-      <Scripts {reloadFrame} {save} />
+      <Scripts {save} />
     </InfoAccordion.Item>
   </InfoAccordion.Root>
 </div>
