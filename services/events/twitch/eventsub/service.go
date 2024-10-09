@@ -191,8 +191,12 @@ func RegisterService(app *pocketbase.PocketBase) {
 
 			subs := subscriptions.CreateDefaultSubscriptions(external.ProviderId)
 			for _, sub := range subs {
-				_, err := CreateSubscription(user.Id, sub)
+				recordId, err := CreateSubscription(user.Id, sub)
 				if errors.Is(err, connection.ErrAlreadSubscribed) {
+					record, _ := app.Dao().FindRecordById("twitch_event_subscriptions", recordId)
+					if record != nil {
+						app.Dao().DeleteRecord(record)
+					}
 					continue
 				}
 

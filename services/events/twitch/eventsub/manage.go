@@ -43,17 +43,16 @@ func DeleteSubscription(subscriptionId string) error {
 	}
 
 	{
-		err := connection.Unsubscribe(subscriptionId)
+		err := services.App.Dao().DeleteRecord(record)
 		if err != nil {
 			return err
 		}
 	}
 
 	{
-		err := services.App.Dao().DeleteRecord(record)
-		if err != nil {
-			return err
-		}
+		// Dont worry too much about errors here since if this fails, then it's probably
+		// already unsubscribed or something is fundamentally wrong with the state of things
+		connection.Unsubscribe(subscriptionId)
 	}
 
 	return nil
