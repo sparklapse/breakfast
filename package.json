@@ -4,7 +4,8 @@
   "private": true,
   "workspaces": [
     "www/*",
-    "packages/@sparklapse/*"
+    "packages/@sparklapse/*",
+    "packages/@brekkie/*"
   ]
 }
 
