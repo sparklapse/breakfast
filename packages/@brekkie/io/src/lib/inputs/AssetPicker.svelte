@@ -14,7 +14,7 @@
 
   let open = false;
   let search = "";
-  let results: ReturnType<AssetHelpers["getAssets"]> = Promise.resolve([]);
+  let results: ReturnType<AssetHelpers["list"]> = Promise.resolve([]);
 </script>
 
 <div class="w-full">
@@ -23,7 +23,7 @@
     <Dialog.Root
       onOpenChange={(state) => {
         if (!state) return;
-        results = helpers.getAssets(search).catch(() => []);
+        results = helpers.list(search).catch(() => []);
       }}
       bind:open
     >
@@ -75,14 +75,14 @@
               on:input={(ev) => {
                 if (!ev.currentTarget.files) return;
                 const file = ev.currentTarget.files[0];
-                helpers.uploadAsset(file).then((url) => {
+                helpers.upload(file).then((url) => {
                   open = false;
                   onchange?.(url);
                 });
               }}
             />
           </div>
-          {#await helpers.getAssets(search).catch(() => [])}
+          {#await helpers.list(search).catch(() => [])}
             <p>Loading...</p>
           {:then assets}
             <div class="flex flex-wrap gap-2">

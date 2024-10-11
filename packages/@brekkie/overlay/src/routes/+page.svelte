@@ -3,8 +3,8 @@
   import { createAssetHelpers } from "@brekkie/io";
 
   createAssetHelpers({
-    getAssets: () => Promise.resolve([]),
-    uploadAsset: async (file) => {
+    list: () => Promise.resolve([]),
+    upload: async (file) => {
       const url = URL.createObjectURL(file);
       return url;
     },

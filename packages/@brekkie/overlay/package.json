@@ -54,6 +54,8 @@
   "types": "./dist/index.d.ts",
   "type": "module",
   "dependencies": {
+    "@brekkie/io": "0.0.1",
+    "@brekkie/obs": "0.0.1",
     "bits-ui": "^0.21.16",
     "clsx": "^2.1.1",
     "lucide-svelte": "^0.451.0",

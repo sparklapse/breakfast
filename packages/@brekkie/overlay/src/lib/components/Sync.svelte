@@ -10,10 +10,14 @@
   export let beforesync: (() => Promise<void> | void) | undefined = undefined;
   export let aftersync: (() => Promise<void> | void) | undefined = undefined;
   export let failedsync: ((err: any) => Promise<void> | void) | undefined = undefined;
+  export let connecting:
+    | ((attempt: ReturnType<typeof obs.easyConnect>) => Promise<void> | void)
+    | undefined = undefined;
 
   const { ws: obs } = useOBS();
   const { connectedStore: obsConnected } = obs;
   let obsPassword: string = localStorage.getItem("obs.password") ?? "";
+  $: if (obsPassword) localStorage.setItem("obs.password", obsPassword);
 
   const {
     label,
@@ -259,10 +263,8 @@
     <button
       class="w-full rounded bg-slate-700 px-2 text-white"
       on:click={async () => {
-        const didConnect = await obs.easyConnect();
-        if (!didConnect || didConnect?.status !== "success") {
-          // TODO: Create a way to do something when failed to connect
-        }
+        const attempt = obs.easyConnect();
+        connecting?.(attempt);
       }}
     >
       Connect

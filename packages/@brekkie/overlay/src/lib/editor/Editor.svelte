@@ -9,9 +9,12 @@
   import Selector from "./Selector.svelte";
   import Transformer from "./Transformer.svelte";
   import Inspector from "./Inspector.svelte";
+  import Scripts from "./Scripts.svelte";
   import { onMount } from "svelte";
+  import Sync from "$lib/components/Sync.svelte";
 
   export let renderUrl: string;
+  export let templateUrl: string = "about:blank";
   export let onsaveandclose: (() => Promise<void> | void) | undefined = undefined;
 
   const {
@@ -156,6 +159,7 @@
     grid={DEFAULT_GRID}
   >
     <iframe
+      src={templateUrl}
       title="overlay"
       class="pointer-events-none absolute left-0 top-0 h-[1080px] w-[1920px] select-none rounded-[1px] outline outline-zinc-700"
       use:mount
@@ -236,7 +240,29 @@
   <!-- Inspector -->
   <Inspector />
   <!-- Menu -->
-  <Menu {renderUrl} {onsaveandclose}>
-    <slot name="menu-scripts" slot="scripts" />
+  <Menu {onsaveandclose}>
+    <slot name="menu-sync" slot="sync" {renderUrl}>
+      <Sync
+        {renderUrl}
+        beforesync={async () => {
+          if ($sources.length === 0) {
+            // toast.error("Can't sync an empty scene");
+            throw new Error("empty scene");
+          }
+          // abortAS?.();
+          // await toast.promise(save(), {
+          //   loading: "Saving overlay before sync...",
+          //   success: "Overlay saved!",
+          //   error: (err) => `Failed to save overlay: ${err.message}`,
+          // });
+        }}
+        aftersync={() => {
+          // toast.success("Synced to OBS!");
+        }}
+      />
+    </slot>
+    <slot name="menu-scripts" slot="scripts">
+      <Scripts />
+    </slot>
   </Menu>
 </div>

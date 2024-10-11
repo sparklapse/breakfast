@@ -1,34 +1,20 @@
 <script lang="ts">
   import { fly } from "svelte/transition";
-  import MessageSquareText from "lucide-svelte/icons/message-square-text";
   import Cable from "lucide-svelte/icons/cable";
-  import Gavel from "lucide-svelte/icons/gavel";
   import ScrollText from "lucide-svelte/icons/scroll-text";
   import CopyPlus from "lucide-svelte/icons/copy-plus";
   import { useEditor } from "$lib/logic/index.js";
-
-  // import EventFeed from "$lib/components/events/EventFeed.svelte";
-  // import Action from "$lib/components/events/Action.svelte";
-  import InfoAccordion from "$lib/common/info-accordion/index.js";
-  import Sync from "$lib/common/Sync.svelte";
-
+  import InfoAccordion from "$lib/components/info-accordion/index.js";
   import Creator from "./Creator.svelte";
-  import Scripts from "./Scripts.svelte";
   import type { ActionDefinition } from "$lib/logic/index.js";
 
-  export let renderUrl: string;
   export let onsaveandclose: (() => Promise<void> | void) | undefined = undefined;
 
   const {
     label,
     save,
     scripts: { scripts },
-    sources: { sources },
   } = useEditor();
-
-  $: actions = $scripts
-    .map((s) => s.actions ?? [])
-    .reduce((acc, cur) => [...acc, ...cur], [] as ActionDefinition[]);
 </script>
 
 <div
@@ -68,24 +54,7 @@
       <h3 class="flex items-center gap-2" slot="header">
         <Cable class="size-5" />OBS Sync
       </h3>
-      <Sync
-        {renderUrl}
-        beforesync={async () => {
-          if ($sources.length === 0) {
-            // toast.error("Can't sync an empty scene");
-            throw new Error("empty scene");
-          }
-          // abortAS?.();
-          // await toast.promise(save(), {
-          //   loading: "Saving overlay before sync...",
-          //   success: "Overlay saved!",
-          //   error: (err) => `Failed to save overlay: ${err.message}`,
-          // });
-        }}
-        aftersync={() => {
-          // toast.success("Synced to OBS!");
-        }}
-      />
+      <slot name="sync" />
     </InfoAccordion.Item>
 
     <!-- Source creator -->
@@ -119,9 +88,7 @@
       <h3 class="flex items-center gap-2" slot="header">
         <ScrollText class="size-4" />Scripts
       </h3>
-      <slot name="scripts">
-        <Scripts />
-      </slot>
+      <slot name="scripts" />
     </InfoAccordion.Item>
   </InfoAccordion.Root>
 

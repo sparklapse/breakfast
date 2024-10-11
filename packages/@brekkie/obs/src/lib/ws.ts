@@ -104,6 +104,8 @@ export class OBSWebSocket extends EventTarget {
 
             return await this.connect(obsPassword, obsPort, obsAddress);
         }
+
+        throw new Error("No password is set");
     }
 
     async connect(
