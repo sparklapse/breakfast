@@ -48,12 +48,12 @@ func refreshToken() error {
 	{
 		err := services.App.Dao().DB().
 			Select("accessToken").
-            From("tokens").
+			From("tokens").
 			Where(dbx.NewExp(
-				"provider = 'twitch' AND expires < {:now}",
-				dbx.Params{"now": time.Now()},
+				"provider = 'twitch'",
 			)).
-            Limit(1).
+			OrderBy("expires DESC").
+			Limit(1).
 			One(&query)
 
 		if err == nil {
