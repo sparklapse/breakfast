@@ -1,6 +1,6 @@
 {
   "name": "@brekkie/io",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "scripts": {
     "dev": "vite dev",
     "build": "vite build && npm run package",
@@ -32,6 +32,7 @@
     "@sveltejs/kit": "^2.0.0",
     "@sveltejs/package": "^2.0.0",
     "@sveltejs/vite-plugin-svelte": "^3.0.0",
+    "@types/color": "^3.0.6",
     "@types/eslint": "^9.6.0",
     "eslint": "^9.0.0",
     "eslint-config-prettier": "^9.1.0",
@@ -51,6 +52,10 @@
   "types": "./dist/index.d.ts",
   "type": "module",
   "dependencies": {
-    "lucide-svelte": "^0.451.0"
+    "bits-ui": "^0.21.16",
+    "clsx": "^2.1.1",
+    "color": "^4.2.3",
+    "lucide-svelte": "^0.451.0",
+    "zod": "^3.23.8"
   }
 }

@@ -1,6 +1,6 @@
 {
   "name": "@brekkie/overlay",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "scripts": {
     "dev": "vite dev",
     "build": "vite build && npm run package",
@@ -32,6 +32,11 @@
     "@sveltejs/kit": "^2.0.0",
     "@sveltejs/package": "^2.0.0",
     "@sveltejs/vite-plugin-svelte": "^3.0.0",
+    "@types/color": "^3.0.6",
+    "@types/d3-interpolate": "^3.0.4",
+    "@types/d3-selection": "^3.0.11",
+    "@types/d3-timer": "^3.0.2",
+    "@types/d3-zoom": "^3.0.8",
     "@types/eslint": "^9.6.0",
     "autoprefixer": "^10.4.20",
     "eslint": "^9.0.0",
@@ -54,11 +59,18 @@
   "types": "./dist/index.d.ts",
   "type": "module",
   "dependencies": {
-    "@brekkie/io": "0.0.1",
-    "@brekkie/obs": "0.0.1",
+    "@brekkie/io": "0.0.2",
+    "@brekkie/obs": "0.0.2",
     "bits-ui": "^0.21.16",
     "clsx": "^2.1.1",
+    "color": "^4.2.3",
+    "d3-interpolate": "^3.0.1",
+    "d3-selection": "^3.0.0",
+    "d3-timer": "^3.0.1",
+    "d3-zoom": "^3.0.0",
+    "fuse.js": "^7.0.0",
     "lucide-svelte": "^0.451.0",
-    "nanoid": "^5.0.7"
+    "nanoid": "^5.0.7",
+    "zod": "^3.23.8"
   }
 }

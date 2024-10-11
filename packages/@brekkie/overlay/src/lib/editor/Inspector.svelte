@@ -1,5 +1,4 @@
 <script lang="ts">
-  import toast from "svelte-french-toast";
   import clsx from "clsx";
   import Color from "color";
   import { fly } from "svelte/transition";

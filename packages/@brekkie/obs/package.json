@@ -1,6 +1,6 @@
 {
   "name": "@brekkie/obs",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "scripts": {
     "dev": "vite dev",
     "build": "vite build && npm run package",
@@ -49,5 +49,9 @@
   },
   "svelte": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "type": "module"
+  "type": "module",
+  "dependencies": {
+    "msgpackr": "^1.11.0",
+    "zod": "^3.23.8"
+  }
 }

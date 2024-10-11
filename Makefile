@@ -7,6 +7,11 @@ install:
 	cd packages/@brekkie/overlay; bun run build
 	go get
 
+check:
+	cd packages/@brekkie/obs; bun run check
+	cd packages/@brekkie/io; bun run check
+	cd packages/@brekkie/overlay; bun run check
+
 overlays:
 	cd www/overlay; bun run build
 	cd www/localoverlay; bun run build

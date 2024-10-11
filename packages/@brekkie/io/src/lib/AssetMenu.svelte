@@ -36,27 +36,29 @@
       }}
     />
   </div>
-  {#await assetsProm}
-    <p>Loading...</p>
-  {:then assets}
-    <div class="flex flex-wrap gap-2">
+  <div class="flex flex-wrap gap-2">
+    {#await assetsProm}
+      <p>Loading...</p>
+    {:then assets}
       {#each assets as asset}
         <button
-          class="grid size-24 grid-rows-6 rounded border border-slate-400 bg-white p-2 shadow"
+          class="flex h-fit flex-col gap-1 rounded border border-slate-400 bg-white p-2 shadow"
           on:click={() => {
             onassetpicked?.(asset.url);
           }}
         >
           <img
-            class="row-span-5 h-full w-full overflow-hidden object-cover"
+            class="row-span-5 size-24 overflow-hidden object-contain"
             src={asset.url}
             alt={asset.label}
           />
-          <div class="flex justify-between">
-            <p class="w-full truncate text-left text-sm">{asset.label}</p>
+          <div class="flex w-full justify-between">
+            <p class="w-20 truncate text-left text-sm">{asset.label}</p>
             {#if helpers.delete}
               <button
-                on:click={async () => {
+                class="text-red-900"
+                on:click={async (ev) => {
+                  ev.stopPropagation();
                   await helpers.delete?.(asset.id);
                   assetsProm = helpers.list(search);
                 }}
@@ -67,6 +69,6 @@
           </div>
         </button>
       {/each}
-    </div>
-  {/await}
+    {/await}
+  </div>
 {/if}
