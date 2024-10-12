@@ -6,7 +6,8 @@
   import ArrowUp from "lucide-svelte/icons/arrow-up";
   import Trash from "lucide-svelte/icons/trash-2";
   import { helpers, inputs, DefinedEditor } from "@brekkie/io";
-  import { useEditor, type SourceDefinition } from "$lib/logic/index.js";
+  import { useEditor } from "$lib/logic/index.js";
+  import type { SourceDefinition } from "$lib/types/script.js";
 
   const { InputGroupRow } = helpers;
   const { Text, Number } = inputs;

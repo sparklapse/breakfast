@@ -1,6 +1,7 @@
 import { redirect } from "@sveltejs/kit";
 import type { PageLoad } from "./$types";
 import type { ExternalAuthModel } from "pocketbase";
+import { nanoid } from "nanoid";
 
 export const load: PageLoad = async ({ parent, depends }) => {
   const data = await parent();
@@ -17,10 +18,21 @@ export const load: PageLoad = async ({ parent, depends }) => {
       ),
     );
 
+  depends("db:events");
+
+  const { duration } = await data.pb.breakfast.events.getStoredDuration();
+  const types = await data.pb.breakfast.events.getSavedTypes();
+
+  const twitchEventsubList = data.pb
+    .collection("twitch_event_subscriptions")
+    .getFullList({ requestKey: nanoid() });
+
   return {
-    ...data,
+    duration,
+    types,
     suspense: {
       identities,
+      twitchEventsubList,
     },
   };
 };

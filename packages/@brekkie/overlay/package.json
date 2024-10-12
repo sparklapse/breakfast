@@ -17,6 +17,11 @@
     ".": {
       "types": "./dist/index.d.ts",
       "svelte": "./dist/index.js"
+    },
+    "./math": {
+      "types": "./dist/logic/math/index.d.ts",
+      "node": "./dist/logic/math/index.js",
+      "import": "./dist/logic/math/index.js"
     }
   },
   "files": [

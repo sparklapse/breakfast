@@ -2,7 +2,7 @@
   import toast from "svelte-french-toast";
   import Fuse from "fuse.js";
   import { page } from "$app/stores";
-  import type { ActionDefinition } from "@sparklapse/breakfast/overlay";
+  import type { ActionDefinition } from "@brekkie/overlay";
 
   export let actions: ActionDefinition[] = [];
 

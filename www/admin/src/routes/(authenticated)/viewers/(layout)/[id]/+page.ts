@@ -1,7 +1,7 @@
 import { error } from "@sveltejs/kit";
 import type { PageLoad } from "./$types";
 import type { RecordModel } from "pocketbase";
-import type { Item, Viewer } from "@sparklapse/breakfast/db";
+import type { Viewer } from "@brekkie/overlay";
 
 export const load: PageLoad = async ({ parent, params, depends }) => {
   const data = await parent();
@@ -23,7 +23,7 @@ export const load: PageLoad = async ({ parent, params, depends }) => {
   const items = data.pb.collection("viewer_items").getFullList({
     filter: `owner = '${params.id}'`,
     expand: "item",
-  }) as Promise<(RecordModel & { expand: { item: Item } })[]>;
+  }) as Promise<(RecordModel & { expand: { item: any } })[]>;
 
   return {
     viewer,

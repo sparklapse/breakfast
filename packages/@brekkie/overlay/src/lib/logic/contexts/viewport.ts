@@ -80,6 +80,7 @@ export function createViewport(options?: { initialView?: AreaTransform }) {
 
       const t = timer((time) => {
         const progress = Math.min(1, time / duration);
+        // @ts-ignore - too many types for ts to handle apparently
         select(viewContainer).call(z.transform, i(expoOut(progress)));
         if (progress >= 1) {
           t.stop();
@@ -101,6 +102,7 @@ export function createViewport(options?: { initialView?: AreaTransform }) {
     const y = viewContainer.clientHeight / 2 - bounds.y * k;
 
     if (duration) await setTransformOverTime!({ x, y, k }, duration);
+    // @ts-ignore - too many types for ts to handle apparently
     else select(viewContainer).call(z.transform, zoomIdentity.translate(x, y).scale(k));
   };
 

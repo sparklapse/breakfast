@@ -1,4 +1,4 @@
-import type { SourceDefinition } from "$lib/logic/types/script.js";
+import type { SourceDefinition } from "$lib/types/script.js";
 
 export const BUILTIN_DEFINITIONS: SourceDefinition[] = [
   {

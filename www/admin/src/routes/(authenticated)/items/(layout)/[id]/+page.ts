@@ -1,17 +1,16 @@
 import { nanoid } from "nanoid";
 import { error } from "@sveltejs/kit";
 import type { RecordModel } from "pocketbase";
-import type { Item } from "@sparklapse/breakfast/db";
 import type { PageLoad } from "./$types";
 
 export const load: PageLoad = async ({ parent, params }) => {
   const data = await parent();
 
-  let existing: Item | undefined;
+  let existing: RecordModel | undefined;
   let isDefaultBase = false;
   if (params.id !== "new") {
     const [item, err] = await data.pb
-      .collection<RecordModel & Item>("items")
+      .collection("items")
       .getOne(params.id, { requestKey: nanoid() })
       .then((d) => [d, null] as const)
       .catch((err) => [null, err] as const);

@@ -13,9 +13,3 @@ export * from "./math/transform.js";
 // Naming
 export * from "./naming/source.js";
 export * from "./naming/invis.js";
-
-// Types
-export * from "./types/source.js";
-export * from "./types/script.js";
-export * from "./types/action.js";
-export * from "./types/event.js";

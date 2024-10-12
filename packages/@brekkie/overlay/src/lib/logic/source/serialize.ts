@@ -1,6 +1,6 @@
 import { updateElementWithSource } from "./update.js";
 import type { Transform } from "$lib/logic/math/transform.js";
-import type { Source } from "$lib/logic/types/source.js";
+import type { Source } from "$lib/types/source.js";
 
 const MANAGED_STYLES = ["top", "left", "width", "height", "transform"];
 

@@ -1,5 +1,5 @@
 import { jtox } from "./serialize.js";
-import type { Source } from "$lib/logic/types/source.js";
+import type { Source } from "$lib/types/source.js";
 
 export function updateElementWithSource(element: HTMLElement, source: Source) {
   element.id = source.id;

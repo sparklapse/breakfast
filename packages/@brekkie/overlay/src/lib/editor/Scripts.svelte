@@ -3,7 +3,8 @@
   import { Dialog } from "bits-ui";
   import X from "lucide-svelte/icons/x";
   import Trash from "lucide-svelte/icons/trash-2";
-  import { scriptType, useEditor, type Script } from "$lib/logic/index.js";
+  import { useEditor } from "$lib/logic/index.js";
+  import { scriptType, type Script } from "$lib/types/script.js";
 
   let warningDialog: boolean = false;
   let installDialog: boolean = false;

@@ -1,17 +1,17 @@
 <script lang="ts">
   import toast from "svelte-french-toast";
-  import { createEditor, createViewport } from "@sparklapse/breakfast/overlay";
-  import { page } from "$app/stores";
-  import Sync from "$lib/components/overlay/Sync.svelte";
+  import { createEditor } from "@brekkie/overlay";
+  import { Sync } from "@brekkie/overlay";
 
   import type { PageData } from "./$types";
   export let data: PageData;
 
-  createViewport();
   createEditor({
-    label: data.overlay.label,
-    overlay: data.overlay.sources,
-    scripts: data.overlay.scripts,
+    initial: {
+      label: data.overlay.label,
+      overlay: data.overlay.sources,
+      scripts: data.overlay.scripts,
+    },
   });
 
   let frame: HTMLIFrameElement;
@@ -80,8 +80,7 @@
           </div>
           <div class="w-[20rem] pt-0.5">
             <Sync
-              params="twitchChannels={twitchChannel}"
-              returnUrl={$page.url.pathname}
+              renderUrl="{window.location.host}/overlays/render/{data.overlay.id}"
               aftersync={() => {
                 toast.success("Overlay synced to OBS!");
               }}

@@ -3,7 +3,13 @@
   import Search from "lucide-svelte/icons/search";
   import PlusCircle from "lucide-svelte/icons/circle-plus";
   import { page } from "$app/stores";
-  import type { Item } from "@sparklapse/breakfast/db";
+
+  type Item = {
+    id: string;
+    label: string;
+    description: string;
+    image: string | File | null;
+  };
 
   export let onclick: ((item: Item) => void) | undefined = undefined;
 

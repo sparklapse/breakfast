@@ -3,7 +3,8 @@
   import Hand from "lucide-svelte/icons/hand";
   import Maximize from "lucide-svelte/icons/maximize";
   import MousePointer2 from "lucide-svelte/icons/mouse-pointer-2";
-  import { useViewport, useEditor, sourceType, sourceId } from "$lib/logic/index.js";
+  import { useViewport, useEditor, sourceId } from "$lib/logic/index.js";
+  import { sourceType } from "$lib/types/source.js";
   import Viewport, { DEFAULT_GRID, DEFAULT_VIEW } from "./Viewport.svelte";
   import Menu from "./Menu.svelte";
   import Selector from "./Selector.svelte";

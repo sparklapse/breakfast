@@ -1,5 +1,5 @@
 import { error } from "@sveltejs/kit";
-import type { Overlay } from "@sparklapse/breakfast/db";
+import type { Overlay } from "@brekkie/overlay";
 import type { PageLoad } from "./$types";
 
 export const load: PageLoad = async ({ parent, params }) => {

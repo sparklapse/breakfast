@@ -12,10 +12,10 @@ import { updateElementWithSource, jtox, xtoj } from "$lib/logic/source/index.js"
 import { radToDeg } from "$lib/logic/math/units.js";
 import { sourceId } from "$lib/logic/naming/source.js";
 import { BUILTIN_DEFINITIONS } from "$lib/logic/builtin.js";
-import type { Script, SourceDefinition, Target, TargetRoots } from "$lib/logic/types/script.js";
 import type { Point } from "$lib/logic/math/point.js";
 import type { Transform } from "$lib/logic/math/transform.js";
-import type { Source } from "$lib/logic/types/source.js";
+import type { Script, SourceDefinition, Target, TargetRoots } from "$lib/types/script.js";
+import type { Source } from "$lib/types/source.js";
 
 const MANAGED_STYLES = ["top", "left", "width", "height", "transform"];
 

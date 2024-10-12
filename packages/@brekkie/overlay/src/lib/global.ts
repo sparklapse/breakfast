@@ -1,4 +1,4 @@
-import type { BreakfastEvent } from "$lib/logic/types/event.js";
+import type { BreakfastEvent } from "$lib/types/event.js";
 
 interface BreakfastGlobal {
   events: {

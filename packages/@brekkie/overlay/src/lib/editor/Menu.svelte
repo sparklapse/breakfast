@@ -6,14 +6,12 @@
   import { useEditor } from "$lib/logic/index.js";
   import InfoAccordion from "$lib/components/info-accordion/index.js";
   import Creator from "./Creator.svelte";
-  import type { ActionDefinition } from "$lib/logic/index.js";
 
   export let onsaveandclose: (() => Promise<void> | void) | undefined = undefined;
 
   const {
     label,
     save,
-    scripts: { scripts },
   } = useEditor();
 </script>
 

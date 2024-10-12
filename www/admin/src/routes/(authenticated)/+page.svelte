@@ -4,11 +4,13 @@
   import Settings from "lucide-svelte/icons/settings";
   import Unplug from "lucide-svelte/icons/unplug";
   import UsersRound from "lucide-svelte/icons/users-round";
+  import PanelsTopLeft from "lucide-svelte/icons/panels-top-left";
   import Stats from "$lib/components/obs/Stats.svelte";
   import Obs from "$lib/components/icons/OBS.svelte";
   import type { ComponentType } from "svelte";
 
   import type { PageData } from "./$types";
+  import EventFeed from "$lib/components/events/EventFeed.svelte";
   export let data: PageData;
   const obsConnected = data.obs.connectedStore;
 
@@ -22,6 +24,14 @@
       bg: string;
     };
   }[] = [
+    {
+      label: "Pages",
+      description:
+        "Create website pages you can use to share anything and everything with your community",
+      href: "/breakfast/overlays",
+      icon: PanelsTopLeft,
+      color: { text: "#4f7b9b", bg: "#d9ecf9" },
+    },
     {
       label: "Overlays",
       description: "Create overlays with ease and bring flair to your streams",
@@ -134,10 +144,10 @@
 <div class="my-4" role="separator" />
 
 <h2 class="mb-3 font-semibold">Tools</h2>
-<div class="border-collapse overflow-hidden sm:grid sm:grid-cols-2 sm:gap-1 xl:grid-cols-3">
+<div class="grid border-collapse gap-1 overflow-hidden sm:grid-cols-2 xl:grid-cols-3">
   {#each tools as tool}
     <div
-      class="group relative border bg-white p-6 focus-within:ring-2 focus-within:ring-inset focus-within:ring-slate-500 hover:bg-slate-50 sm:rounded-tr-none"
+      class="group relative h-fit border bg-white p-6 focus-within:ring-2 focus-within:ring-inset focus-within:ring-slate-500 hover:bg-slate-50 sm:rounded-tr-none"
     >
       <div>
         <span
@@ -162,4 +172,7 @@
       </div>
     </div>
   {/each}
+  <div class="h-72">
+    <EventFeed />
+  </div>
 </div>

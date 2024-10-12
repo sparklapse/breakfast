@@ -3,9 +3,10 @@ import Sync from "./components/Sync.svelte";
 export { createEditor, useEditor } from "./logic/contexts/editor.js";
 
 // Types
-export * from "./logic/types/event.js";
-export * from "./logic/types/action.js";
-export * from "./logic/types/script.js";
-export * from "./logic/types/source.js";
+export * from "./types/overlay.js";
+export * from "./types/source.js";
+export * from "./types/script.js";
+export * from "./types/action.js";
+export * from "./types/event.js";
 
 export { Editor, Sync };

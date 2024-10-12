@@ -1,7 +1,9 @@
 <script lang="ts">
   import Fuse from "fuse.js";
   import { useEditor, useViewport } from "$lib/logic/index.js";
-  import type { Source, SourceDefinition, TargetRoots, Transform } from "$lib/logic/index.js";
+  import type { Source } from "$lib/types/source.js";
+  import type { SourceDefinition, TargetRoots } from "$lib/types/script.js";
+  import type { Transform } from "$lib/logic/math/transform.js";
 
   const {
     utils: { screenToLocal },

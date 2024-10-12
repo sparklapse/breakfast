@@ -22,7 +22,6 @@
   },
   "dependencies": {
     "@fontsource-variable/gabarito": "^5.0.6",
-    "@sparklapse/breakfast": "workspace:*",
     "@twurple/chat": "^7.1.0",
     "pocketbase": "^0.21.5"
   }

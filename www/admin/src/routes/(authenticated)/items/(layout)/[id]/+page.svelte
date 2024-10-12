@@ -42,8 +42,7 @@
   import Image from "lucide-svelte/icons/image";
   import Trash2 from "lucide-svelte/icons/trash-2";
   import { goto } from "$app/navigation";
-  import { inputs } from "@sparklapse/breakfast/io";
-  import type { Item } from "@sparklapse/breakfast/db";
+  import { inputs } from "@brekkie/io";
 
   import type { PageData } from "./$types";
   import { page } from "$app/stores";
@@ -51,7 +50,22 @@
 
   const { ColorPicker } = inputs;
 
-  let item: Partial<Item> = {
+  let item: Partial<{
+    type: string;
+    label: string;
+    description: string;
+    image: string | File | null;
+    action: unknown | null;
+    shopPurchasable: boolean;
+    shopInfo: {
+      prices: Record<string, number> | "free";
+    };
+    visibility: "PUBLIC" | "UNLISTED" | "PRIVATE";
+    meta: {
+      color?: string;
+      [key: string]: any;
+    } | null;
+  }> = {
     label: "",
     description: "",
     image: null,
@@ -153,8 +167,9 @@
             <ColorPicker
               class="h-9 shadow-sm"
               label=""
-              value={item.meta.color}
+              value={item.meta?.color}
               onchange={(color) => {
+                if (!item.meta) item.meta = {};
                 item.meta.color = color.hex();
               }}
             />
