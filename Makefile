@@ -1,7 +1,15 @@
 install:
+	rm -rf node_modules
 	bun install
-	cd packages/@sparklapse/breakfast; bun run build
+	cd packages/@brekkie/obs; bun run build
+	cd packages/@brekkie/io; bun run build
+	cd packages/@brekkie/overlay; bun run build
 	go get
+
+check:
+	cd packages/@brekkie/obs; bun run check
+	cd packages/@brekkie/io; bun run check
+	cd packages/@brekkie/overlay; bun run check
 
 overlays:
 	cd www/overlay; bun run build

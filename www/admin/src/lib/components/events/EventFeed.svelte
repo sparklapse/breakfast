@@ -11,7 +11,7 @@
     ChatMessageEvent,
     SubscriptionEvent,
     ActionDefinition,
-  } from "@sparklapse/breakfast/overlay";
+  } from "@brekkie/overlay";
 
   export let actions: ActionDefinition[] = [];
   export let onPauseChange: ((paused: boolean) => void) | undefined = undefined;

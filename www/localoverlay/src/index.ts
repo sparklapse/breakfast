@@ -1,11 +1,10 @@
 import "@fontsource-variable/gabarito";
-import "@sparklapse/breakfast/overlay/global";
 import "./style.css";
 
 import { ChatClient } from "@twurple/chat";
 import { config } from "./config";
 
-import type { BreakfastEvent, ChatMessageEvent } from "@sparklapse/breakfast/overlay";
+import type { BreakfastEvent, ChatMessageEvent } from "@brekkie/overlay";
 
 class BreakfastEvents extends EventTarget {
   emitChatMessageEvent(message: ChatMessageEvent) {

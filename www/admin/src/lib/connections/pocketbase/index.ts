@@ -10,8 +10,7 @@ import { customAlphabet } from "nanoid";
 import { TWITCH_AUTH_SCOPES } from "./auth";
 import { PUBLIC_FEATURE_PROXY_AUTH_REDIRECT } from "$env/static/public";
 import type { Readable } from "svelte/store";
-import type { Action } from "@sparklapse/breakfast/overlay";
-import type { Viewer } from "@sparklapse/breakfast/db";
+import type { Action, Viewer } from "@brekkie/overlay";
 
 export const streamKeyAlphabet = customAlphabet("abcdefghijklmnopqrstuvwxyz0123456789", 21);
 

@@ -21,18 +21,6 @@
   const navItems: { label: string; icon: ComponentType; href: string; route?: string }[] = [
     { label: "Dashboard", icon: Home, href: "/breakfast", route: "/(dashboard)" },
     {
-      label: "Viewers",
-      icon: UsersRound,
-      href: "/breakfast/viewers",
-      route: "/(dashboard)/viewers",
-    },
-    {
-      label: "Items",
-      icon: Gift,
-      href: "/breakfast/items",
-      route: "/(dashboard)/items",
-    },
-    {
       label: "Pages",
       icon: PanelsTopLeft,
       href: "/breakfast/pages",
@@ -44,19 +32,19 @@
       href: "/breakfast/overlays",
       route: "/(dashboard)/overlays",
     },
-    {
-      label: "Events",
-      icon: SquareGanttChart,
-      href: "/breakfast/events",
-      route: "/(dashboard)/events",
-    },
-    {
-      label: "Controller",
-      icon: Joystick,
-      href: "/breakfast/controller",
-      route: "/(dashboard)/controller",
-    },
     { label: "Assets", icon: Image, href: "/breakfast/assets", route: "/(dashboard)/assets" },
+    {
+      label: "Viewers",
+      icon: UsersRound,
+      href: "/breakfast/viewers",
+      route: "/(dashboard)/viewers",
+    },
+    {
+      label: "Items",
+      icon: Gift,
+      href: "/breakfast/items",
+      route: "/(dashboard)/items",
+    },
     { label: "OBS", icon: Obs, href: "/breakfast/obs", route: "/(dashboard)/obs" },
   ];
 
