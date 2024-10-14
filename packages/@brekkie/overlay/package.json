@@ -1,6 +1,6 @@
 {
   "name": "@brekkie/overlay",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "scripts": {
     "dev": "vite dev",
     "build": "vite build && npm run package",
@@ -22,6 +22,9 @@
       "types": "./dist/logic/math/index.d.ts",
       "node": "./dist/logic/math/index.js",
       "import": "./dist/logic/math/index.js"
+    },
+    "./global": {
+      "types": "./dist/global.d.ts"
     }
   },
   "files": [

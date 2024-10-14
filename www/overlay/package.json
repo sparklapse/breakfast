@@ -21,6 +21,7 @@
     "vite-plugin-singlefile": "^2.0.2"
   },
   "dependencies": {
+    "@brekkie/overlay": "^0.0.4",
     "@fontsource-variable/gabarito": "^5.0.6",
     "pocketbase": "^0.21.5"
   }

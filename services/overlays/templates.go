@@ -1,7 +1,6 @@
 package overlays
 
 import (
-	"breakfast/www/localoverlay"
 	"breakfast/www/overlay"
 	"encoding/json"
 	"text/template"
@@ -74,24 +73,8 @@ func registerTemplateRoutes(app *pocketbase.PocketBase) {
 			)
 		})
 
-		e.Router.GET("/overlays/local/template", func(c echo.Context) error {
-			return localoverlay.LocalOverlayTemplate.Execute(
-				c.Response().Writer,
-				overlay.OverlayTemplateParams{
-					Title:   "template",
-					Styles:  "",
-					Body:    "",
-					Scripts: "",
-				},
-			)
-		})
-
 		e.Router.GET("/overlays/render/:id", func(c echo.Context) error {
 			return render(overlay.OverlayTemplate, c, app)
-		})
-
-		e.Router.GET("/overlays/local/render/:id", func(c echo.Context) error {
-			return render(localoverlay.LocalOverlayTemplate, c, app)
 		})
 
 		return nil

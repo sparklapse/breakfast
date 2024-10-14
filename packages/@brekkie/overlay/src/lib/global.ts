@@ -1,6 +1,9 @@
 import type { BreakfastEvent } from "$lib/types/event.js";
 
 interface BreakfastGlobal {
+  viewers: {
+    addCurrency: (id: string, amount: number, currency?: string) => Promise<void>;
+  };
   events: {
     /**
      * Listen for events from the breakfast SSE endpoint (chat messages, redeems, etc.)

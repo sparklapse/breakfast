@@ -79,8 +79,31 @@ export type SubscriptionEvent = {
   };
 };
 
+export type CurrencySpentEvent = {
+  id: string | null;
+  type: "currency-spent",
+  platform: Platforms;
+  data: {
+    id: string;
+    channel: Channel;
+    chatter: Chatter;
+    viewer: Viewer | null;
+    input: string;
+    redeemed: {
+      id: string;
+      label: string;
+      description: string;
+      currency: string;
+      cost: number;
+    };
+    item: unknown | null;
+    status: "unfulfilled" | "fulfilled" | "cancelled" | (string & {});
+  };
+};
+
 export type BreakfastEvent =
   | ActionEvent
   | ChatMessageEvent
   | ChatMessageDeleteEvent
-  | SubscriptionEvent;
+  | SubscriptionEvent
+  | CurrencySpentEvent;

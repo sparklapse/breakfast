@@ -182,17 +182,20 @@ func registerSettingsAPIs(app *pocketbase.PocketBase) {
 				}
 			}
 
+			valid_types := []string{}
 			for _, t := range saved.Types {
 				if !slices.Contains(types.AllEventTypes, t) {
-					return c.JSON(400, map[string]string{"message": "Invalid type"})
+					continue
 				}
+
+				valid_types = append(valid_types, t)
 			}
 
 			{
 				_, err := app.Dao().DB().
 					Update(
 						"_params",
-						dbx.Params{"value": strings.Join(saved.Types, ",")},
+						dbx.Params{"value": strings.Join(valid_types, ",")},
 						dbx.NewExp("key = 'breakfast-events-saved-types'"),
 					).
 					Execute()
@@ -202,7 +205,7 @@ func registerSettingsAPIs(app *pocketbase.PocketBase) {
 			}
 
 			// Update memory cache to save having to query the database for every event coming in
-			listener.SavedEventTypes = saved.Types
+			listener.SavedEventTypes = valid_types
 
 			return c.JSON(200, map[string]string{
 				"message": "OK",
