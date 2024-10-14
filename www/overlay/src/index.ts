@@ -12,9 +12,6 @@ window.breakfast = {
       if (typeof current !== "number") throw new Error("Viewer wallet data is corrupt");
       await pb.send(`/api/breakfast/viewers/${id}/wallet/add`, { method: "POST", body: JSON.stringify({ [currency]: amount }) });
     },
-    subCurrency: async (id, amount, currency = "dots") => {
-      await window.breakfast.viewers.addCurrency(id, -amount, currency);
-    },
   },
   events: {
     listen: (listener) => pb.realtime.subscribe("@breakfast/events", listener),
