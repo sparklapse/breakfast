@@ -183,6 +183,71 @@ func registerManageAPIs(app *pocketbase.PocketBase) {
 			return c.JSON(200, query)
 		})
 
+		e.Router.POST("/api/breakfast/viewers/:id/wallet/add", func(c echo.Context) error {
+			// Validate user is authenticated
+			info := apis.RequestInfo(c)
+			user := info.AuthRecord
+
+			if user == nil {
+				return c.JSON(http.StatusUnauthorized, map[string]string{"message": "Unauthorized"})
+			}
+
+			if user.Collection().Id != "users" {
+				return c.JSON(http.StatusUnauthorized, map[string]string{"message": "Unauthorized"})
+			}
+
+			viewerId := c.PathParam("id")
+
+			record, err := app.Dao().FindRecordById("viewers", viewerId)
+			if err != nil {
+				return c.JSON(400, map[string]string{"message": "Failed to get viewer"})
+			}
+
+			var wallet map[string]int
+			{
+				err := record.UnmarshalJSONField("wallet", &wallet)
+				if err != nil {
+					return c.JSON(500, map[string]string{"message": "Viewer wallet is corrupt"})
+				}
+			}
+
+			data := apis.RequestInfo(c).Data
+
+			for key, maybeAmount := range data {
+				amount := 0
+				switch maybeAmount.(type) {
+				case float64:
+					amount = int(maybeAmount.(float64))
+				case int:
+					amount = maybeAmount.(int)
+				default:
+					continue
+				}
+
+				currentCount, exists := wallet[key]
+				if !exists {
+					currentCount = 0
+				}
+
+				_, err := app.Dao().DB().
+					NewQuery(
+						"UPDATE viewers SET wallet = json_patch(wallet, json_object({:currency}, {:amount})) WHERE id = {:id}",
+					).
+					Bind(dbx.Params{
+						"currency": key,
+						"amount":   currentCount + amount,
+						"id":       viewerId,
+					}).
+					Execute()
+
+				if err != nil {
+					return c.JSON(400, map[string]string{"message": "Failed to update key: " + key})
+				}
+			}
+
+			return nil
+		})
+
 		return nil
 	})
 }

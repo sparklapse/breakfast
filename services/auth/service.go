@@ -18,7 +18,7 @@ func RegisterService(app *pocketbase.PocketBase) {
 		// Refresh any existing tokens before anything else
 		tokens.RefreshExpiredTwitchTokens(app)
 
-        // Enable authentication with streamKeys
+		// Enable authentication with streamKeys
 		e.Router.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
 			return func(c echo.Context) error {
 				streamkey := c.Request().URL.Query().Get("sk")

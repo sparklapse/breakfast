@@ -3,7 +3,7 @@ package types
 const EventTypeAction = "action"
 const EventTypeChatMessage = "chat-message"
 const EventTypeChatMessageDelete = "chat-message-delete"
-const EventTypePointsRedeem = "points-redeem"
+const EventTypeCurrencySpent = "currency-spent"
 const EventTypeStreamOffline = "stream-offline"
 const EventTypeStreamOnline = "stream-online"
 const EventTypeSubscription = "subscription"
@@ -12,14 +12,14 @@ var AllEventTypes = []string{
 	EventTypeAction,
 	EventTypeChatMessage,
 	EventTypeChatMessageDelete,
-	EventTypePointsRedeem,
+	EventTypeCurrencySpent,
 	EventTypeStreamOffline,
 	EventTypeStreamOnline,
 	EventTypeSubscription,
 }
 var DefaultSavedEventTypes = []string{
 	EventTypeAction,
-	EventTypePointsRedeem,
+	EventTypeCurrencySpent,
 	EventTypeStreamOffline,
 	EventTypeStreamOnline,
 	EventTypeSubscription,

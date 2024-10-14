@@ -156,7 +156,7 @@
   </DropdownMenu.Root>
 </div>
 
-<div class="grid md:grid-cols-2 lg:grid-cols-3">
+<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
   <div>
     <div class="flex items-center justify-between">
       <h3 class="font-semibold">Items</h3>
@@ -231,5 +231,14 @@
         {/each}
       </ul>
     {/await}
+  </div>
+
+  <div>
+    <h3 class="font-semibold">Wallet</h3>
+    <ul>
+      {#each Object.entries(data.viewer.wallet ?? {}) as [currency, amount]}
+        <li>{currency}: {amount}</li>
+      {/each}
+    </ul>
   </div>
 </div>

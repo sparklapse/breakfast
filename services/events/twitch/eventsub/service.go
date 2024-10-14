@@ -79,6 +79,39 @@ func RegisterService(app *pocketbase.PocketBase) {
 			}
 			eventType = types.EventTypeChatMessageDelete
 			eventData = data
+		case subscriptions.TypeChannelPointsRedeemAdd:
+			data, err := subscriptions.ProcessChannelPointsRedeemAddPayload(message.Payload)
+			if err != nil {
+				app.Logger().Error(
+					"EVENTS Failed to conform twitch channel points redeem add to type",
+					"error", err.Error(),
+				)
+			}
+			eventType = types.EventTypeCurrencySpent
+			eventData = data
+			if data.Viewer != nil {
+				currentCount, exists := data.Viewer.Wallet["channel points"]
+				if !exists {
+					currentCount = 0
+				}
+
+				_, err := app.Dao().DB().
+					NewQuery(
+						"UPDATE viewers SET wallet = json_patch(wallet, json_object('channel points', {:amount})) WHERE id = {:id}",
+					).
+					Bind(dbx.Params{
+						"amount": currentCount - data.Redeemed.Cost,
+						"id":     data.Viewer.Id,
+					}).
+					Execute()
+
+				if err != nil {
+					app.Logger().Error(
+						"EVENTS Twitch channel points were redeemed but unable to update viewer count",
+						"error", err.Error(),
+					)
+				}
+			}
 		default:
 			app.Logger().Error(
 				"EVENTS Twitch eventsub processed an event which isn't handled",

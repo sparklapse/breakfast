@@ -1,8 +1,0 @@
-@tailwind base;
-
-body {
-  font-family: "Gabarito Variable", system-ui;
-  width: 100vw;
-  height: 100vh;
-  overflow: hidden;
-}

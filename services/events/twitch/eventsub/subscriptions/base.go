@@ -13,5 +13,6 @@ func CreateDefaultSubscriptions(twitchUserId string) []SubscriptionConfig {
 		CreateChannelSubscribeSubscription(twitchUserId),
 		CreateStreamOfflineSubscription(twitchUserId),
 		CreateStreamOnlineSubscription(twitchUserId),
+		CreateChannelPointsRedeemAddSubscription(twitchUserId),
 	}
 }

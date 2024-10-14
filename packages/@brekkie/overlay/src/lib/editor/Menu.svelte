@@ -9,10 +9,7 @@
 
   export let onsaveandclose: (() => Promise<void> | void) | undefined = undefined;
 
-  const {
-    label,
-    save,
-  } = useEditor();
+  const { label, save } = useEditor();
 </script>
 
 <div
