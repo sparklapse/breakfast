@@ -8,6 +8,7 @@
   import { goto } from "$app/navigation";
   import { nanoid } from "nanoid";
   export let data: PageData;
+  const { user } = data;
 
   const save = async () => {
     const clone = $overlay.cloneNode(true);
@@ -80,16 +81,19 @@
   });
 </script>
 
-<Editor
-  renderUrl="{window.location.host}/overlays/render/{data.overlay.id}"
-  onsaveandclose={() => {
-    toast.promise(
-      save().then(() => goto("/breakfast/overlays")),
-      {
-        loading: "Saving overlay...",
-        success: "Overlay saved!",
-        error: (err) => `Failed to save overlay: ${err.message}`,
-      },
-    );
-  }}
-/>
+{#if $user}
+  <Editor
+    templateUrl="/overlays/template?sk={$user.id}.{$user.streamKey}"
+    renderUrl="{window.location.host}/overlays/render/{data.overlay.id}"
+    onsaveandclose={() => {
+      toast.promise(
+        save().then(() => goto("/breakfast/overlays")),
+        {
+          loading: "Saving overlay...",
+          success: "Overlay saved!",
+          error: (err) => `Failed to save overlay: ${err.message}`,
+        },
+      );
+    }}
+  />
+{/if}
