@@ -173,6 +173,7 @@ func registerSetup(app *pocketbase.PocketBase) {
 
 				owner = models.NewRecord(collection)
 				owner.SetId("owner")
+				owner.SetPassword("breakfast")
 				owner.Set("streamKey", security.RandomString(21))
 				owner.SetVerified(true)
 			}

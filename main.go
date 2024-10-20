@@ -15,6 +15,7 @@ import (
 	"log"
 
 	"github.com/pocketbase/pocketbase"
+	"github.com/pocketbase/pocketbase/cmd"
 	"github.com/pocketbase/pocketbase/core"
 	"github.com/pocketbase/pocketbase/plugins/migratecmd"
 	"github.com/pocketbase/pocketbase/tools/cron"
@@ -51,7 +52,16 @@ func main() {
 		return nil
 	})
 
-	if err := app.Start(); err != nil {
+	serveCmd := cmd.NewServeCommand(app, true)
+	err := app.Bootstrap()
+	if err != nil {
+		log.Fatal(err)
+		panic("failed to bootstrap pocketbase")
+	}
+	if err := serveCmd.Execute(); err != nil {
 		log.Fatal(err)
 	}
+	// if err := app.Start(); err != nil {
+	// 	log.Fatal(err)
+	// }
 }
