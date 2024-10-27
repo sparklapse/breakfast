@@ -1,7 +1,7 @@
 <script lang="ts">
   import toast from "svelte-french-toast";
   import { createAssetHelpers } from "@brekkie/io";
-  import { Editor, createEditor } from "@brekkie/overlay";
+  import { Editor, Sync, createEditor } from "@brekkie/overlay";
   import { page } from "$app/stores";
 
   import type { PageData } from "./$types";
@@ -95,5 +95,18 @@
         },
       );
     }}
-  />
+  >
+    <svelte:fragment slot="menu-sync">
+      <Sync
+        renderUrl="{window.location.host}/overlays/render/{data.overlay.id}"
+        beforesync={async () => {
+          toast.loading("Syncing to OBS...", { id: "obs-sync" });
+          await save();
+        }}
+        aftersync={() => {
+          toast.success("Overlay synced to OBS", { id: "obs-sync" });
+        }}
+      />
+    </svelte:fragment>
+  </Editor>
 {/if}

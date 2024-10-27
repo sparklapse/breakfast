@@ -18,5 +18,5 @@ RUN apk add ca-certificates
 COPY --from=build /app/breakfast /breakfast
 EXPOSE 1234
 
-CMD ["/breakfast", "serve", "--http=0.0.0.0:1234"]
+CMD ["/breakfast", "--http=0.0.0.0:1234"]
 
