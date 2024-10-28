@@ -2,6 +2,10 @@
 
 > By [Sparklapse](https://sparklapse.com)
 
+<p align="center">
+  <img src="https://dev.azure.com/sparklapse/breakfast/_apis/build/status/build-breakfast" alt="">
+</p>
+
 ## Getting Started
 
 If you just want to use breakfast as part of your streams without any of the hassle, then just head to [brekkie.stream](https://brekkie.stream) and you can sign up for an account to get started!
